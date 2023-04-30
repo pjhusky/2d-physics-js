@@ -1,5 +1,7 @@
 # Simple 2D Physics Playground
 
+Just some small 2D particle physics demos, and simple softbody and spring-mass system experiments.
+
 # Clone the repository
 
 ```git clone https://github.com/pjhusky/2d-physics-js.git```
@@ -11,8 +13,6 @@
 
 ```https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook&useCrtFilter```
 ![](/MetaballCrtFilter.jpg)
-
-
 
 ```https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoPictureParticle&useCircleOutline```
 ![](/PictureParticles.jpg)
