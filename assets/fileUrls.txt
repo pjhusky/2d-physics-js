@@ -1,0 +1,14 @@
+* https://www.flaticon.com/free-icon/magnetic-field_5144863
+<a href="https://www.flaticon.com/free-icons/magnetic-field" title="magnetic field icons">Magnetic field icons created by surang - Flaticon</a>
+
+* spheremap-mountains.jpg
+https://developer.playcanvas.com/en/user-manual/assets/models/building/
+
+* mark-komorowski-90-scaled.jpg
+https://www.artstation.com/artwork/o2bPyk
+
+* monster sprites from pixijs demos
+https://github.com/pixijs/examples/tree/main/public/examples/assets
+
+* IVILPC image
+https://www.cg.tuwien.ac.at/sites/default/files/research/projects/IVILPC/logo_0.png

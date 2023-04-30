@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html>
+    <!-- TODO [peter]:  -->
+    <!-- * springs => attached to level geometry like tentacles => either Pixi ~"trail-sprite" or filled with metaballs -->
+    <!-- * springs => softbody ball that moves around like tumble weed ... 
+                      maybe make level freely turnable (like puzzle-maze games), then those will always bounce around) -->
+    <!-- * find out how to measure frame time / performance in browser... -->
+    <!-- * try web workers  -->
+
+    <!-- * spring solver should have grouping by shape, so we can also calculate collisions between soft bodies
+            - collision only with closest point -->
+    <!-- * spring solver should expose spring stiffnes and damping per object -->
+    
+    <!-- * rigid bodies just soft bodies with large stiffness and damping coefficients... and manybe draw then such that oscillations aren't as visible
+            - friction? -->
+    
+    <head>
+        
+        <!-- during development - make sure browser really refreshes source & assets!!! -->
+        <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+                
+        <!-- WORK IN PROGESS!!! -->
+        <title>PixiJs Experiments</title>
+        <link rel="icon" type="image/png" href="assets/magnetic-field-2.png">
+        <link rel="shortcut icon" type="image/png" href="assets/magnetic-field-2.png">
+        
+        <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
+        <!-- '?v=1' forces refresh -->
+        <script type="text/javascript" src="js/pixijs/pixi.js"></script>
+        <script type="text/javascript" src="js/appUtils.js?v=1"></script>
+        <script type="text/javascript" src="js/setupTriangle.js?v=1"></script>
+        <script type="text/javascript" src="js/sphere.js?v=1"></script>
+        <script type="text/javascript" src="js/gauss.js?v=1"></script>
+        <script type="text/javascript" src="js/filterShaders.js?v=1"></script>
+        <script type="text/javascript" src="js/particleFluidSolver.js?v=1"></script>
+        <script type="text/javascript" src="js/softBodySolver.js?v=1"></script>
+        
+        <script type="text/javascript" src="js/particleColorsFirefox.js?v=1"></script>
+        <script type="text/javascript" src="js/particleColorsChrome.js?v=1"></script>
+        
+    </head>
+    <body ontouchstart="">
+    
+        <script> 
+            let browserEnum = new AppUtils.BrowserEnum();
+            
+            let a = 7321;        
+            function mulberry32(a) {
+                return function() {
+                let t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ t >>> 15, t | 1);
+                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                }
+            }
+            
+            const startRandomSeed = 75921;
+            let seed = startRandomSeed;
+            function random() {
+                let x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            }            
+            
+            console.log( document.title );
+            
+            let fluidParticleTints = null;
+            if ( browserEnum.isFirefox ) {
+                fluidParticleTints = MyParticleColorsFirefox.tints;
+                console.log( "use Firefox browser color tints" );
+            } else {
+                fluidParticleTints = MyParticleColorsChrome.tints;
+                console.log( "use Chrome browser color tints" );
+            }
+                  
+            const queryString = window.location.search;
+            console.log(queryString);
+            const urlParams = new URLSearchParams(queryString);
+            if ( urlParams.has('demoSelector') ) {
+                console.log( urlParams.get('demoSelector') );
+            }
+                        
+            let isMetaballFluidDemoMode = urlParams.has('demoMetaballFluid');
+            
+            const isPictureParticleFluidDemoMode = urlParams.has('demoPictureParticle');
+            const useCircleOutline = urlParams.has('useCircleOutline')
+            
+            let useCrtFilter = urlParams.has('useCrtFilter');
+            
+            let drawBackgroundMetaballs = urlParams.has('drawBackgroundMetaballs'); // background metaballs        
+            
+            const drawSoftbodies = urlParams.has('drawSoftbodies');
+            
+            const drawSpringTestSprites = urlParams.has('drawSpringTestSprites');
+            
+            let drawMetaballs = isMetaballFluidDemoMode || isPictureParticleFluidDemoMode;
+            let fluidAsBlobs = isMetaballFluidDemoMode && urlParams.has('fluidAsBlobs');
+            let useStickyGooLook = isMetaballFluidDemoMode && urlParams.has('useStickyGooLook');
+                
+            
+            console.log( `window.location.search = ${window.location.search}` );
+            
+            let paramString = window.location.search.replace( "?https://github.com/pjhusky/2d-physics-js/main/index.html", "" );
+            console.log( `paramString = ${paramString}` );
+            
+            // if no params passed - either when launched 'directly' when there is no "?<str>" appended, or if the entire "?<str>" is equal to the 
+            // git url (in which case we know that index.html was called without params in live preview mode)
+            if( paramString.length == 0 ) {
+            // if ( urlParams.keys().length == 0 ) {
+                console.log( "no parameters given - enabling default parameters" );
+                
+                // default params, when no params given
+                isMetaballFluidDemoMode = true;
+                drawMetaballs = true;
+                fluidAsBlobs = true;
+                useStickyGooLook = true;
+                
+                drawBackgroundMetaballs = true;
+                useCrtFilter = true;
+                
+            } else {
+                const keys = urlParams.keys();
+                console.log("---");
+                let numKeys = 0;
+                for (const key of keys) {
+                    console.log(key);
+                    numKeys += 1;
+                }
+                console.log( `numKeys = ${numKeys}` );
+                console.log("---");
+            }
+            
+            let sceneMapTex = PIXI.Texture.from('assets/mark-komorowski-90-scaled.jpg');
+            if ( isMetaballFluidDemoMode ) {
+                // https://www.artstation.com/artwork/o2bPyk
+                sceneMapTex = PIXI.Texture.from('assets/mark-komorowski-90-scaled.jpg');
+            } else if ( isPictureParticleFluidDemoMode ) {
+                sceneMapTex = PIXI.Texture.from('assets/screenRatio_whiteOnly.png'); // playback
+                //sceneMapTex = PIXI.Texture.from('assets/ivilpc-logo-2.png'); // when recording
+            }
+            
+            console.log(useCircleOutline);
+            
+            const app = new PIXI.Application({
+                //resizeTo: window, // Auto fill the screen
+                autoDensity: true, // Handles high DPI screens                
+                autoResize: true,
+                resolution: devicePixelRatio,
+            });
+            document.body.appendChild(app.view);
+
+            app.stage.position.set(0, 0);
+            app.stage.width  = app.screen.width;
+            app.stage.height = app.screen.height;
+            app.stage.filterArea = app.renderer.screen;
+
+            // https://github.com/kittykatattack/scaleToWindow
+            var newStyle = document.createElement("style");
+            var style = "* {padding: 0; margin: 0}";
+            newStyle.appendChild(document.createTextNode(style));
+            document.head.appendChild(newStyle);var newStyle = document.createElement("style");
+            var style = "* {padding: 0; margin: 0}";
+            newStyle.appendChild(document.createTextNode(style));
+            document.head.appendChild(newStyle);
+
+            let windowScale = AppUtils.scaleToWindow( app.renderer.view );
+            
+            // https://developer.playcanvas.com/en/user-manual/assets/models/building/
+            const envMapTex = PIXI.Texture.from('assets/spheremap-mountains.jpg');
+                        
+
+            
+            //downloadToFile( `Hey there!`, 'assets/tmp.txt', 'text/plain' );
+
+            // let file = document.getElementById("readfile");
+            // file.addEventListener("change", function () {
+            //     var reader = new FileReader();
+            //     reader.onload = function (progressEvent) {
+            //     console.log(this.result);
+            //     };
+            //     reader.readAsText(this.files[0]);
+            // });
+            
+            let gaussDim = 256;
+            let gaussSpriteScale = 96.0 / gaussDim;
+            let gaussianDeviation = 0.2;
+            let gaussianHeight = 0.275;
+
+            [gaussContainer, gaussQuad, gaussTexture] = MyGauss.setupGauss( gaussDim, gaussianDeviation, gaussianHeight );
+
+            let metaballContainer = new PIXI.Container();
+            metaballContainer.position.set(0, 0);
+            metaballContainer.width  = app.screen.width;
+            metaballContainer.height = app.screen.height;
+            metaballContainer.filterArea = app.renderer.screen;
+
+            let numGaussSprites = 50;
+
+            if ( drawMetaballs ) {
+                app.stage.addChild(metaballContainer);          
+            }
+            
+            var gaussSpriteArray = [];
+            
+            for (let i = 0; i < numGaussSprites; i++) {
+                const gaussSprite = new PIXI.Sprite(gaussTexture);
+                gaussSprite.blendMode = PIXI.BLEND_MODES.ADD;
+                gaussSprite.anchor.set(0.5);
+                // set a random scale
+                gaussSprite.scale.set(0.8 * gaussSpriteScale + random() * 0.3);
+                // finally let's set a random position...
+                gaussSprite.x = Math.floor(random() * app.screen.width);
+                gaussSprite.y = Math.floor(random() * app.screen.height);
+                // create some extra properties that will control movement
+                gaussSprite.direction = random() * Math.PI * 2;
+                // this number will be used to modify the direction of the dude over time
+                gaussSprite.turningSpeed = random() - 0.8;
+                // create a random speed between 0 - 2
+                gaussSprite.speed = 2 + random() * 2;
+                // finally we push the dude into the dudeArray so it it can be easily accessed later
+                gaussSpriteArray.push(gaussSprite);
+                gaussSprite.cullable = false;
+                
+                if ( drawBackgroundMetaballs ) {
+                    metaballContainer.addChild(gaussSprite);
+                }
+            }   
+            
+            //var maxGaussAccum = gaussianHeight * numGaussSprites;
+            const maxGaussAccum = gaussianHeight * 50;
+            
+            const gaussSpriteBoundsPadding = 40.0;
+            const gaussSpriteBounds = new PIXI.Rectangle(
+                -gaussSpriteBoundsPadding,
+                -gaussSpriteBoundsPadding,
+                app.screen.width + gaussSpriteBoundsPadding + 100.0,
+                app.screen.height + gaussSpriteBoundsPadding + 100.0,
+            );                    
+            
+            // using filters
+            
+            // pass-through
+            const metaballPassThroughFilter = new PIXI.Filter( PIXI.Filter.defaultVertexSrc,  PIXI.Filter.defaultFragmentSrc, { myUniform: 0.5 } );
+
+            const metaballFilter = new PIXI.Filter( 
+                PIXI.Filter.defaultVertexSrc,  
+                MyFilterShaders.metaballFilterFragmentSrc, 
+                { myUniform: 0.5 } 
+            );
+                
+            const outlineFilter = new PIXI.Filter( 
+                PIXI.Filter.defaultVertexSrc,  
+                MyFilterShaders.outlineFilterFragmentSrc, 
+                { u_rDim: {x: 1.0/app.screen.width, y: 1.0/app.screen.height} } 
+            );
+
+            const metaballNormalsFilter = new PIXI.Filter( 
+                MyFilterShaders.myVertexSrc,
+                MyFilterShaders.metaballNormalsFilterFragmentSrc, 
+                {   u_envMapTex: envMapTex, 
+                    u_sceneMapTex: sceneMapTex, 
+                    u_recipMaxGaussAccum: 1.0/maxGaussAccum, 
+                    u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
+            );
+
+            const metaballAlphaBasedFilter = new PIXI.Filter( 
+                PIXI.Filter.defaultVertexSrc,  
+                MyFilterShaders.metaballAlphaBasedFilterFragmentSrc, 
+                { u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
+            );
+                
+            const metaballDiffFilter = new PIXI.Filter( 
+                PIXI.Filter.defaultVertexSrc,  
+                MyFilterShaders.metaballDiffFilterFragmentSrc, 
+                { u_envMapTex: envMapTex, u_sceneMapTex: sceneMapTex, u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
+            );
+            
+            // based on https://www.shadertoy.com/view/Ms23DR#
+            const crtFilter = new PIXI.Filter(
+                MyFilterShaders.myVertexSrc,
+                MyFilterShaders.crtFilterFragmentSrc,
+                { u_time: 0.0, u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height}, u_dim: {x: app.renderer.screen.width, y: app.renderer.screen.height} }
+            );
+
+            const blurFilter = new PIXI.BlurFilter();
+            blurFilter.blur = 1.5;
+
+
+            
+            metaballContainer.filters = [metaballNormalsFilter];
+
+            if ( useCrtFilter ) {
+                app.stage.filters = [crtFilter];
+            }
+            
+            const eggHeadSprite = PIXI.Sprite.from('assets/eggHead.png');
+            eggHeadSprite.anchor.set(0.5);
+            // move the sprite to the left-center of the screen
+            eggHeadSprite.x = app.screen.width / 3 + app.screen.width / 10;
+            eggHeadSprite.y = app.screen.height / 2;
+            eggHeadSprite.scale.set( 0.66 );
+            if ( drawSpringTestSprites ) {
+                app.stage.addChild( eggHeadSprite );
+            }
+            // make the sprite interactive
+            //eggHeadSprite.interactive = true;
+            eggHeadSprite.eventMode = "dynamic";
+            eggHeadSprite.cursor = 'pointer';
+
+            eggHeadSpriteSpringConst = 6000.0;
+            eggHeadSpriteVelX = 0.0;
+            eggHeadSpriteVelY = 0.0;
+            eggHeadSpriteAccelX = 0.0;
+            eggHeadSpriteAccelY = 0.0;
+            let velDamping = 0.98;
+
+            
+            // https://codewithstein.com/how-to-drag-and-drop-pixijs/
+            var eggHeadSpriteClickOffsetX = 0;
+            var eggHeadSpriteClickOffsetY = 0;
+            eggHeadSprite.on('mousedown', function (e) {
+                console.log('Picked up');
+                eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
+                eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
+                eggHeadSprite.dragging = true;
+            });
+            eggHeadSprite.on('mousemove', function (e) {
+                console.log('Dragging');
+                if (eggHeadSprite.dragging) {
+                    eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
+                    eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
+                }
+            });
+            eggHeadSprite.on('mouseup', function (e) {
+                console.log('Moving');
+                eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
+                eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
+                eggHeadSpriteClickOffsetX = 0;
+                eggHeadSpriteClickOffsetY = 0;
+                eggHeadSpriteVelX = 0.0;
+                eggHeadSpriteVelY = 0.0;            
+                eggHeadSprite.dragging = false;
+            });            
+                        
+            const flowerTopSprite = PIXI.Sprite.from('assets/flowerTop.png');
+            flowerTopSprite.anchor.set(0.5);
+            flowerTopSprite.x = 2 * app.screen.width / 3 - app.screen.width / 10;
+            flowerTopSprite.y = app.screen.height / 2;
+            flowerTopSprite.scale.set( 0.66 );
+            if ( drawSpringTestSprites ) {
+                app.stage.addChild( flowerTopSprite );
+            }
+            // make the sprite interactive
+            //flowerTopSprite.interactive = true;
+            flowerTopSprite.eventMode = "dynamic";
+            flowerTopSprite.cursor = 'pointer';
+
+            flowerTopSpriteVelX = 0.0;
+            flowerTopSpriteVelY = 0.0;
+            flowerTopSpriteAccelX = 0.0;
+            flowerTopSpriteAccelY = 0.0;
+            flowerTopSprite.on('mousedown', function (e) {
+                console.log('Picked up');
+                flowerTopSprite.x = e.data.global.x;
+                flowerTopSprite.y = e.data.global.y;
+                flowerTopSprite.dragging = true;
+            });
+            flowerTopSprite.on('mousemove', function (e) {
+                console.log('Dragging');
+                if (flowerTopSprite.dragging) {
+                    flowerTopSprite.x = e.data.global.x;
+                    flowerTopSprite.y = e.data.global.y;
+                }
+            });
+            flowerTopSprite.on('mouseup', function (e) {
+                console.log('Moving');
+                flowerTopSprite.x = e.data.global.x;
+                flowerTopSprite.y = e.data.global.y;
+                flowerTopSpriteVelX = 0.0;
+                flowerTopSpriteVelY = 0.0;            
+                flowerTopSprite.dragging = false;
+            });            
+
+            let initDiffVecX = (flowerTopSprite.x - eggHeadSprite.x);
+            let initDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
+            let restLen = Math.sqrt( initDiffVecX * initDiffVecX + initDiffVecY * initDiffVecY );
+            
+            triangle = MyTriangle.setupTriangle();
+            //! app.stage.addChild(triangle);
+
+            if ( false ) { // instanced triangle fluidParticles
+                let sphereRadius = 3.5;
+                let instanceCount = 10; 
+                sphere = MySphere.setupSphere( sphereRadius, instanceCount );
+                app.stage.addChild(sphere);
+            }
+
+            // https://medium.com/@bigtimebuddy/rendering-fast-graphics-with-pixijs-6f547895c08c
+            // https://codesandbox.io/s/pixi-graphics-post-attempt-4-hlgs33?from-embed=&file=/src/index.ts:725-928
+
+            // also for recordings!!!
+            // let maxNumFluidParticles = 6500.0;
+            // let fluidParticleRadius = 3.25;
+            let maxNumFluidParticles = 8000.0;
+            let fluidParticleRadius = 2.9;
+ 
+            if ( useStickyGooLook ) {
+                maxNumFluidParticles = 1900.0;
+                fluidParticleRadius = 6.0;
+            }
+                        
+            let fixedDt = 0.016;
+            
+            let PFS = ParticleFluidSolver;
+            
+            let fluidSolverCircleAreaConstraint = new PFS.FluidSolverConstraintCircle( app.screen.width, app.screen.height, fluidParticleRadius );
+            let fluidSolverConstraints = new Array();
+            fluidSolverConstraints.push( fluidSolverCircleAreaConstraint );
+            
+            let fluidParticleGravityX = 0.0;
+            
+            let fluidParticleGravityY = 1200.0;
+            let subSteps = 4;
+            let particleFluidSolver = new PFS.FluidSolver(  app.screen.width, app.screen.height, 
+                                                            maxNumFluidParticles, fluidParticleRadius, fluidParticleGravityX, fluidParticleGravityY,
+                                                            fixedDt, subSteps,
+                                                            //[ fluidSolverCircleAreaConstraint ] 
+                                                            fluidSolverConstraints
+                                                        );
+                        
+            
+            let outlinedCircleRT = null;
+            if ( !fluidAsBlobs ) 
+            {
+                let templateShape = null;
+                if ( useCircleOutline ) {
+                    templateShape = new PIXI.Graphics()
+                        .beginFill(0xffffff)
+                        .lineStyle({ width: 1, color: 0x333333, alignment: 0 })
+                        .drawCircle(0, 0, fluidParticleRadius);
+                } else {
+                    templateShape = new PIXI.Graphics()
+                        .beginFill(0xffffff)
+                        .drawCircle(0, 0, fluidParticleRadius);
+                }    
+                
+                    
+                let { width, height } = templateShape;
+                
+                // Draw the circle to the RenderTexture
+                outlinedCircleRT = PIXI.RenderTexture.create({
+                    width,
+                    height,
+                    //multisample: MSAA_QUALITY.HIGH,
+                    resolution: window.devicePixelRatio
+                });
+                // With the existing renderer, render texture
+                // make sure to apply a transform Matrix
+                app.renderer.render(templateShape, {
+                    renderTexture: outlinedCircleRT,
+                    transform: new PIXI.Matrix(1, 0, 0, 1, width / 2, height / 2)
+                });
+                
+                // Required for MSAA, WebGL 2 only
+                //app.renderer.framebuffer.blit();
+
+                // Discard the original Graphics
+                templateShape.destroy(true);
+            }
+            
+            if ( !fluidAsBlobs ) { // TODO: remove this check and perform always?
+                readImg = PIXI.Sprite.from(sceneMapTex);
+                image = app.renderer.extract.pixels(readImg);
+                
+                let wfm = async (image) => {
+                    await image;
+                }
+                wfm(image);
+            }
+            
+
+            let activeFluidParticles = 0;
+            for (let i = 0; i < maxNumFluidParticles; i++) {
+                let fluidParticle = null;
+                // DEBUG: comment this back in!!!
+                if ( fluidAsBlobs ) {
+                    fluidParticle = new PFS.FluidParticle(gaussTexture);
+                    fluidParticle.scale.set( 0.2 );
+                    fluidParticle.blendMode = PIXI.BLEND_MODES.ADD;
+                    
+                    if ( useStickyGooLook ) {
+                        fluidParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16); // that STICKY gooey look :-)
+                    } else {
+                        fluidParticle.tint = AppUtils.rgbToHex( 255, 255, 255 ); // CLEAN LOOK!!!
+                    }
+                    
+                } else {
+                    fluidParticle = new PFS.FluidParticle(outlinedCircleRT);
+                    fluidParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
+                    
+                    let addr = i;
+                    if ( addr < fluidParticleTints.length ) {
+                        fluidParticle.tint = fluidParticleTints[addr];
+                        //console.log("here!");
+                    } else {
+                        fluidParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
+                        console.log(`here! i=${i}, len=${fluidParticleTints.length}`);
+                    }
+                }
+
+                fluidParticle.anchor.set(0.5);
+                
+                fluidParticle.position.x = app.screen.width  * ( 0.33 + random()*0.33 );
+                fluidParticle.position.y = app.screen.height * ( 0.33 + random()*0.33 );
+
+                fluidParticle.speed = 1 + random() * 1.2;
+                fluidParticle.lastPosX = fluidParticle.position.x;
+                fluidParticle.lastPosY = fluidParticle.position.y; 
+
+                fluidParticle.accelX = 0.0;
+                fluidParticle.accelY = fluidParticleGravityY;
+                
+                particleFluidSolver.addParticle( fluidParticle );
+            }
+
+            particleFluidSolver.setActiveParticleCount( 0 );
+
+            let sphereShapesContainer = null;
+            // DEBUG: comment this back in!!!
+            if ( fluidAsBlobs ) {
+                //metaballContainer.addChild(...fluidParticles); // emit particles later on
+                numGaussSprites += maxNumFluidParticles;
+            } else {
+                sphereShapesContainer = new PIXI.Container();
+                //sphereShapesContainer.addChild(...fluidParticles); // emit particles later on
+                
+                // ################# //
+                //!!!!  ADD FLUID PARTICLES TO STAGE SO THEY GET RENDERED
+                if ( isMetaballFluidDemoMode || isPictureParticleFluidDemoMode ) {
+                    app.stage.addChild( sphereShapesContainer ); // comment this line out to hide fluid circles
+                }
+                // ################# //
+            }            
+            
+            
+            let softBodyContainer = new PIXI.Container();
+            if ( drawSoftbodies ) {
+                app.stage.addChild( softBodyContainer ); // add softbody particles to scene
+            }
+
+            let numSoftBodyBallMassPositions  = 8;
+            let numSoftBodyPlankMassPositions = 8;
+            
+            let softBodyMassRadius = 8.0;
+            let softBodyRadius = 70.0;
+            
+            let SBS = SoftBodySolver;
+
+            let softBodyAreaConstraint = new SBS.SpringMassSolverConstraintCircle( app.screen.width, app.screen.height, fluidParticleRadius );
+            let softBodyConstraints = new Array();
+            softBodyConstraints.push( softBodyAreaConstraint );
+            
+
+                                                            
+            let softBodyCombinedSystem = new SBS.SoftBodySolver(  app.screen.width, app.screen.height, 
+                                                              numSoftBodyBallMassPositions+numSoftBodyPlankMassPositions, softBodyMassRadius, fluidParticleGravityX, fluidParticleGravityY,
+                                                              fixedDt, subSteps,
+                                                              softBodyConstraints );
+                        
+            { // make ball
+                let angleStep = Math.PI * 2.0 / numSoftBodyBallMassPositions;
+                for ( let i = 0; i < numSoftBodyBallMassPositions; i++ ) {
+                    let softBodyParticle = new SBS.MassPoint(outlinedCircleRT);
+                    softBodyParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
+                    softBodyParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
+                    
+                    softBodyParticle.anchor.set(0.5);
+                    
+                    softBodyParticle.scale.set( softBodyMassRadius / fluidParticleRadius );
+
+                    let angle = i * angleStep;
+                    softBodyParticle.position.x = app.screen.width  * 0.5 + Math.cos( angle ) * softBodyRadius;
+                    softBodyParticle.position.y = app.screen.height * 0.5 + Math.sin( angle ) * softBodyRadius;
+                    
+                    softBodyParticle.vel.x = 300.0;
+                    softBodyParticle.vel.y = -600.0;
+
+                    softBodyParticle.speed = 0.0; //1 + random() * 1.2;
+                    
+                    softBodyContainer.addChild( softBodyParticle );                
+                    // add particle to spring-mass system solver
+                    softBodyCombinedSystem.addParticle( softBodyParticle );
+                }
+
+                for ( let i = 0; i < numSoftBodyBallMassPositions; i++ ) {
+                    // insert links into 
+                    for ( let j = i + 1; j < numSoftBodyBallMassPositions; j++ ) {
+                        softBodyCombinedSystem.addLink( i, j % numSoftBodyBallMassPositions );
+                    }
+                }
+            }
+            
+            { // make bridge element
+
+                // add spring masses to gfx system
+                for ( let i = 0; i < numSoftBodyPlankMassPositions; i++ ) {
+                    let softBodyParticle = new SBS.MassPoint(outlinedCircleRT);
+                    softBodyParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
+                    softBodyParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
+                    
+                    softBodyParticle.anchor.set(0.5);
+                    
+                    softBodyParticle.scale.set( softBodyMassRadius / fluidParticleRadius );
+
+                    // let angle = i * angleStep;
+                    // softBodyParticle.position.x = app.screen.width  * 0.5 + Math.cos( angle ) * softBodyRadius;
+                    // softBodyParticle.position.y = app.screen.height * 0.5 + Math.sin( angle ) * softBodyRadius;
+                    
+                    // positions for a horizontal bar
+                    // softBodyParticle.position.x = app.screen.width  * 0.5 + ( ( i % 4 ) / 3.0 * 2.0 - 1.0 ) * 180.0;
+                    // softBodyParticle.position.y = app.screen.height * 0.28 + ( Math.floor( i / 4 ) * 2.0 - 1.0 ) * 35.0;
+
+                    softBodyParticle.position.x = ( ( i % 4 ) / 3.0 * 2.0 - 1.0 ) * 180.0;
+                    softBodyParticle.position.y = ( Math.floor( i / 4 ) * 2.0 - 1.0 ) * 35.0;
+                    
+                    const rota = Math.PI * 0.11;
+                    const ca = Math.cos( rota );
+                    const sa = Math.sin( rota );
+                    const rotx =  ca * softBodyParticle.position.x + sa * softBodyParticle.position.y;
+                    const roty = -sa * softBodyParticle.position.x + ca * softBodyParticle.position.y;
+                    softBodyParticle.position.x = rotx + app.screen.width  * 0.5;
+                    softBodyParticle.position.y = roty + app.screen.height * 0.3;
+                    
+                    softBodyParticle.vel.x = -100.0;
+                    softBodyParticle.vel.y = -500.0;
+
+                    softBodyParticle.speed = 0.0; //1 + random() * 1.2;
+                    
+                    softBodyContainer.addChild( softBodyParticle );
+
+                    // add particle to spring-mass system solver
+                    softBodyCombinedSystem.addParticle( softBodyParticle );
+                    
+                }
+
+                for ( let i = numSoftBodyBallMassPositions; i < numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions; i++ ) {
+                    // insert links into 
+                    for ( let j = i + 1; j < numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions; j++ ) {
+                        //softBodyBridgeSystem.addLink( i, j % numSoftBodyMassPositions );
+                        softBodyCombinedSystem.addLink( i, j % ( numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions ) );
+                    }
+                }
+
+            }            
+            // #######################
+            
+            
+            // Listen for window resize events
+            window.addEventListener('resize', resize);
+            resize();
+   
+            // const redraw = () => {
+            //     let startTime = performance.now();
+            //     for (let i = 0; i < fluidParticles.length; i++) {
+            //         const fluidParticle = fluidParticles[i];
+            //         fluidParticle.position.x += fluidParticle.speed;
+            //         if (fluidParticle.position.x > app.screen.width + width) {
+            //             fluidParticle.position.x -= app.screen.width + width + width;
+            //         }
+            //     }
+            //     // text.text =
+            //     //     "Prepared: " +
+            //     //     Math.round(performance.now() - startTime) +
+            //     //     "ms, Points: n/a";
+            //     app.render();
+
+            //     requestAnimationFrame(redraw);
+            // };
+            // requestAnimationFrame(redraw);
+                        
+            let keyObject_SPACE = AppUtils.keyboard( " " );
+            let keyObject_r = AppUtils.keyboard( "r" );
+            
+            keyObject_SPACE.press = () => {
+                //key object pressed
+            };
+            keyObject_SPACE.release = async () => {
+                //key object released
+                const readImg = PIXI.Sprite.from(sceneMapTex);
+                const image = await app.renderer.extract.pixels(readImg);
+                await image;
+                PFS.saveFluidParticleColorsToConsole(particleFluidSolver.getFluidParticles(), image);                
+            };
+
+            keyObject_r.release = async () => {
+                if ( fluidAsBlobs ) {
+                    metaballContainer.removeChildren(
+                        Math.max( 0, metaballContainer.children.length-1-activeFluidParticles ), 
+                        metaballContainer.children.length-1 );
+                } else {
+                    //sphereShapesContainer.removeChildren(0,activeFluidParticles);
+                    sphereShapesContainer.removeChildren(0,sphereShapesContainer.children.length-1);
+                }
+                activeFluidParticles = 0;
+                particleFluidSolver.setActiveParticleCount( 0 );
+                seed = startRandomSeed;
+            };
+            
+            app.stage.eventMode = "dynamic";
+            app.stage.hitArea = app.screen;
+            //app.stage.on('pointerdown', AppUtils.takeScreenshot);
+
+            let saveFluidParticleColorsHelper = async () => {
+                
+                const readImg = PIXI.Sprite.from(sceneMapTex);
+                const image = await app.renderer.extract.pixels(readImg);
+                await image;
+                PFS.saveFluidParticleColors( app, browserEnum, particleFluidSolver.getFluidParticles(), image );
+                console.log("LMB clicked - saved fluid particle colors from background!"); 
+            }
+
+            if ( !fluidAsBlobs ) {
+                app.stage.on('pointerdown', saveFluidParticleColorsHelper);
+            }
+            
+
+            let tickNum = 0;
+
+            let elapsed = 0.0;
+            app.ticker.add((delta) => {
+                //elapsed += delta;
+                
+                //console.log(delta / PIXI.Ticker.targetFPMS);                
+                
+                tickNum += 1;
+                
+                dt = app.ticker.elapsedMS * 0.001;
+                dt = Math.min( 0.033, dt );
+                
+                //elapsed += dt;
+                elapsed += 1/60;
+
+                // tried clearing that nasty single particle that sticks around after "reset", but doesn't work
+                // if ( fluidAsBlobs ) {
+                //     let containerLen = metaballContainer.length-1;
+                //     if ( activeFluidParticles < containerLen ) {
+                //         metaballContainer.removeChildren(activeFluidParticles, containerLen);
+                //     }
+                // } else {
+                //     let containerLen = sphereShapesContainer.length-1;
+                //     if ( activeFluidParticles < containerLen ) {
+                //         sphereShapesContainer.removeChildren(activeFluidParticles, containerLen);
+                //     }
+                // }
+                
+                // emit new fluid particles    
+                const emissionRate = (isPictureParticleFluidDemoMode) ? 8 : 6;
+                for ( let i = 0; i < emissionRate; i++ ) 
+                {
+                    const angleVal = elapsed * 2.0 * 3.1415;
+                    const cosTime = Math.cos( angleVal ) * 0.3 + 0.7;
+                    const sinTime = Math.sin( angleVal ) * 0.3 + 0.7;
+                    
+                    //if ( activeFluidParticles < fluidParticles.length ) {
+                    if ( activeFluidParticles < maxNumFluidParticles ) {
+                        //let fluidParticle = fluidParticles[activeFluidParticles];
+                        //XXXYYYXXX let fluidParticle = particleFluidSolver.addNewParticleAtIdx( activeFluidParticles );
+                        let fluidParticle = particleFluidSolver.getParticleAtIdx( activeFluidParticles );
+                        
+                        if ( isPictureParticleFluidDemoMode ) {
+                            let offX = activeFluidParticles % 13 - 6;
+                            offX *= 1.8 + 0.2 * random();
+                            fluidParticle.position.x = app.screen.width * 0.3 + offX * 1.1 * fluidParticleRadius;
+                            //fluidParticle.position.x = app.screen.width / 2;
+                            //fluidParticle.position.y = app.screen.height / 2;
+                            let offY = activeFluidParticles % 10;
+                            offY *= 0.8 + 0.2 * random();
+                            //let signX = ( activeFluidParticles % 3 ) - 1;
+                            let signX = -1.0;
+                            //let randDir = random() * 0.5 - 0.25;
+
+                            let randDir = 1.0; //-random() * 0.1 + 0.9;
+                            const randDirX_tmp = randDir * signX * 0.8 * fluidParticleRadius;
+                            const randDirY_tmp = 0.1;// * 3.0;
+                            
+                            let randDirX = +cosTime * randDirX_tmp + sinTime * randDirY_tmp;
+                            let randDirY = -sinTime * randDirX_tmp + cosTime * randDirY_tmp;
+
+                            fluidParticle.position.y = app.screen.height * 0.225 + offY * fluidParticleRadius;
+                            
+                            fluidParticle.position.x += randDirX * 2.0;
+                            fluidParticle.position.y += randDirY * 2.0;
+
+                            fluidParticle.lastPosX = fluidParticle.position.x + randDirX;
+                            fluidParticle.lastPosY = fluidParticle.position.y + randDirY;// + randDir * 0.5 * fluidParticleRadius; 
+                            
+                        } else /*if ( isMetaballFluidDemoMode )*/ {
+                            // let signX = ( activeFluidParticles % 3 ) - 1;
+                            // randDir = random() * 0.5 - 0.25;
+                            // randDirX = randDir * 0.03 * signX;
+                            // randDirY = randDir * 0.02;
+                            // fluidParticle.position.x = app.screen.width * 0.5 + offX * fluidParticleRadius;
+                            // fluidParticle.position.y = app.screen.height * 0.25 + offY * fluidParticleRadius;
+                            let offX = activeFluidParticles % 13 - 6;
+                            fluidParticle.position.x = app.screen.width / 2 + offX * 1.8 * fluidParticleRadius;
+                            let offY = activeFluidParticles % 10;
+                            let signX = ( activeFluidParticles % 3 ) - 1;
+                            let randDir = random() * 0.5 - 0.25;
+                            fluidParticle.speed = 0.0001;
+                            fluidParticle.position.y = app.screen.height / 4 + offY * 1.8 * fluidParticleRadius;
+                            fluidParticle.lastPosX = fluidParticle.position.x + dt * randDir * signX * 0.5 * fluidParticleRadius;
+                            fluidParticle.lastPosY = fluidParticle.position.y + dt * randDir * 0.5 * fluidParticleRadius; 
+                        }
+                        
+                        fluidParticle.accelX = 0.0;
+                        fluidParticle.accelY = fluidParticleGravityY;
+
+                        if ( fluidAsBlobs ) {
+                            metaballContainer.addChild(fluidParticle);
+                        } else {
+                            sphereShapesContainer.addChild(fluidParticle);
+                        }
+                        
+                        activeFluidParticles++;
+                        particleFluidSolver.setActiveParticleCount( activeFluidParticles );
+                    } else {
+                        break;
+                    }
+                }
+                
+                //console.log( app.ticker.elapsedMS * 0.001 );
+                
+                triangle.rotation += 0.04;
+                triangle.position.x += 1.4;
+                triangle.position.y += Math.sin( tickNum * 0.1 ) * 2.0;
+                
+                //app.renderer.render(metaballContainer, { renderTexture: metaballBufferRT } );
+              
+                metaballNormalsFilter.uniforms.u_time = elapsed;
+                metaballNormalsFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
+                metaballNormalsFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
+                
+                crtFilter.uniforms.u_time = elapsed;
+                crtFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
+                crtFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
+
+                particleFluidSolver.updateFluidDriver();
+
+                //!!!  
+                // softBodyBallSystem.updateDriver();
+                // softBodyBridgeSystem.updateDriver();
+                softBodyCombinedSystem.updateDriver();
+                
+                // update gauss blobs
+                //gaussSprite.position.x = (Math.sin( tickNum * 0.1 ) + 1.0) * 0.25 * app.screen.width;
+                for (let i = 0; i < gaussSpriteArray.length; i++) {
+                    const gaussSprite = gaussSpriteArray[i];
+                    gaussSprite.direction += gaussSprite.turningSpeed * 0.01;
+                    gaussSprite.x += Math.sin(gaussSprite.direction) * gaussSprite.speed;
+                    gaussSprite.y += Math.cos(gaussSprite.direction) * gaussSprite.speed;
+
+                    // wrap the dudes by testing their bounds...
+                    if (gaussSprite.x < gaussSpriteBounds.x) {
+                        gaussSprite.x += gaussSpriteBounds.width;
+                    } else if (gaussSprite.x > gaussSpriteBounds.x + gaussSpriteBounds.width) {
+                        gaussSprite.x -= gaussSpriteBounds.width;
+                    }
+
+                    if (gaussSprite.y < gaussSpriteBounds.y) {
+                        gaussSprite.y += gaussSpriteBounds.height;
+                    } else if (gaussSprite.y > gaussSpriteBounds.y + gaussSpriteBounds.height) {
+                        gaussSprite.y -= gaussSpriteBounds.height;
+                    }
+                } 
+                
+                if ( !eggHeadSprite.dragging ) { // spring relaxation
+
+                    currDiffVecX = (flowerTopSprite.x - eggHeadSprite.x);
+                    currDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
+                    currLen = Math.sqrt( currDiffVecX * currDiffVecX + currDiffVecY * currDiffVecY );
+                    
+                    relativeLenDiff = (restLen - currLen) / restLen;
+                    
+                    springForce = -eggHeadSpriteSpringConst * relativeLenDiff;
+                    
+                    //let gravityY = 0.02; // +=
+                    let gravityY = 50.2; // =
+                    // if ( Math.abs( springForce ) > 0.0 ) 
+                    {                                            
+                        mass = 1.0;
+                        springAccel = ( springForce / mass ) * dt;
+                        //springAccelY = ( -gravityY + springForce / mass ) * dt;
+                        
+                        //eggHeadSpriteAccelY += gravityY;
+                        //eggHeadSpriteAccelY = gravityY;
+                        
+                        eggHeadSpriteVelX += springAccel * currDiffVecX/currLen;
+                        eggHeadSpriteVelY += springAccel * currDiffVecY/currLen;// + eggHeadSpriteAccelY;
+                        
+                        eggHeadSprite.x += eggHeadSpriteVelX * dt;// + springAccel * dt;
+                        eggHeadSprite.y += eggHeadSpriteVelY * dt;// + springAccel * dt;
+                                                
+                    }
+                    
+                    eggHeadSpriteVelX *= velDamping;
+                    eggHeadSpriteVelY *= velDamping;
+                }
+                
+                { // spring relaxation for 2nd 
+                    currDiffVecX = (eggHeadSprite.x - flowerTopSprite.x);
+                    currDiffVecY = (eggHeadSprite.y - flowerTopSprite.y);
+                    currLen = Math.sqrt( currDiffVecX * currDiffVecX + currDiffVecY * currDiffVecY );
+                    
+                    relativeLenDiff = (restLen - currLen) / restLen;
+                    
+                    springForce = -eggHeadSpriteSpringConst * relativeLenDiff;
+                        
+                    mass = 1.0;
+                    springAccel = ( springForce / mass ) * dt;
+                    
+                    flowerTopSpriteVelX += springAccel * currDiffVecX/currLen;
+                    flowerTopSpriteVelY += springAccel * currDiffVecY/currLen;
+                    
+                    flowerTopSprite.x += flowerTopSpriteVelX * dt;
+                    flowerTopSprite.y += flowerTopSpriteVelY * dt;
+                    flowerTopSpriteVelX *= velDamping;
+                    flowerTopSpriteVelY *= velDamping;
+                }                
+                
+            });
+
+            
+            
+            // Resize function window
+            function resize() {
+                windowScale = AppUtils.scaleToWindow( app.renderer.view );
+                console.log( windowScale );
+                
+                particleFluidSolver.onResolutionChanged( app.screen.width, app.screen.height );
+            }
+            
+       
+        </script>
+        
+        <!-- <script> 
+            // Create the application helper and add its render target to the page
+            let app = new PIXI.Application({ width: 640, height: 360 });
+            document.body.appendChild(app.view);
+
+            // Add a ticker callback to move the sprite back and forth
+            let elapsed = 0.0;
+            app.ticker.add((delta) => {
+                elapsed += delta;
+            });
+        </script> -->
+    </body>
+</html>
