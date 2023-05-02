@@ -33,9 +33,12 @@ https://user-images.githubusercontent.com/10312640/235639750-52d3ddd1-e786-4ed8-
 
 # Running a demo (local http server)
 
+Start a simple local http server, for example:
 ```python3 -m http.server 8000```
 
-[Colored Particles with CRT Filters](http://localhost:8000/index.html?demoPictureParticle&useCircleOutline&useCrtFilter)
+Then open your browser and type something along these lines:
+```http://localhost:8000/index.html?demoPictureParticle&useCircleOutline&useCrtFilter```
+<!-- [Colored Particles with CRT Filter](http://localhost:8000/index.html?demoPictureParticle&useCircleOutline&useCrtFilter) -->
 
 
 # Supported parameters
