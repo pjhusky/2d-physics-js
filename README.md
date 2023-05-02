@@ -8,7 +8,7 @@ Just some small 2D particle physics demos, and simple softbody and spring-mass s
 
 # Running a demo (web)
 
-Live Demo: [Metaball Fluids](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook)
+Live Demo: [Metaball Fluids](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook&drawBackgroundMetaballs)
 <!-- ![](/Metaball.jpg) -->
 <!--
 <a href="https://user-images.githubusercontent.com/10312640/235639664-820b8b52-13a4-436d-afc4-f7ac595b5329.mp4" title="Metaball Particles">
