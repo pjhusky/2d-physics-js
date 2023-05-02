@@ -8,7 +8,7 @@ Just some small 2D particle physics demos, and simple softbody and spring-mass s
 
 # Running a demo (web)
 
-[Metaball Fluids](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook)
+Live Demo: [Metaball Fluids](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook)
 <!-- ![](/Metaball.jpg) -->
 <!--
 <a href="https://user-images.githubusercontent.com/10312640/235639664-820b8b52-13a4-436d-afc4-f7ac595b5329.mp4" title="Metaball Particles">
@@ -20,15 +20,15 @@ Just some small 2D particle physics demos, and simple softbody and spring-mass s
 https://user-images.githubusercontent.com/10312640/235639664-820b8b52-13a4-436d-afc4-f7ac595b5329.mp4
 
 
-[Metaball Fluids with CRT Filter](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook&useCrtFilter)
+Live Demo: [Metaball Fluids with CRT Filter](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook&useCrtFilter)
 ![](/MetaballCrtFilter.jpg)
 
-[Colored Particles](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoPictureParticle&useCircleOutline)
+Live Demo: [Colored Particles](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoPictureParticle&useCircleOutline)
 <!-- ![](/PictureParticles.jpg) -->
 https://user-images.githubusercontent.com/10312640/235639750-52d3ddd1-e786-4ed8-9d08-8ba75c73bd95.mp4
 
 
-[Softbodies](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&drawSoftbodies)
+Live Demo: [Softbodies](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&drawSoftbodies)
 
 
 # Running a demo (local http server)
@@ -45,18 +45,26 @@ Then open your browser and type something along these lines:
 
 # Supported parameters
 
-demoMetaballFluid
-fluidAsBlobs
-useStickyGooLook
+- demoMetaballFluid
+- fluidAsBlobs
+- useStickyGooLook
+<br>
 
-demoPictureParticle
-useCircleOutline
+- demoPictureParticle
+- useCircleOutline
+<br>
 
-drawBackgroundMetaballs
+- drawBackgroundMetaballs
+<br>
 
-drawSoftbodies
+- drawSoftbodies
+<br>
 
-drawSpringTestSprites
+- drawSpringTestSprites
+<br>
 
-useCrtFilter
+- useCrtFilter
+<br>
 
+- recordingEnabled
+<br>
