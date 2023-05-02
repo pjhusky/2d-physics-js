@@ -87,6 +87,8 @@
             
             let useCrtFilter = urlParams.has('useCrtFilter');
             
+            const recordingEnabled = urlParams.has('recordingEnabled');
+            
             let drawBackgroundMetaballs = urlParams.has('drawBackgroundMetaballs'); // background metaballs        
             
             const drawSoftbodies = urlParams.has('drawSoftbodies');
@@ -96,7 +98,7 @@
             let drawMetaballs = isMetaballFluidDemoMode || isPictureParticleFluidDemoMode;
             let fluidAsBlobs = isMetaballFluidDemoMode && urlParams.has('fluidAsBlobs');
             let useStickyGooLook = isMetaballFluidDemoMode && urlParams.has('useStickyGooLook');
-                
+            
             
             console.log( `window.location.search = ${window.location.search}` );
             
@@ -681,16 +683,18 @@
             let keyObject_SPACE = AppUtils.keyboard( " " );
             let keyObject_r = AppUtils.keyboard( "r" );
             
-            keyObject_SPACE.press = () => {
-                //key object pressed
-            };
-            keyObject_SPACE.release = async () => {
-                //key object released
-                const readImg = PIXI.Sprite.from(sceneMapTex);
-                const image = await app.renderer.extract.pixels(readImg);
-                await image;
-                PFS.saveFluidParticleColorsToConsole(particleFluidSolver.getFluidParticles(), image);                
-            };
+            if ( recordingEnabled == true ) { // recordings
+                keyObject_SPACE.press = () => {
+                    //key object pressed
+                };
+                keyObject_SPACE.release = async () => {
+                    //key object released
+                    const readImg = PIXI.Sprite.from(sceneMapTex);
+                    const image = await app.renderer.extract.pixels(readImg);
+                    await image;
+                    PFS.saveFluidParticleColorsToConsole(particleFluidSolver.getFluidParticles(), image);                
+                };
+            }
 
             keyObject_r.release = async () => {
                 if ( fluidAsBlobs ) {
@@ -719,10 +723,12 @@
                 console.log("LMB clicked - saved fluid particle colors from background!"); 
             }
 
-            if ( !fluidAsBlobs ) {
-                app.stage.on('pointerdown', saveFluidParticleColorsHelper);
-            }
-            
+            // for recordings
+            if ( recordingEnabled == true ) { // recordings
+                if ( !fluidAsBlobs ) {
+                    app.stage.on('pointerdown', saveFluidParticleColorsHelper);
+                }
+            }            
 
             let tickNum = 0;
 
