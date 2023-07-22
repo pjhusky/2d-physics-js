@@ -227,7 +227,8 @@ var MyFilterShaders = (function (exports) {
             //gl_FragColor = vec4(origCol,1.0); return; // pass-through only
             
             vec3 col;
-            float x =  sin(0.3*u_time+curvedTCSampler.y*21.0)*sin(0.7*u_time+curvedTCSampler.y*29.0)*sin(0.3+0.33*u_time+curvedTCSampler.y*31.0)*0.0017;
+            //float x =  sin(0.3*u_time+curvedTCSampler.y*21.0)*sin(0.7*u_time+curvedTCSampler.y*29.0)*sin(0.3+0.33*u_time+curvedTCSampler.y*31.0)*0.0017;
+            float x =  sin(0.3+curvedTCSampler.y*21.0)*sin(0.7+curvedTCSampler.y*29.0)*sin(0.3+0.33+curvedTCSampler.y*31.0)*0.0017;
             
             // float offS = 0.001;
             // float offL = 0.002;
@@ -240,7 +241,10 @@ var MyFilterShaders = (function (exports) {
             float wG  = 0.05;
             // float wRB = 0.0;
             // float wG  = 0.0;
-            float stepVal = ( step( 0.0, 3.2 * sin( curvedTCSampler.y * 5.5 + u_time ) ) * 0.5 );
+            
+            //float stepVal = ( step( 0.0, 3.2 * sin( curvedTCSampler.y * 5.5 + u_time ) ) * 0.5 );
+            float stepVal = ( step( 0.0, 3.2 * sin( curvedTCSampler.y * 5.5 ) ) * 0.5 );
+            
             wRB += stepVal*0.02;
             col.r += wRB * texture2D( uSampler, stepVal * 0.75 * vec2( x + 0.025, -0.027 ) + vec2( curvedTCSampler.x + 0.001, curvedTCSampler.y + 0.001 ) ).x;
             col.g += wG  * texture2D( uSampler, 0.75 * vec2( x + -0.022, -0.02 ) + vec2( curvedTCSampler.x + 0.000, curvedTCSampler.y - 0.002 ) ).y;
@@ -255,23 +259,27 @@ var MyFilterShaders = (function (exports) {
             col *= vec3(0.95,1.05,0.95);
             col *= 2.8;
 
-            float scans = clamp( 0.35+0.35*sin(5.5*u_time+curvedTC.y*u_dim.y*1.5), 0.0, 1.0);
+            //float scans = clamp( 0.35+0.35*sin(5.5*u_time+curvedTC.y*u_dim.y*1.5), 0.0, 1.0);
+            float scans = clamp( 0.35+0.35*sin(5.5+curvedTC.y*u_dim.y*1.5), 0.0, 1.0);
             //float scans = clamp( 0.35+0.35*sin(3.5*u_time+origTC.y*u_dim.y*1.5), 0.0, 1.0);
             
             float s = pow(scans,1.7);
             col = col*vec3( 0.4+0.7*s) ;
 
-            col *= 1.0+0.01*sin(110.0*u_time);
+            //col *= 1.0+0.01*sin(110.0*u_time);
+            col *= 1.0+0.01*sin(110.0);
             //col *= 1.0+0.05*sin(110.0*u_time);
             if (curvedTC.x < 0.0 || curvedTC.x > 1.0) { col *= 0.0; }
             if (curvedTC.y < 0.0 || curvedTC.y > 1.0) { col *= 0.0; }
             
             col*=1.0-0.65*vec3(clamp((mod(gl_FragCoord.x, 2.0)-1.0)*2.0,0.0,1.0));
             
-            float comp = smoothstep( 0.1, 0.9, sin(u_time) );
+            //float comp = smoothstep( 0.1, 0.9, sin(u_time) );
+            float comp = smoothstep( 0.1, 0.9, 0.5 );
             
             // SHIFT-glitch darken as well -> the same as in curve to shift coord left/right
             col *= 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5*u_time ) ), 1.0/2.0 ), 0.0, 1.0 );
+            //col *= 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5 ) ), 1.0/2.0 ), 0.0, 1.0 );
         
             // Remove the next line to stop cross-fade between original and postprocess
             //col = mix( col, origCol, comp );

@@ -846,7 +846,7 @@
                 metaballNormalsFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
                 metaballNormalsFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
                 
-                crtFilter.uniforms.u_time = elapsed;
+                crtFilter.uniforms.u_time = elapsed*1.33;
                 crtFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
                 crtFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
 
