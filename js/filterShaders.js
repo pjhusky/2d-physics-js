@@ -220,6 +220,11 @@ var MyFilterShaders = (function (exports) {
             vec2 curvedTC = curve( tcFull );
             vec2 curvedTCSampler = curve( vTextureCoord );
             
+            float glitch_x_shift_factor = 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5*u_time ) ), 1.0/2.0 ), 0.0, 1.0 );
+            //curvedTCSampler.x += ( 1.0 - pow( ( glitch_x_shift_factor ), 0.5 ) ) * 0.01 * sin( 7.3 * u_time + 6.0 * curvedTCSampler.y );
+            curvedTCSampler.x += ( 1.0 - pow( ( glitch_x_shift_factor ), 0.75 ) ) * 0.01;
+            //curvedTCSampler.x += ( 1.0 - glitch_x_shift_factor ) * 0.02;
+            
             //gl_FragColor.rgba = vec4( curvedTC, 0.0, 1.0 ); return;
             
             vec3 origCol = texture2D( uSampler, origTC ).xyz;
@@ -278,7 +283,8 @@ var MyFilterShaders = (function (exports) {
             float comp = smoothstep( 0.1, 0.9, 0.5 );
             
             // SHIFT-glitch darken as well -> the same as in curve to shift coord left/right
-            col *= 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5*u_time ) ), 1.0/2.0 ), 0.0, 1.0 );
+            //col *= 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5*u_time ) ), 1.0/2.0 ), 0.0, 1.0 );
+            col *= glitch_x_shift_factor;
             //col *= 0.6 + 0.4 * clamp( pow( abs( 3.2 * sin( curvedTCSampler.y * 2.5 + 0.5 ) ), 1.0/2.0 ), 0.0, 1.0 );
         
             // Remove the next line to stop cross-fade between original and postprocess
