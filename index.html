@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html>
+
+    <!-- python3 -m http.server 8000 -->
+
     <!-- TODO [peter]:  -->
     <!-- * springs => attached to level geometry like tentacles => either Pixi ~"trail-sprite" or filled with metaballs -->
     <!-- * springs => softbody ball that moves around like tumble weed ... 
@@ -27,14 +30,23 @@
         
         <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
         <!-- '?v=1' forces refresh -->
+        
+        <script type="text/javascript" src="js/mathLib.js?v=1"></script>
+        <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
+        
         <script type="text/javascript" src="js/pixijs/pixi.js"></script>
         <script type="text/javascript" src="js/appUtils.js?v=1"></script>
-        <script type="text/javascript" src="js/setupTriangle.js?v=1"></script>
+        <!-- <script type="text/javascript" src="js/setupTriangle.js?v=1"></script> -->
+        <script type="text/javascript" src="js/triangle.js?v=1"></script>
         <script type="text/javascript" src="js/sphere.js?v=1"></script>
         <script type="text/javascript" src="js/gauss.js?v=1"></script>
         <script type="text/javascript" src="js/filterShaders.js?v=1"></script>
         <script type="text/javascript" src="js/particleFluidSolver.js?v=1"></script>
         <script type="text/javascript" src="js/softBodySolver.js?v=1"></script>
+
+        <script type="text/javascript" src="js/delaunay.js?v=1"></script>
+        <script type="text/javascript" src="js/drawPrimitive.js?v=1"></script>
+        
         
         <script type="text/javascript" src="js/particleColorsFirefox.js?v=1"></script>
         <script type="text/javascript" src="js/particleColorsChrome.js?v=1"></script>
@@ -117,8 +129,11 @@
                 fluidAsBlobs = true;
                 useStickyGooLook = true;
                 
-                drawBackgroundMetaballs = true;
-                useCrtFilter = true;
+                //drawBackgroundMetaballs = true;
+                drawBackgroundMetaballs = false;
+                
+                //useCrtFilter = true;
+                useCrtFilter = false;
                 
             } else {
                 const keys = urlParams.keys();
@@ -199,8 +214,134 @@
             let numGaussSprites = 50;
 
             if ( drawMetaballs ) {
-                app.stage.addChild(metaballContainer);          
+                app.stage.addChild(metaballContainer);
             }
+            
+            primitiveTriangle = MyDrawPrimitive.setupTriangle( [200.0, 150.0], [400.0, 150.0], [100.0, 250.0] )
+            primitiveTriangle.shader.uniforms.u_color = [ 0.5, 0.9, 0.9, 0.6 ];
+            app.stage.addChild(primitiveTriangle);
+
+            // primitivePoly = MyDrawPrimitive.setupPolygon( [-100.0,-50.0 , 100.0,-75.0, 0.0,100.0 , 200.0,100.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,2,1,3] )
+            // primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLES;
+            primitivePoly = MyDrawPrimitive.setupPolygon( [100.0,450.0 , 300.0,475.0, 200.0,300.0 , 400.0,230.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,3] )
+            primitivePoly.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
+            primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP;
+            app.stage.addChild(primitivePoly);
+            
+            //https://pixijs.io/examples/#/graphics/simple.js
+            const path = [800, 370, 900, 460, 980, 420, 930, 570, 790, 520];
+            const gfxPolygon = new PIXI.Graphics();
+            //gfxPolygon.lineStyle(0);
+            gfxPolygon.lineStyle(2, 0x444477, 1);
+            //gfxPolygon.lineStyle(2, 0x7776FF, 1);
+            
+            //gfxPolygon.beginFill(0x3500FA, 0.4);
+            gfxPolygon.beginFill(0x1000FA, 0.2);
+            gfxPolygon.drawPolygon(path);
+            gfxPolygon.endFill();
+            app.stage.addChild(gfxPolygon);
+
+            testVec2_A = new Vec2( 0.0, 0.0 );
+            testVec2_B = new Vec2( 3.0, 4.0 );
+            dist_AB = Vec2.dist(testVec2_A, testVec2_B);
+            len_B = Vec2.len( testVec2_B );
+            thisLen_B = testVec2_B.len();
+            console.log(`###here! \n dist_AB=${dist_AB} \n len_B=${len_B} \n thisLen_B=${thisLen_B}`);
+            
+            testTriangle = new Triangle( testVec2_A, testVec2_B, new Vec2( -3.0, -4.0 ) );
+            // console.log( `testTriangle.points() p0 = ${testTriangle.points[0].x} ${testTriangle.points[0].y}` );
+            // console.log( `testTriangle.points() p1 = ${testTriangle.points[1].x} ${testTriangle.points[1].y}` );
+            // console.log( `testTriangle.points() p2 = ${testTriangle.points[2].x} ${testTriangle.points[2].y}` );
+            
+            testTriangle2 = new Triangle( new Vec2( 6.0, 0.0 ), new Vec2( 0.0, 0.0 ), new Vec2( 0.0, 8.0 ) );
+            const circum_center = testTriangle2.circumCenter();
+            // console.log( `testTriangle2.circum_center = ${circum_center.x} ${circum_center.y}` );
+            const circum_center_static = Triangle.circumCenter(testTriangle2);
+            // console.log( `testTriangle2.circum_center_static = ${circum_center_static.x} ${circum_center_static.y}` );
+
+            testTriangleLine = new Triangle( new Vec2( 1.0, 1.0 ), new Vec2( 0.0, 0.0 ), new Vec2( 2.0, 2.0 ) );
+            const circum_center_line = testTriangleLine.circumCenter();
+            // console.log( `circum_center_line = ${circum_center_line.x} ${circum_center_line.y}` );
+            
+
+            testTriangle2 = new Triangle( new Vec2( 0.1, 0.1 ), new Vec2( 0.3, 0.6 ), new Vec2( 0.5, 0.2 ) );
+            const circum_center_line2 = testTriangle2.circumCenter();
+            // console.log( `circum_center_line 2 = ${circum_center_line2.x} ${circum_center_line2.y}` );
+
+            testTriangle3 = new Triangle( new Vec2( 0.8, 0.1 ), new Vec2( 0.7, 0.5 ), new Vec2( 0.8, 0.9 ) );
+            const circum_center_line3 = testTriangle3.circumCenter();
+            // console.log( `circum_center_line 3 = ${circum_center_line3.x} ${circum_center_line3.y}` );
+            // console.log( `testTriangle3.toString() = ${testTriangle3.toString()}` );
+            // console.log( `testTriangle3.p0.toString() = ${testTriangle3.p0.toString()}` );
+            // console.log( `testTriangle3.p1.toString() = ${testTriangle3.p1.toString()}` );
+            // console.log( `testTriangle3.p2.toString() = ${testTriangle3.p2.toString()}` );
+            
+            
+            //const delaunay_input_pts = [ new Vec2(200.0, -70.0), new Vec2(400.0, -70.0), new Vec2(300.0, 120.0) ];
+            // const delaunay_input_pts = [ 
+            //     new Vec2(160.0, 320.0),  // p1
+            //     new Vec2(400.0, 200.0),  // p2
+            //     new Vec2(380.0, 340.0),  // p3
+            //     new Vec2(180.0, 200.0),  // p4
+            //     new Vec2(420.0, 190.0),  // p5
+            //     new Vec2(370.0, 110.0),  // p6
+            //     new Vec2(390.0, 130.0),  // p7
+            //     new Vec2(290.0, 190.0),  // p8
+            //     new Vec2(130.0, 180.0),  // p9
+            //     ];
+            // const delaunay_input_pts = [ 
+            //     [ 160.0, 320.0 ],  // p1
+            //     [ 400.0, 200.0 ],  // p2
+            //     [ 380.0, 340.0 ],  // p3
+            //     [ 180.0, 200.0 ],  // p4
+            //     [ 420.0, 190.0 ],  // p5
+            //     [ 370.0, 110.0 ],  // p6
+            //     [ 390.0, 130.0 ],  // p7
+            //     [ 290.0, 190.0 ],  // p8
+            //     [ 130.0, 180.0 ],  // p9
+            //     ];
+            const delaunay_input_pts = [ 
+                [ 210.0, 410.0 ],  // p1
+                [ 450.0, 300.0 ],  // p2
+                [ 430.0, 450.0 ],  // p3
+                [ 230.0, 300.0 ],  // p4
+                [ 470.0, 290.0 ],  // p5
+                [ 420.0, 210.0 ],  // p6
+                [ 440.0, 230.0 ],  // p7
+                [ 340.0, 290.0 ],  // p8
+                [ 180.0, 280.0 ],  // p9
+                ];
+            console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
+            
+            delaunay_tris = Delaunay.calculate( delaunay_input_pts );
+            console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
+
+            // delaunay_tris.forEach( (delaunay_tri) => {
+            //     primitiveTri = MyDrawPrimitive.setupTriangle( 
+            //         // [delaunay_tri.p0.x, delaunay_tri.p0.y], 
+            //         // [delaunay_tri.p1.x, delaunay_tri.p1.y], 
+            //         // [delaunay_tri.p2.x, delaunay_tri.p2.y] )
+            //         delaunay_tri[0], 
+            //         delaunay_tri[1],
+            //         delaunay_tri[2] );
+            //     app.stage.addChild(primitiveTri);
+            // } );
+
+            delaunay_tris.forEach( (delaunay_tri) => {
+                const path = [ 
+                    // delaunay_tri.p0.x, delaunay_tri.p0.y, 
+                    // delaunay_tri.p1.x, delaunay_tri.p1.y,
+                    // delaunay_tri.p2.x, delaunay_tri.p2.y ];
+                    delaunay_tri[0][0], delaunay_tri[0][1], 
+                    delaunay_tri[1][0], delaunay_tri[1][1],
+                    delaunay_tri[2][0], delaunay_tri[2][1] ];
+                const gfxPolygon = new PIXI.Graphics();
+                gfxPolygon.lineStyle(2, 0x444477, 1);
+                gfxPolygon.beginFill(0x1000FA, 0.2);
+                gfxPolygon.drawPolygon(path);
+                gfxPolygon.endFill();
+                app.stage.addChild(gfxPolygon);
+            } );
             
             var gaussSpriteArray = [];
             
@@ -387,7 +528,7 @@
             let initDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
             let restLen = Math.sqrt( initDiffVecX * initDiffVecX + initDiffVecY * initDiffVecY );
             
-            triangle = MyTriangle.setupTriangle();
+            //triangle = MyTriangle.setupTriangle();
             //! app.stage.addChild(triangle);
 
             if ( false ) { // instanced triangle fluidParticles
@@ -736,8 +877,8 @@
             app.ticker.add((delta) => {
                 //elapsed += delta;
                 
-                //console.log(delta / PIXI.Ticker.targetFPMS);                
-                
+                //console.log(delta / PIXI.Ticker.targetFPMS);                        
+        
                 tickNum += 1;
                 
                 dt = app.ticker.elapsedMS * 0.001;
@@ -758,6 +899,15 @@
                 //         sphereShapesContainer.removeChildren(activeFluidParticles, containerLen);
                 //     }
                 // }
+                
+                
+                primitiveTriangle.rotation += 0.01;
+                primitiveTriangle.shader.uniforms.u_time += 0.1;
+                // primitiveTriangle.shader.uniforms.u_color[0] += 0.02;
+                // primitiveTriangle.shader.uniforms.u_color[0] %= 1.0;
+                primitiveTriangle.shader.uniforms.u_color[0] = Math.cos( 0.5 + elapsed * 1.3 ) * 0.5 + 0.5;
+                primitiveTriangle.shader.uniforms.u_color[1] = Math.cos( elapsed ) * 0.5 + 0.5;
+                primitiveTriangle.shader.uniforms.u_color[2] = Math.cos( 0.7 + 0.33 * elapsed ) * 0.5 + 0.5;
                 
                 // emit new fluid particles    
                 const emissionRate = (isPictureParticleFluidDemoMode) ? 8 : 6;
@@ -836,9 +986,9 @@
                 
                 //console.log( app.ticker.elapsedMS * 0.001 );
                 
-                triangle.rotation += 0.04;
-                triangle.position.x += 1.4;
-                triangle.position.y += Math.sin( tickNum * 0.1 ) * 2.0;
+                // triangle.rotation += 0.04;
+                // triangle.position.x += 1.4;
+                // triangle.position.y += Math.sin( tickNum * 0.1 ) * 2.0;
                 
                 //app.renderer.render(metaballContainer, { renderTexture: metaballBufferRT } );
               
@@ -846,7 +996,7 @@
                 metaballNormalsFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
                 metaballNormalsFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
                 
-                crtFilter.uniforms.u_time = elapsed*1.33;
+                crtFilter.uniforms.u_time = elapsed*0.33;
                 crtFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
                 crtFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
 
