@@ -13,6 +13,21 @@ class Triangle {
         // this.circum_center = new Vec2( 0.0, 0.0 );
     }
     
+    static fromArray( triArray ) {
+        return new Triangle( 
+            new Vec2( triArray[0][0], triArray[0][1] ),
+            new Vec2( triArray[1][0], triArray[1][1] ),
+            new Vec2( triArray[2][0], triArray[2][1] ) );
+    }
+    
+    toArray() {
+        return new Array(
+            new Array( this.p0.x, this.p0.y ),
+            new Array( this.p1.x, this.p1.y ),
+            new Array( this.p2.x, this.p2.y )
+        );
+    }
+    
     get points() {
         return [ this.p0, this.p1, this.p2 ];
     }
@@ -51,8 +66,8 @@ class Triangle {
     }
 
     static circumCenterAndRadis(tri) {
-        const circum_center = tri.circumCenter();
-        const radius = Vec2.dist( tri.p0, circum_center );
-        return [ circum_center, radius ];
+        const circum_center_vec2 = tri.circumCenter();
+        const radius = Vec2.dist( tri.p0, circum_center_vec2 );
+        return [ circum_center_vec2, radius ];
     }
 }

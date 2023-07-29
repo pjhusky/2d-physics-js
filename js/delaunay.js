@@ -1,10 +1,12 @@
 class Delaunay {
     
     static get_AABB( points ) {
-        let min_x = 10000000.0;
-        let max_x = -min_x;
-        let min_y = min_x;
-        let max_y = max_x;
+        // let min_x = 10000000.0;
+        // let max_x = -min_x;
+        let min_x = points[0][0];
+        let max_x = min_x;
+        let min_y = points[0][1];
+        let max_y = min_y ;
         
         points.forEach(
         //for ( point of points)
@@ -22,14 +24,14 @@ class Delaunay {
         }
         )
         //return [ new Vec2( min_x, min_y ), new Vec2( max_x, max_y ) ];
-        return [ [ min_x, min_y ], [ max_x, max_y ] ];
+        return new Array( new Array( min_x, min_y ), new Array( max_x, max_y ) );
     }
     
     // static delTriangleFromArray( tri_to_del ) {    
     // }
     
     static removeTri( in_tris, tri_to_remove ) {
-        let out_tris = [];
+        let out_tris = new Array();
         
         in_tris.forEach( (tri) => {
             // if ( tri )    
@@ -47,18 +49,11 @@ class Delaunay {
     }
 
     static approxEqual( x, y ) {
-        return ( Math.abs( x - y ) < 0.0000001 );
+        // const zero_tolerance = 0.0000001;
+        const zero_tolerance = 0.00001;
+        return ( Math.abs( x - y ) < zero_tolerance );
     }
     
-    // static containsTriangleVertex( triangle_points, vertex_to_test ) {
-    //     for ( let i = 0; i < 3; i++ ) {
-    //         if ( triangle_points[i].x == vertex_to_test.x && 
-    //              triangle_points[i].y == vertex_to_test.y ) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
     static doesTriangleContainVertex( triangle_points, vertex_to_test ) {
         for ( let i = 0; i < 3; i++ ) {
             if ( this.approxEqual( triangle_points[i][0], vertex_to_test[0] ) && 
@@ -125,9 +120,14 @@ class Delaunay {
         
         const center_AABB_vec2 = Vec2.add( min_AABB_vec2, max_AABB_vec2 ).scale(0.5);
         console.log( ` ## center_AABB_vec2 = ${center_AABB_vec2}` );
-        const AABB_scale_up = 1.0;
-        min_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
-        max_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
+        // const AABB_scale_up = 2.1;
+        // min_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
+        // max_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
+
+        const AABB_scale_up = 2.1;
+        min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -180.0, -170.0 ) );
+        max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  180.0,  170.0 ) );
+
         console.log( `AABB after min=${min_AABB_pt}, max=${max_AABB_pt}` );
         //console.log( `min=(${min_AABB_pt.x}|${min_AABB_pt.y}), max=(${max_AABB_pt.x}|${max_AABB_pt.y})` );
         
@@ -135,30 +135,25 @@ class Delaunay {
         min_AABB_pt[1] = min_AABB_vec2.y;
         max_AABB_pt[0] = max_AABB_vec2.x;
         max_AABB_pt[1] = max_AABB_vec2.y;
-        //let delaunay_tris = [ new Triangle( min_AABB_pt, new Vec2( max_AABB_pt.x, min_AABB_pt.y ), max_AABB_pt ) ];
-        //let delaunay_tris = [ [ min_AABB_pt.x, min_AABB_pt.y ] , [ max_AABB_pt.x, min_AABB_pt.y ], [ max_AABB_pt.x, max_AABB_pt.y ] ];
+        
+        //let delaunay_tris = [ [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ], [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ] ];
         //let delaunay_tris = [ [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ] ];
+        //let delaunay_tris = new Array( new Array( new Array( min_AABB_pt[0],min_AABB_pt[1] ), new Array( max_AABB_pt[0], min_AABB_pt[1] ), new Array( max_AABB_pt[0],max_AABB_pt[1] ) ) );
         
-        let delaunay_tris = [ [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ], [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ] ];
-        //let delaunay_tris = [ [ points[0], points[1], points[2] ] ];
+        let delaunay_tris = new Array( 
+            new Array( 
+                // new Array( min_AABB_pt[0],min_AABB_pt[1] ), 
+                // new Array( center_AABB_vec2[0], max_AABB_pt[0][1] ), 
+                // new Array( max_AABB_pt[0],min_AABB_pt[1] ) 
+
+                new Array( 1.0, 1.0 ), 
+                new Array( 350.0, 701.0 ), 
+                new Array( 700.0, 1.0 ) 
+
+            ) 
+        );
         
-        //let delaunay_tris = [];
-        //let delaunay_tris = new Set( [ new Triangle( min_AABB_pt, new Vec2( max_AABB_pt.x, min_AABB_pt.y ), max_AABB_pt ) ] );
-        
-        //let delaunay_tris = [ new Triangle( new Vec2( max_AABB_pt.x, min_AABB_pt.y ), min_AABB_pt, max_AABB_pt ) ];
-        //return delaunay_tris;
-        
-        //let delaunay_tris = [ new Triangle( points[0], points[1], points[2] ) ];
-        
-        // let delaunay_tris_set = new Set( delaunay_tris );
-        // // let delaunay_tris_set = new Set();
-        // // delaunay_tris.forEach( dt => {
-        // //     delaunay_tris_set.add( dt );
-        // // } );
-        // console.log( `delaunay_tris_set (${delaunay_tris_set.size} elements):` );
-        // delaunay_tris_set.forEach( el => {console.log(el.toString());} )
-        
-        delaunay_tris = Delaunay.uniqueTris( delaunay_tris );
+        //! delaunay_tris = Delaunay.uniqueTris( delaunay_tris );
         //const delaunay_tris_unqiue = Delaunay.uniqueTris( delaunay_tris );
         //console.log( ` ## delaunay_tris_unqiue = ${delaunay_tris_unqiue}` );
         
@@ -180,22 +175,22 @@ class Delaunay {
             //console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
             
             while ( delaunay_tri_idx < delaunay_tris.length ) {
-                const curr_delaunay_tri = delaunay_tris[ delaunay_tri_idx ];
-                //let [circum_center, radius] = Triangle.circumCenterAndRadis( curr_delaunay_tri );
-                //console.log( `curr_delaunay_tri = ${curr_delaunay_tri}` );
-                let [circum_center, radius] = Triangle.circumCenterAndRadis( 
-                    new Triangle( 
-                        new Vec2(curr_delaunay_tri[0][0], curr_delaunay_tri[0][1]), 
-                        new Vec2(curr_delaunay_tri[1][0], curr_delaunay_tri[1][1]),
-                        new Vec2(curr_delaunay_tri[2][0], curr_delaunay_tri[2][1]) )
-                 );
-                const curr_dist = Vec2.dist( circum_center, curr_vec2 );
-                //console.log( `curr_dist = ${curr_dist}, radius = ${radius}, circum_center = (${circum_center.x}|${circum_center.y})` );
-                //console.log( `curr_dist = ${curr_dist}, radius = ${radius}, circum_center = ${circum_center.toString()}` );
+                
+                const curr_delaunay_tri_T = Triangle.fromArray( delaunay_tris[ delaunay_tri_idx ] );
+                const curr_delaunay_tri = curr_delaunay_tri_T.toArray();
+                //const curr_delaunay_tri = delaunay_tris[ delaunay_tri_idx ];
+
+                let [circum_center_vec2, radius] = Triangle.circumCenterAndRadis( 
+                    // new Triangle( 
+                    //     new Vec2(curr_delaunay_tri[0][0], curr_delaunay_tri[0][1]), 
+                    //     new Vec2(curr_delaunay_tri[1][0], curr_delaunay_tri[1][1]),
+                    //     new Vec2(curr_delaunay_tri[2][0], curr_delaunay_tri[2][1]) )
+                    curr_delaunay_tri_T
+                );
+                const curr_dist = Vec2.dist( circum_center_vec2, curr_vec2 );
+
+                console.log( `delaunay tri ${delaunay_tri_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )}):\n curr_dist = ${curr_dist}, radius = ${radius}, circum_center = ${circum_center_vec2}` );
                 if ( curr_dist < radius ) {
-                    //invalid_tris.push( curr_delaunay_tri );
-                    //invalid_tris.push( [ [curr_delaunay_tri.p0.x, curr_delaunay_tri.p0.y], [curr_delaunay_tri.p1.x, curr_delaunay_tri.p1.y], [curr_delaunay_tri.p2.x, curr_delaunay_tri.p2.y] ] );
-                    //console.log( `B4    invalid_tris=${invalid_tris}` );
                     invalid_tris.push( curr_delaunay_tri );
                     //console.log( `After invalid_tris=${invalid_tris}` );
                 }
@@ -203,23 +198,9 @@ class Delaunay {
             }
             
             
-            let invalid_tri_vertices = [];
+            let invalid_tri_vertices = new Array();
             for ( let invalid_tri_idx = 0; invalid_tri_idx < invalid_tris.length; invalid_tri_idx++ ) {
-                //console.log( `B4 remove delaunay_tris.length = ${delaunay_tris.length}` );
-                //delaunay_tris = delaunay_tris.filter( function(tri){ return tri != invalid_tris[invalid_tri_idx] } ); // does != actually work as expected (ref compare, or val compare ???)
-                
-                
-                // let delaunay_tris_set = new Set();
-                // delaunay_tris.forEach( (delaunay_tri) => {
-                //     delaunay_tris_set.add( [ delaunay_tri.p0.x, delaunay_tri.p0.y ] );
-                //     delaunay_tris_set.add( [ delaunay_tri.p1.x, delaunay_tri.p1.y ] );
-                //     delaunay_tris_set.add( [ delaunay_tri.p2.x, delaunay_tri.p2.y ] );
-                // } );
-                
-                //let delaunay_tris_set = new Set( delaunay_tris );
-              
-                
-                //console.log( `  B4 removeTri delaunay_tris.length = ${delaunay_tris.length}` );
+
                 const len_before_remove = delaunay_tris.length;
                 delaunay_tris = Delaunay.removeTri( delaunay_tris, invalid_tris[invalid_tri_idx] );
                 //console.log( `  after removeTri delaunay_tris.length = ${delaunay_tris.length}` );
@@ -229,90 +210,58 @@ class Delaunay {
                     console.log( ` ######## --------- AAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHH ---------- ############ ` );
                 }
                 
-                //delaunay_tris_set.delete( invalid_tris[invalid_tri_idx] );
-                //delaunay_tris = [];
-                //let delaunay_tris_tmp = Array.from( delaunay_tris_set );
-                //delaunay_tris = Array.from( delaunay_tris_set );
-                
-                
-                //console.log( `  after uniqueTris delaunay_tris.length = ${delaunay_tris.length}` );
-                
-                //console.log( `delaunay_tris_tmp.length = ${delaunay_tris_tmp.length}, delaunay_tris_set.size = ${delaunay_tris_set.size}` );
-                
-                // for ( let i = 0; i < delaunay_tris_tmp.length / 3; i++ ) {
-                //     delaunay_tris.push( new Triangle( 
-                //         new Vec2( delaunay_tris_tmp[ i * 3 + 0 ][0], delaunay_tris_tmp[ i * 3 + 0 ][1] ),
-                //         new Vec2( delaunay_tris_tmp[ i * 3 + 1 ][0], delaunay_tris_tmp[ i * 3 + 1 ][1] ),
-                //         new Vec2( delaunay_tris_tmp[ i * 3 + 2 ][0], delaunay_tris_tmp[ i * 3 + 2 ][1] ) ) );
-                // }
-                //console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
-                
-                //console.log( `after remove delaunay_tris.length = ${delaunay_tris.length}` );
-                // for ( let vert_idx = 0; vert_idx < 3; vert_idx++ ) {
-                //     invalid_tri_vertices.push( invalid_tris[ invalid_tri_idx ].points[ vert_idx ] );
-                // }
-
                 for ( let vert_idx = 0; vert_idx < 3; vert_idx++ ) {
-                    invalid_tri_vertices.push( invalid_tris[ invalid_tri_idx ][ vert_idx ] );
+                    invalid_tri_vertices.push( new Array( invalid_tris[ invalid_tri_idx ][ vert_idx ][0], invalid_tris[ invalid_tri_idx ][ vert_idx ][1] ) );
                 }
 
-                // invalid_tri_vertices.push( invalid_tris[ invalid_tri_idx ].p0 );
-                // invalid_tri_vertices.push( invalid_tris[ invalid_tri_idx ].p1 );
-                // invalid_tri_vertices.push( invalid_tris[ invalid_tri_idx ].p2 );
             }
             delaunay_tris = Delaunay.uniqueTris( delaunay_tris );
             //console.log( `invalid_tri_vertices with potential duplicates len = ${invalid_tri_vertices.length}` ); 
-            const len_before = invalid_tri_vertices.length;
+            //const len_before = invalid_tri_vertices.length;
             
-            //let invalid_tri_vertices_set = new Set( invalid_tri_vertices );
-            //invalid_tri_vertices = Array.from( invalid_tri_vertices_set );
             invalid_tri_vertices = Delaunay.uniqueVerts(invalid_tri_vertices);
             
-            // let invalid_tri_vertices_set = new Set();
-            // invalid_tri_vertices.forEach( (invalid_tri_vert) => {
-            //     invalid_tri_vertices_set.add( [ invalid_tri_vert.x, invalid_tri_vert.y ] )
-            // } );
-            // let invalid_tri_vertices_tmp = Array.from( invalid_tri_vertices_set );
-            // invalid_tri_vertices = []
-            // invalid_tri_vertices_tmp.forEach( (invalid_tri_vert_tmp) => {
-            //     invalid_tri_vertices.push( new Vec2( invalid_tri_vert_tmp[0], invalid_tri_vert_tmp[1] ) );
-            // } );
+            // if ( len_before != invalid_tri_vertices.length ) {
+            //     console.log( `removed ${len_before - invalid_tri_vertices.length} vertex duplicates!` );
+            // }
             
-            
-            //console.log( `invalid_tri_vertices only unique entries len = ${invalid_tri_vertices.length}` );
-            if ( len_before != invalid_tri_vertices.length ) {
-                console.log( `removed ${len_before - invalid_tri_vertices.length} vertex duplicates!` );
-            }
-            
+            console.log( `invalid_tri_vertices = ${invalid_tri_vertices}` );
             
             for ( let i = 0; i < invalid_tri_vertices.length; i++ ) {
                 for ( let j = i + 1; j < invalid_tri_vertices.length; j++ ) {
                     let num_occurrences = 0;
                     for ( let k = 0; k < invalid_tris.length; k++ ) {
-                        if ( //invalid_tris[k].points.includes( invalid_tri_vertices[i] ) &&
-                             //invalid_tris[k].includes( invalid_tri_vertices[i] ) &&
-                             //Delaunay.containsTriangleVertex( invalid_tris[k].points, invalid_tri_vertices[i] ) &&
-                             Delaunay.doesTriangleContainVertex( invalid_tris[k], invalid_tri_vertices[i] ) &&
-                             //invalid_tris[k].points.includes( invalid_tri_vertices[j] ) ) {
-                             
-                             //invalid_tris[k].includes( invalid_tri_vertices[j] ) ) {
-                             //Delaunay.containsTriangleVertex( invalid_tris[k].points, invalid_tri_vertices[j] ) ) {
-                                Delaunay.doesTriangleContainVertex( invalid_tris[k], invalid_tri_vertices[j] ) ) {
+                        if ( Delaunay.doesTriangleContainVertex( invalid_tris[k], invalid_tri_vertices[i] ) &&
+                             Delaunay.doesTriangleContainVertex( invalid_tris[k], invalid_tri_vertices[j] ) ) {
                                 //console.log( " *** found occurrence! *** " );
                                 num_occurrences++;
                         }
                     }
                     if ( num_occurrences == 1 ) {
-                        //delaunay_tris.push( new Triangle( invalid_tri_vertices[i], invalid_tri_vertices[j], curr_pt ) );
-                        //delaunay_tris.push( new Triangle( invalid_tri_vertices[j], invalid_tri_vertices[i], curr_pt ) );
-                        delaunay_tris.push( [ invalid_tri_vertices[j], invalid_tri_vertices[i], curr_pt_to_add ] );
+                        //delaunay_tris.push( [ invalid_tri_vertices[j], invalid_tri_vertices[i], curr_pt_to_add ] );
+                        delaunay_tris.push( 
+                            new Array(
+                                new Array( invalid_tri_vertices[j][0], invalid_tri_vertices[j][1] ), 
+                                new Array( invalid_tri_vertices[i][0], invalid_tri_vertices[i][1] ), 
+                                new Array( curr_pt_to_add[0], curr_pt_to_add[1] )
+                         ) );
                     }
                 }
             }
             //console.log( `added several new Delaunay tris: ${delaunay_tris}` );
+
+            
+            for ( let dt_idx = 0; dt_idx < delaunay_tris.length; dt_idx++ ) {
+                
+                const curr_delaunay_tri = delaunay_tris[ dt_idx ];
+
+                console.log( `pt add finish delaunay tri ${dt_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )})` );
+            }
             
             curr_pt_idx++;
         }
+        
+    
         return delaunay_tris;
     }
 }

@@ -301,7 +301,9 @@
             //     [ 130.0, 180.0 ],  // p9
             //     ];
             const delaunay_input_pts = [ 
-                [ 210.0, 410.0 ],  // p1
+                // [ 210.0, 410.0 ],  // p1
+                [ 300.0, 300.0 ],  // p1
+                
                 [ 450.0, 300.0 ],  // p2
                 [ 430.0, 450.0 ],  // p3
                 [ 230.0, 300.0 ],  // p4
@@ -327,6 +329,7 @@
             //     app.stage.addChild(primitiveTri);
             // } );
 
+            let fill_color = 0x1000FA;
             delaunay_tris.forEach( (delaunay_tri) => {
                 const path = [ 
                     // delaunay_tri.p0.x, delaunay_tri.p0.y, 
@@ -337,7 +340,9 @@
                     delaunay_tri[2][0], delaunay_tri[2][1] ];
                 const gfxPolygon = new PIXI.Graphics();
                 gfxPolygon.lineStyle(2, 0x444477, 1);
-                gfxPolygon.beginFill(0x1000FA, 0.2);
+                //gfxPolygon.beginFill(0x1000FA, 0.2);
+                gfxPolygon.beginFill(fill_color & 0xFFFFFF, 0.2);
+                fill_color += 0x512710;
                 gfxPolygon.drawPolygon(path);
                 gfxPolygon.endFill();
                 app.stage.addChild(gfxPolygon);
