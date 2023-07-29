@@ -107,10 +107,7 @@ class Delaunay {
         return out_verts;
     }
     
-    static calculate( points ) {
-        
-        //return [ new Triangle( points[0], points[1], points[2] ) ];
-        
+    static createBoundingTri( points ) {
         let [ min_AABB_pt, max_AABB_pt ] = Delaunay.get_AABB( points );
         
         let min_AABB_vec2 = new Vec2( min_AABB_pt[0], min_AABB_pt[1] );
@@ -124,40 +121,72 @@ class Delaunay {
         // min_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
         // max_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
 
-        const AABB_scale_up = 2.1;
-        min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -180.0, -170.0 ) );
-        max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  180.0,  170.0 ) );
+        const max_len = Math.SQRT2 * Math.max( 100.0, 
+            Math.max(   Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).len(),
+                        Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).len() ) );
+                        
+        //const AABB_scale_up = 2.1;
+        // min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -180.0, -170.0 ) );
+        // max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  180.0,  170.0 ) );
 
-        console.log( `AABB after min=${min_AABB_pt}, max=${max_AABB_pt}` );
-        //console.log( `min=(${min_AABB_pt.x}|${min_AABB_pt.y}), max=(${max_AABB_pt.x}|${max_AABB_pt.y})` );
+        min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -max_len, -max_len ) );
+        max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  max_len,  max_len ) );
+        console.log( ` ## min_AABB_vec2 = ${min_AABB_vec2}, max_AABB_vec2 = ${max_AABB_vec2}` );
         
-        min_AABB_pt[0] = min_AABB_vec2.x;
-        min_AABB_pt[1] = min_AABB_vec2.y;
-        max_AABB_pt[0] = max_AABB_vec2.x;
-        max_AABB_pt[1] = max_AABB_vec2.y;
-        
-        //let delaunay_tris = [ [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ], [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ] ];
-        //let delaunay_tris = [ [ min_AABB_pt, [ max_AABB_pt[0], min_AABB_pt[1] ], max_AABB_pt ] ];
-        //let delaunay_tris = new Array( new Array( new Array( min_AABB_pt[0],min_AABB_pt[1] ), new Array( max_AABB_pt[0], min_AABB_pt[1] ), new Array( max_AABB_pt[0],max_AABB_pt[1] ) ) );
-        
-        let delaunay_tris = new Array( 
-            new Array( 
-                // new Array( min_AABB_pt[0],min_AABB_pt[1] ), 
-                // new Array( center_AABB_vec2[0], max_AABB_pt[0][1] ), 
-                // new Array( max_AABB_pt[0],min_AABB_pt[1] ) 
+        const deg30_in_radians = ( Math.PI / 180.0 ) * 30.0;
+        const tan_30_deg = Math.tan( deg30_in_radians );
+        const len_x = max_len / tan_30_deg;
 
-                new Array( 1.0, 1.0 ), 
-                new Array( 350.0, 701.0 ), 
-                new Array( 700.0, 1.0 ) 
+        const deg60_in_radians = ( Math.PI / 180.0 ) * 60.0;
+        const tan_60_deg = Math.tan( deg60_in_radians );
+        const len_y = len_x * tan_60_deg - max_len;
+        
+        console.log( `max_len = ${max_len}, len_x = ${len_x}, len_y = ${len_y}` );
+        
+        const center_btm = Vec2.add( center_AABB_vec2, new Vec2( 0.0, -max_len ) );
+        const left_x = Vec2.add( center_btm, new Vec2( -len_x, 0.0 ) );
+        const right_x = Vec2.add( center_btm, new Vec2( len_x, 0.0 ) );
+        const center_top = Vec2.add( center_AABB_vec2, new Vec2( 0.0, len_y ) );
+        
+        
+        // console.log( `AABB after min=${min_AABB_pt}, max=${max_AABB_pt}` );
+        // //console.log( `min=(${min_AABB_pt.x}|${min_AABB_pt.y}), max=(${max_AABB_pt.x}|${max_AABB_pt.y})` );
+        
+        // min_AABB_pt[0] = min_AABB_vec2.x;
+        // min_AABB_pt[1] = min_AABB_vec2.y;
+        // max_AABB_pt[0] = max_AABB_vec2.x;
+        // max_AABB_pt[1] = max_AABB_vec2.y;
+        // console.log( ` ## min_AABB_pt = ${min_AABB_pt}, min_AABB_vec2 = ${min_AABB_vec2}` );
 
-            ) 
+        console.log( ` ## center_top = ${center_top}, left_x = ${left_x}, right_x = ${right_x}` );
+        
+        return new Array( 
+            // new Array( min_AABB_pt[0],min_AABB_pt[1] ), 
+            // new Array( center_AABB_vec2[0], max_AABB_pt[0][1] ), 
+            // new Array( max_AABB_pt[0],min_AABB_pt[1] ) 
+
+            // new Array( 1.0, 1.0 ), 
+            // new Array( 350.0, 701.0 ), 
+            // new Array( 700.0, 1.0 ) 
+            center_top.toArray(),
+            left_x.toArray(),
+            right_x.toArray()
         );
+    }
+    
+    static calculate( points, remove_bound_tris ) {
+        
+        //return [ new Triangle( points[0], points[1], points[2] ) ];
+        
+        const init_tri = this.createBoundingTri( points );
+
+        let delaunay_tris = new Array( init_tri );
         
         //! delaunay_tris = Delaunay.uniqueTris( delaunay_tris );
         //const delaunay_tris_unqiue = Delaunay.uniqueTris( delaunay_tris );
         //console.log( ` ## delaunay_tris_unqiue = ${delaunay_tris_unqiue}` );
         
-        console.log( ` ## min_AABB_pt = ${min_AABB_pt}, min_AABB_vec2 = ${min_AABB_vec2}` );
+        
         console.log( ` ## delaunay_tris = ${delaunay_tris}` );
         
         let curr_pt_idx = 0;
@@ -260,8 +289,27 @@ class Delaunay {
             
             curr_pt_idx++;
         }
+ 
         
+        let bound_tris_to_remove = new Array();
+        for ( let i = 0; i < delaunay_tris.length; i++ ) {
+            let tri = delaunay_tris[i];
+            for ( let k = 0; k < 3; k++ ) {
+                const init_tri_vertex = init_tri[k];
+                if ( Delaunay.doesTriangleContainVertex( tri, init_tri_vertex ) ) {
+                    bound_tris_to_remove.push( tri );
+                    break;
+                }
+            }
+        }
+
+        if ( remove_bound_tris ) {            
+            console.log( `bound_tris_to_remove = ${bound_tris_to_remove}, count = ${bound_tris_to_remove.length}` );
+            for ( let i = 0; i < bound_tris_to_remove.length; i++ ) {
+                delaunay_tris = this.removeTri( delaunay_tris, bound_tris_to_remove[i] );
+            }
+        }
     
-        return delaunay_tris;
+        return [ delaunay_tris, bound_tris_to_remove ];
     }
 }

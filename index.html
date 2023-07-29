@@ -31,7 +31,7 @@
         <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
         <!-- '?v=1' forces refresh -->
         
-        <script type="text/javascript" src="js/mathLib.js?v=1"></script>
+        <script type="text/javascript" src="js/vec2.js?v=1"></script>
         <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
         
         <script type="text/javascript" src="js/pixijs/pixi.js"></script>
@@ -315,8 +315,10 @@
                 ];
             console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
             
-            delaunay_tris = Delaunay.calculate( delaunay_input_pts );
+            const remove_bound_tris = true;
+            let [ delaunay_tris, bound_delaunay_tris ] = Delaunay.calculate( delaunay_input_pts, remove_bound_tris );
             console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
+            console.log( `bound_delaunay_tris.length = ${bound_delaunay_tris.length}` );
 
             voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
             console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
@@ -332,7 +334,7 @@
             //     app.stage.addChild(primitiveTri);
             // } );
 
-            let show_delaunay_tris = false;
+            let show_delaunay_tris = true;
             if ( show_delaunay_tris ) {
                 let fill_color = 0x1000FA;
                 delaunay_tris.forEach( (delaunay_tri) => {
@@ -354,10 +356,12 @@
                 } );
             }
             
-            let show_voronoi_lines = true;
+            let show_voronoi_lines = false;
             if ( show_voronoi_lines ) {
-                let fill_color = 0x1000FA;
+                let fill_color = 0x4000FA;
+                //let loops = 0;
                 voronoi_convex_polygons.forEach( (voronoi_convex_polygon) => {
+                    //loops++; if ( loops > 3) {return;}
                     const gfxPolygon = new PIXI.Graphics();
                     //gfxPolygon.lineStyle(2, 0xDD4433, 1);
                     gfxPolygon.lineStyle(2, fill_color & 0xFFFFFF, 0.4);
