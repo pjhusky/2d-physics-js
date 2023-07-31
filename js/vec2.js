@@ -21,6 +21,10 @@ class Vec2 {
         return new Array( this.x, this.y );
     }
     
+    static fromArray( vec2_as_array ) {
+        return new Vec2( vec2_as_array[0], vec2_as_array[1] );
+    }
+    
     static add( v1, v2 ) {
         return new Vec2( v1.x+v2.x, v1.y+v2.y );
     }

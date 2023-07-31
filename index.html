@@ -16,7 +16,11 @@
     
     <!-- * rigid bodies just soft bodies with large stiffness and damping coefficients... and manybe draw then such that oscillations aren't as visible
             - friction? -->
-    
+
+    <!-- * Voronoi lines to actual voronoi-cell polygons!!! -->
+    <!-- * polygon clipping (mask voronoi fracture pattern by object-to-be-factured ==> at boundaries we'll need to clip polygons) -->
+    <!-- * make rigid body sim work with convex polys -->
+                        
     <head>
         
         <!-- during development - make sure browser really refreshes source & assets!!! -->
@@ -31,7 +35,9 @@
         <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
         <!-- '?v=1' forces refresh -->
         
+        <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
+        
         <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
         
         <script type="text/javascript" src="js/pixijs/pixi.js"></script>
@@ -301,28 +307,111 @@
             //     [ 290.0, 190.0 ],  // p8
             //     [ 130.0, 180.0 ],  // p9
             //     ];
-            const delaunay_input_pts = [ 
-                // [ 210.0, 410.0 ],  // p1
-                [ 300.0, 300.0 ],  // p1
-                [ 450.0, 300.0 ],  // p2
-                [ 430.0, 450.0 ],  // p3
-                [ 230.0, 300.0 ],  // p4
-                [ 470.0, 290.0 ],  // p5
-                [ 420.0, 210.0 ],  // p6
-                [ 440.0, 230.0 ],  // p7
-                [ 340.0, 290.0 ],  // p8
-                [ 180.0, 280.0 ],  // p9
-                ];
+
+            // const delaunay_input_pts = [ 
+            //     // [ 210.0, 410.0 ],  // p1
+            //     [ 300.0, 300.0 ],  // p1
+            //     [ 450.0, 300.0 ],  // p2
+            //     [ 430.0, 450.0 ],  // p3
+            //     [ 230.0, 300.0 ],  // p4
+            //     [ 470.0, 290.0 ],  // p5
+            //     [ 420.0, 210.0 ],  // p6
+            //     [ 440.0, 230.0 ],  // p7
+            //     [ 340.0, 290.0 ],  // p8
+            //     [ 180.0, 280.0 ],  // p9
+            //     ];
+
+            // regular grid
+            // const delaunay_input_pts = [];
+            // for ( let y = 100; y <= 600-50; y += 100 ) {
+            //     for ( let x = 100+50; x <= 600-50; x += 100 ) {
+            //         delaunay_input_pts.push( [x,y] );
+            //     }
+            // }
+
+            // jiggled grid
+            // const delaunay_input_pts = [];
+            // for ( let y = 100; y <= 600-50; y += 100 ) {
+            //     for ( let x = 100+50; x <= 600-50; x += 100 ) {
+            //         const r1 = ( Math.random() - 0.5 ) * 75.0;
+            //         const r2 = ( Math.random() - 0.5 ) * 75.0;
+            //         delaunay_input_pts.push( [x+r1,y+r2] );
+            //     }
+            // }
+
+
+            // regular circular
+            const delaunay_input_pts = [];
+            const radiuses = [ 20.0, 40.0, 80.0, 220.0 ];
+            //const angleInc = [ 60.0, 60.0, 30.0, 20.0 ];
+            for ( let rad_idx = 0; rad_idx < radiuses.length; rad_idx++ ) {
+                const radius = radiuses[rad_idx];
+                //for ( let angle = 0; angle < 360.0; angle += angleInc[ rad_idx ] ) {
+                    for ( let angle = 0; angle < 360.0; angle += 30.0 ) {
+                    const curr_angle = ( Math.PI / 180.0 ) * ( angle );
+                    const curr_radius = radius;
+                    const mx = 350.0;
+                    const my = 350.0;                    
+                    const cx = Math.cos( curr_angle ) * curr_radius;
+                    const cy = Math.sin( curr_angle ) * curr_radius;
+                    delaunay_input_pts.push( [mx + cx, my + cy] );
+                }
+            }
+            
+            // jiggled circular
+            // const delaunay_input_pts = [];
+            // const radiuses = [ 20.0, 40.0, 80.0, 220.0 ];
+            // //const angleInc = [ 60.0, 60.0, 30.0, 20.0 ];
+            // for ( let rad_idx = 0; rad_idx < radiuses.length; rad_idx++ ) {
+            //     const radius = radiuses[rad_idx];
+            //     //for ( let angle = 0; angle < 360.0; angle += angleInc[ rad_idx ] ) {
+            //         for ( let angle = 0; angle < 360.0; angle += 30.0 ) {
+            //         const rand1 = ( Math.random() - 0.5 ) * 15.0;
+            //         const curr_angle = ( Math.PI / 180.0 ) * ( angle + rand1 );
+            //         const rand2 = ( Math.random() - 0.5 ) * 0.33 * radius;
+            //         const curr_radius = radius + rand2;
+            //         const mx = 350.0;
+            //         const my = 350.0;                    
+            //         const cx = Math.cos( curr_angle ) * curr_radius;
+            //         const cy = Math.sin( curr_angle ) * curr_radius;
+            //         delaunay_input_pts.push( [mx + cx, my + cy] );
+            //     }
+            // }
+
+            // random
+            // const delaunay_input_pts = [];
+            // for ( let i = 0; i <= 20; i++ ) {
+            //     const r1 = 438 + ( Math.random() - 0.5 ) * 2.0 * 300.0;
+            //     const r2 = 320 + ( Math.random() - 0.5 ) * 2.0 * 250.0;
+            //     delaunay_input_pts.push( [r1,r2] );
+            // }
+
+            // random line
+            // const delaunay_input_pts = [];
+            // for ( let i = 0; i <= 40; i++ ) {
+                
+            //     const rx = ( Math.random() - 0.5 ) * 2.0 * 20.0;
+            //     const x = 600.0 * i / 40.0 + rx;
+                
+            //     const ry = 350 + ( Math.random() - 0.5 ) * 2.0 * 300.0;
+                
+            //     delaunay_input_pts.push( [x,ry] );
+            // }
+            
+            
             console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
             
             const show_delaunay_tris = true;
+            let show_voronoi_lines = false;
+            const remove_bound_tris = true; //show_delaunay_tris || !show_voronoi_lines;
             
-            const remove_bound_tris = show_delaunay_tris;
-            let [ delaunay_tris, bound_delaunay_tris ] = Delaunay.calculate( delaunay_input_pts, remove_bound_tris );
+            
+            let [ delaunay_tris, bound_delaunay_tris ] = Delaunay.calculate( delaunay_input_pts );
             console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
             console.log( `bound_delaunay_tris.length = ${bound_delaunay_tris.length}` );
 
-            voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
+            //voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
+            voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, bound_delaunay_tris );
             console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
             
             // delaunay_tris.forEach( (delaunay_tri) => {
@@ -338,37 +427,47 @@
 
             
             if ( show_delaunay_tris ) {
-                let fill_color = 0x1000FA;
-                delaunay_tris.forEach( (delaunay_tri) => {
+                
+                let delaunay_tri_vis = delaunay_tris;
+                if ( remove_bound_tris ) {
+                    delaunay_tri_vis = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, bound_delaunay_tris );
+                }
+                
+                //let fill_color = 0x1000FA;
+                let fill_color = 0x770000;
+                const alpha = 0.7;
+                delaunay_tri_vis.forEach( (vis_tri) => {
                     const path = [ 
-                        // delaunay_tri.p0.x, delaunay_tri.p0.y, 
-                        // delaunay_tri.p1.x, delaunay_tri.p1.y,
-                        // delaunay_tri.p2.x, delaunay_tri.p2.y ];
-                        delaunay_tri[0][0], delaunay_tri[0][1], 
-                        delaunay_tri[1][0], delaunay_tri[1][1],
-                        delaunay_tri[2][0], delaunay_tri[2][1] ];
+                        vis_tri[0][0], vis_tri[0][1], 
+                        vis_tri[1][0], vis_tri[1][1],
+                        vis_tri[2][0], vis_tri[2][1] ];
                     const gfxPolygon = new PIXI.Graphics();
                     gfxPolygon.lineStyle(2, 0x444477, 1);
                     //gfxPolygon.beginFill(0x1000FA, 0.2);
-                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, 0.2);
-                    fill_color += 0x512710;
+                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, alpha);
+                    //fill_color += 0x512710;
                     gfxPolygon.drawPolygon(path);
                     gfxPolygon.endFill();
                     app.stage.addChild(gfxPolygon);
                 } );
             }
             
-            let show_voronoi_lines = false;
+            
             if ( show_voronoi_lines ) {
-                let fill_color = 0x4000FA;
+                //let fill_color = 0x4000FA;
+                //let fill_color = 0x000077;
+                let fill_color = 0x070707;
+                const alpha = 0.25;
                 //let loops = 0;
                 voronoi_convex_polygons.forEach( (voronoi_convex_polygon) => {
                     //loops++; if ( loops > 3) {return;}
                     const gfxPolygon = new PIXI.Graphics();
                     //gfxPolygon.lineStyle(2, 0xDD4433, 1);
                     gfxPolygon.lineStyle(2, fill_color & 0xFFFFFF, 0.4);
-                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, 0.0);
-                    fill_color += 0x512710;
+                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, alpha);
+                    //fill_color += 0x512710;
+                    //fill_color += 0x070707;
+                    fill_color = Math.random() * 255.0 * 255.0 * 255.0;
                     gfxPolygon.drawPolygon(voronoi_convex_polygon);
                     gfxPolygon.endFill();
                     app.stage.addChild(gfxPolygon);

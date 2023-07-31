@@ -47,17 +47,11 @@ class Delaunay {
         
         return out_tris;
     }
-
-    static approxEqual( x, y ) {
-        // const zero_tolerance = 0.0000001;
-        const zero_tolerance = 0.00001;
-        return ( Math.abs( x - y ) < zero_tolerance );
-    }
     
     static doesTriangleContainVertex( triangle_points, vertex_to_test ) {
         for ( let i = 0; i < 3; i++ ) {
-            if ( this.approxEqual( triangle_points[i][0], vertex_to_test[0] ) && 
-                 this.approxEqual( triangle_points[i][1], vertex_to_test[1] ) ) {
+            if ( MathUtil.isApproxEqual( triangle_points[i][0], vertex_to_test[0] ) && 
+                 MathUtil.isApproxEqual( triangle_points[i][1], vertex_to_test[1] ) ) {
                 return true;
             }
         }
@@ -94,8 +88,8 @@ class Delaunay {
             
             let is_unique = 1;
             for ( let i = 0; i < out_verts.length; i++ ) {
-                if ( ( this.approxEqual( out_verts[i][0], in_vert_x ) ) &&
-                     ( this.approxEqual( out_verts[i][1], in_vert_y ) ) ) {
+                if ( ( MathUtil.isApproxEqual( out_verts[i][0], in_vert_x ) ) &&
+                     ( MathUtil.isApproxEqual( out_verts[i][1], in_vert_y ) ) ) {
                     is_unique = 0;
                     break;
                 }
@@ -121,11 +115,12 @@ class Delaunay {
         // min_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
         // max_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
 
-        const max_len = Math.SQRT2 * Math.max( 100.0, 
+        const AABB_scale_up = 0.75;
+        const max_len = AABB_scale_up * Math.SQRT2 * Math.max( 100.0, 
             Math.max(   Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).len(),
                         Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).len() ) );
                         
-        //const AABB_scale_up = 2.1;
+        
         // min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -180.0, -170.0 ) );
         // max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  180.0,  170.0 ) );
 
@@ -173,6 +168,22 @@ class Delaunay {
             right_x.toArray()
         );
     }
+
+    static delaunayTrisWithoutBoundTris( delaunay_tris, bound_tris_to_remove ) {
+        console.log( `bound_tris_to_remove = ${bound_tris_to_remove}, count = ${bound_tris_to_remove.length}` );
+        
+        let delaunay_tris_ret = new Array();
+        delaunay_tris.forEach( (tri) => {
+            delaunay_tris_ret.push( tri );
+        } );
+        
+        for ( let i = 0; i < bound_tris_to_remove.length; i++ ) {
+            delaunay_tris_ret = this.removeTri( delaunay_tris_ret, bound_tris_to_remove[i] );
+        }
+        
+        return delaunay_tris_ret;
+    }
+
     
     static calculate( points, remove_bound_tris ) {
         
@@ -300,13 +311,6 @@ class Delaunay {
                     bound_tris_to_remove.push( tri );
                     break;
                 }
-            }
-        }
-
-        if ( remove_bound_tris ) {            
-            console.log( `bound_tris_to_remove = ${bound_tris_to_remove}, count = ${bound_tris_to_remove.length}` );
-            for ( let i = 0; i < bound_tris_to_remove.length; i++ ) {
-                delaunay_tris = this.removeTri( delaunay_tris, bound_tris_to_remove[i] );
             }
         }
     
