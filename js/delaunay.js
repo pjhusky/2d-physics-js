@@ -169,23 +169,23 @@ class Delaunay {
         );
     }
 
-    static delaunayTrisWithoutBoundTris( delaunay_tris, bound_tris_to_remove ) {
-        console.log( `bound_tris_to_remove = ${bound_tris_to_remove}, count = ${bound_tris_to_remove.length}` );
+    static delaunayTrisWithoutBoundTris( delaunay_tris, boundary_tris_to_remove ) {
+        console.log( `boundary_tris_to_remove = ${boundary_tris_to_remove}, count = ${boundary_tris_to_remove.length}` );
         
         let delaunay_tris_ret = new Array();
         delaunay_tris.forEach( (tri) => {
             delaunay_tris_ret.push( tri );
         } );
         
-        for ( let i = 0; i < bound_tris_to_remove.length; i++ ) {
-            delaunay_tris_ret = this.removeTri( delaunay_tris_ret, bound_tris_to_remove[i] );
+        for ( let i = 0; i < boundary_tris_to_remove.length; i++ ) {
+            delaunay_tris_ret = this.removeTri( delaunay_tris_ret, boundary_tris_to_remove[i] );
         }
         
         return delaunay_tris_ret;
     }
 
     
-    static calculate( points, remove_bound_tris ) {
+    static calculate( points, remove_boundary_tris ) {
         
         //return [ new Triangle( points[0], points[1], points[2] ) ];
         
@@ -229,7 +229,7 @@ class Delaunay {
                 );
                 const curr_dist = Vec2.dist( circum_center_vec2, curr_vec2 );
 
-                console.log( `delaunay tri ${delaunay_tri_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )}):\n curr_dist = ${curr_dist}, radius = ${radius}, circum_center = ${circum_center_vec2}` );
+                //console.log( `delaunay tri ${delaunay_tri_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )}):\n curr_dist = ${curr_dist}, radius = ${radius}, circum_center = ${circum_center_vec2}` );
                 if ( curr_dist < radius ) {
                     invalid_tris.push( curr_delaunay_tri );
                     //console.log( `After invalid_tris=${invalid_tris}` );
@@ -265,7 +265,7 @@ class Delaunay {
             //     console.log( `removed ${len_before - invalid_tri_vertices.length} vertex duplicates!` );
             // }
             
-            console.log( `invalid_tri_vertices = ${invalid_tri_vertices}` );
+            //console.log( `invalid_tri_vertices = ${invalid_tri_vertices}` );
             
             for ( let i = 0; i < invalid_tri_vertices.length; i++ ) {
                 for ( let j = i + 1; j < invalid_tri_vertices.length; j++ ) {
@@ -295,25 +295,82 @@ class Delaunay {
                 
                 const curr_delaunay_tri = delaunay_tris[ dt_idx ];
 
-                console.log( `pt add finish delaunay tri ${dt_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )})` );
+                //console.log( `pt add finish delaunay tri ${dt_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )})` );
             }
             
             curr_pt_idx++;
         }
  
         
-        let bound_tris_to_remove = new Array();
+        let boundary_tris_to_remove = new Array();
+        // let boundary_edges = new Array();
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             let tri = delaunay_tris[i];
             for ( let k = 0; k < 3; k++ ) {
                 const init_tri_vertex = init_tri[k];
                 if ( Delaunay.doesTriangleContainVertex( tri, init_tri_vertex ) ) {
-                    bound_tris_to_remove.push( tri );
+                    boundary_tris_to_remove.push( tri );
+                    
+                    console.log( `tri to remove = ${Triangle.fromArray( tri )}` );
+                    
+                    // let boundary_edge = new Array();
+                    // for ( let j = 0; j < tri.length; j++ ) {
+                    //     //if ( k == j ) continue;
+                    //     //const vertex = init_tri[j];
+                        
+                    //     const vertex = tri[j];
+                    //     // if ( MathUtil.isApproxEqual( vertex[0], init_tri_vertex[0] ) && 
+                    //     //      MathUtil.isApproxEqual( vertex[1], init_tri_vertex[1] )) { continue; }
+                        
+                    //     let num_outer_tri_vertices = 0;
+                    //     //for ( let t = 0; t < init_tri.length; t++ ) {
+                    //     for ( let t = 0; t < 3; t++ ) {
+                    //         if ( this.doesTriangleContainVertex( tri, init_tri[t] ) ) { num_outer_tri_vertices++; }
+                    //     }
+                    //     if ( num_outer_tri_vertices == 1 ) {
+                    //         boundary_edge.push( new Array( vertex[0], vertex[1] ) );
+                    //     }
+                    // }
+                    // //if ( !MathUtil.isApproxEqual( Vec2.dist( Vec2.fromArray( boundary_edge[0] ), Vec2.fromArray( boundary_edge[1] ) ) ) ) {
+                    // if ( boundary_edge.length != 0 ) {
+                    //     boundary_edges.push( boundary_edge );
+                    // }
+                    //}
                     break;
                 }
             }
         }
+        
+        let boundary_edges = new Array();
+        for ( let i = 0; i < delaunay_tris.length; i++ ) {
+            let current_tri = delaunay_tris[i];
+            
+            // let num_outer_tri_vertices = 0;
+            
+            let contained_tri_vert_indices = [];
+            for ( let t = 0; t < 3; t++ ) {
+                const outer_tri_vertex = init_tri[t];
+                if ( this.doesTriangleContainVertex( current_tri, outer_tri_vertex ) ) { 
+                    // num_outer_tri_vertices++; 
+                    contained_tri_vert_indices.push(t);
+                }
+            }
+            //if ( num_outer_tri_vertices == 1 ) {
+            if ( contained_tri_vert_indices.length == 1 ) {
+                const shared_init_tri_vertex = init_tri[ contained_tri_vert_indices[0] ];
+                let boundary_edge = new Array();
+                for ( let v = 0; v < 3; v++ ) {
+                    const current_vertex = current_tri[v];
+                    
+                    if ( MathUtil.isApproxEqual( current_vertex[0], shared_init_tri_vertex[ 0 ] ) ||
+                         MathUtil.isApproxEqual( current_vertex[1], shared_init_tri_vertex[ 1 ] ) ) { continue; }
+                    boundary_edge.push( new Array( current_vertex[0], current_vertex[1] ) );
+                }
+                boundary_edges.push( boundary_edge );
+            }
+            
+        }
     
-        return [ delaunay_tris, bound_tris_to_remove ];
+        return [ delaunay_tris, boundary_tris_to_remove, boundary_edges ];
     }
 }
