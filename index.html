@@ -403,7 +403,7 @@
             console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
             
             const show_delaunay_tris = true;
-            let show_voronoi_cells = false;
+            let show_voronoi_cells = true;
             const remove_boundary_tris = true; //show_delaunay_tris || !show_voronoi_cells;
             const show_boundary_tris_extra = true;
             const show_boundary_edges = true;
@@ -497,18 +497,18 @@
                 //let fill_color = 0x4000FA;
                 let fill_color = 0x000077;
                 //let fill_color = 0x373737;
-                const alpha = 0.33;
+                const alpha = 0.3;
                 //let loops = 0;
                 voronoi_convex_polygons.forEach( (voronoi_convex_polygon) => {
                     //loops++; if ( loops > 3) {return;}
                     const gfxPolygon = new PIXI.Graphics();
                     const line_width = 1.0;
                     //gfxPolygon.lineStyle(line_width, 0xDD4433, 1);
-                    gfxPolygon.lineStyle(line_width, fill_color & 0xFFFFFF, 1.0);
+                    gfxPolygon.lineStyle(line_width, 0xFFFFFF, 1.0);
                     gfxPolygon.beginFill(fill_color & 0xFFFFFF, alpha);
                     //fill_color += 0x512710;
                     //fill_color += 0x070707;
-                    //fill_color = Math.random() * 255.0 * 255.0 * 255.0;
+                    fill_color = Math.random() * 255.0 * 255.0 * 255.0;
                     gfxPolygon.drawPolygon(voronoi_convex_polygon);
                     gfxPolygon.endFill();
                     app.stage.addChild(gfxPolygon);
