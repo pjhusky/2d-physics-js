@@ -44,6 +44,8 @@ class Voronoi {
         //delaunay_tris.array.forEach( (delaunay_tri) => {
         for ( let i = 0; i < delaunay_tris.length; i++ ) {            
             const delaunay_tri = delaunay_tris[i];
+            let pt_as_list = Triangle.fromArray( delaunay_tri ).circumCenter().toArray();
+
             //delaunay_tri.forEach( (tri_vertex) => {
             for ( let v = 0; v < 3; v++ ) {
                 const tri_vertex = delaunay_tri[v];
@@ -55,7 +57,6 @@ class Voronoi {
                 
                 // the current triangle's circum center is thus in the voronoi-cell boundary polyline
                 let voronoi_cell_poly = new Array();
-                let pt_as_list = Triangle.fromArray( delaunay_tri ).circumCenter().toArray();
                 voronoi_cell_poly.push( pt_as_list );
                 //voronoi_cell_poly.push( pt_as_list[0] );
                 //voronoi_cell_poly.push( pt_as_list[1] );
