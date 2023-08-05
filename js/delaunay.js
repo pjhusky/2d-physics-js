@@ -341,21 +341,18 @@ class Delaunay {
             }
         }
         
-        let boundary_edges = new Array();
+        let boundary_edges_not_sorted = new Array();
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             let current_tri = delaunay_tris[i];
-            
-            // let num_outer_tri_vertices = 0;
             
             let contained_tri_vert_indices = [];
             for ( let t = 0; t < 3; t++ ) {
                 const outer_tri_vertex = outer_tri[t];
                 if ( this.doesTriangleContainVertex( current_tri, outer_tri_vertex ) ) { 
-                    // num_outer_tri_vertices++; 
                     contained_tri_vert_indices.push(t);
                 }
             }
-            //if ( num_outer_tri_vertices == 1 ) {
+
             if ( contained_tri_vert_indices.length == 1 ) {
                 const shared_init_tri_vertex = outer_tri[ contained_tri_vert_indices[0] ];
                 let boundary_edge = new Array();
@@ -366,11 +363,38 @@ class Delaunay {
                          MathUtil.isApproxEqual( current_vertex[1], shared_init_tri_vertex[ 1 ] ) ) { continue; }
                     boundary_edge.push( new Array( current_vertex[0], current_vertex[1] ) );
                 }
-                boundary_edges.push( boundary_edge );
+                boundary_edges_not_sorted.push( boundary_edge );
+            }    
+        }
+        
+        // sort boundary edges such that they form a continuous sequence of edges
+        let boundary_edges = new Array();
+        boundary_edges.push( boundary_edges_not_sorted[0] );
+        boundary_edges_not_sorted.shift(); // pop front
+        while ( boundary_edges_not_sorted.length > 0.0 ) {
+            
+            const last_sorted_boundary_edge_idx = boundary_edges.length - 1;
+            const last_sorted_vertex = boundary_edges[last_sorted_boundary_edge_idx][1];        
+            
+            for ( let i = 0; i < boundary_edges_not_sorted.length; i++ ) {
+                const curr_edge = boundary_edges_not_sorted[i];
+                if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[0][0] ) &&
+                     MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[0][1] ) ) {
+                    boundary_edges.push( curr_edge );                    
+                    boundary_edges_not_sorted.splice(i,1);
+                    break;
+                }
+                if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[1][0] ) &&
+                     MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[1][1] ) ) {
+                    boundary_edges.push( new Array( curr_edge[1], curr_edge[0] ) );
+                    console.log( `boundary_edges.length = ${boundary_edges.length}` );                    
+                    boundary_edges_not_sorted.splice(i,1);
+                    break;
+                }
             }
             
         }
-    
+            
         return [ outer_tri, delaunay_tris, boundary_tris_to_remove, boundary_edges ];
     }
 }

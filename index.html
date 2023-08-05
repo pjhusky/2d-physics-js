@@ -502,17 +502,37 @@
                 //let fill_color = 0x373737;
                 const alpha = 0.7;
                 //let loops = 0;
+
+                let show_debug_voronoi_cells_non_clipped = false;
                 
-                // final data "conversion" / preparation to match the format expected by outside plot function
                 let voronoi_convex_polygons_plot = [];           
-                voronoi_convex_polygons.forEach( (polygon) => {
-                    let voronoi_convex_polygon_coords = new Array();
-                    polygon.forEach( (vertex) => {
-                        voronoi_convex_polygon_coords.push( vertex[ 0 ] );
-                        voronoi_convex_polygon_coords.push( vertex[ 1 ] );
+                
+                if ( show_debug_voronoi_cells_non_clipped ) { // final data "conversion" / preparation to match the format expected by outside plot function
+                    voronoi_convex_polygons.forEach( (polygon) => {
+                        let voronoi_convex_polygon_coords = new Array();
+                        polygon.forEach( (vertex) => {
+                            voronoi_convex_polygon_coords.push( vertex[ 0 ] );
+                            voronoi_convex_polygon_coords.push( vertex[ 1 ] );
+                        } );
+                        voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
                     } );
-                    voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
-                } );
+                } else { // clip voronoi cells to delaunay-triangulated "inner" shape
+                    voronoi_convex_polygons.forEach( (polygon) => {
+                        let voronoi_convex_polygon_coords = new Array();
+                        // convert separate edges in boundary_edges into polyline
+                        let subject_poly = new Array();
+                        subject_poly.push( boundary_edges[0][0] );
+                        for ( let i = 0; i < boundary_edges.length; i++ ) {
+                            subject_poly.push( boundary_edges[i][1] );
+                        }
+                        let clipped_polygon = Voronoi.clip( subject_poly, polygon );
+                        clipped_polygon.forEach( (vertex) => {
+                            voronoi_convex_polygon_coords.push( vertex[ 0 ] );
+                            voronoi_convex_polygon_coords.push( vertex[ 1 ] );
+                        } );
+                        voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
+                    } );            
+                }
                 
                 voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
                     //loops++; if ( loops > 3) {return;}
