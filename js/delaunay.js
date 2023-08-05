@@ -363,36 +363,50 @@ class Delaunay {
                          MathUtil.isApproxEqual( current_vertex[1], shared_init_tri_vertex[ 1 ] ) ) { continue; }
                     boundary_edge.push( new Array( current_vertex[0], current_vertex[1] ) );
                 }
-                boundary_edges_not_sorted.push( boundary_edge );
+                if ( boundary_edge.length == 2 ) {
+                    boundary_edges_not_sorted.push( boundary_edge );
+                } else {
+                    //boundary_edge.push( new Array( boundary_edge[0][0]-0.02, boundary_edge[0][1]+0.02 ) );
+                    //boundary_edges_not_sorted.push( boundary_edge );
+                    console.log( `boundary_edge.length should be 2, but is ${boundary_edge.length}` );
+                }
             }    
         }
         
         // sort boundary edges such that they form a continuous sequence of edges
         let boundary_edges = new Array();
-        boundary_edges.push( boundary_edges_not_sorted[0] );
-        boundary_edges_not_sorted.shift(); // pop front
-        while ( boundary_edges_not_sorted.length > 0.0 ) {
+        if ( boundary_edges_not_sorted.length > 0 ) {
+            boundary_edges.push( boundary_edges_not_sorted[0] );
+            boundary_edges_not_sorted.shift(); // pop front
             
-            const last_sorted_boundary_edge_idx = boundary_edges.length - 1;
-            const last_sorted_vertex = boundary_edges[last_sorted_boundary_edge_idx][1];        
+            let boundary_edges_len = boundary_edges.length;
             
-            for ( let i = 0; i < boundary_edges_not_sorted.length; i++ ) {
-                const curr_edge = boundary_edges_not_sorted[i];
-                if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[0][0] ) &&
-                     MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[0][1] ) ) {
-                    boundary_edges.push( curr_edge );                    
-                    boundary_edges_not_sorted.splice(i,1);
-                    break;
+            while ( boundary_edges_not_sorted.length > 0 ) {
+                
+                const last_sorted_boundary_edge_idx = boundary_edges.length - 1;
+                const last_sorted_vertex = boundary_edges[last_sorted_boundary_edge_idx][1];        
+                
+                for ( let i = 0; i < boundary_edges_not_sorted.length; i++ ) {
+                    const curr_edge = boundary_edges_not_sorted[i];
+                    if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[0][0] ) &&
+                        MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[0][1] ) ) {
+                        boundary_edges.push( curr_edge );                    
+                        boundary_edges_not_sorted.splice(i,1);
+                        break;
+                    }
+                    //console.log( `curr_edge = ${curr_edge}` );
+                    if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[1][0] ) &&
+                        MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[1][1] ) ) {
+                        boundary_edges.push( new Array( curr_edge[1], curr_edge[0] ) );
+                        console.log( `boundary_edges.length = ${boundary_edges.length}` );                    
+                        boundary_edges_not_sorted.splice(i,1);
+                        break;
+                    }
                 }
-                if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[1][0] ) &&
-                     MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[1][1] ) ) {
-                    boundary_edges.push( new Array( curr_edge[1], curr_edge[0] ) );
-                    console.log( `boundary_edges.length = ${boundary_edges.length}` );                    
-                    boundary_edges_not_sorted.splice(i,1);
-                    break;
-                }
+                
+                if ( boundary_edges_len == boundary_edges.length ) { break;}
+                boundary_edges_len = boundary_edges.length;
             }
-            
         }
             
         return [ outer_tri, delaunay_tris, boundary_tris_to_remove, boundary_edges ];
