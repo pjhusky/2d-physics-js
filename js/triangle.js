@@ -36,6 +36,15 @@ class Triangle {
         return `{"Triangle": "[[${this.p0.x}, ${this.p0.y}], [${this.p1.x}, ${this.p1.y}], [${this.p2.x}, ${this.p2.y}]]"}`;
     }
     
+    isPointInside( point_vec2 ) {
+        // basically check if barycentric coords of point wrt triangle is a convex combination
+        // https://mathworld.wolfram.com/TriangleInterior.html
+        const det_p1_p2_recip = 1.0 / Vec2.det( this.p1, this.p2 );
+        const a = ( Vec2.det( point_vec2, this.p2 ) - Vec2.det( this.p0, this.p2 ) ) * det_p1_p2_recip;
+        const b = -( Vec2.det( point_vec2, this.p1 ) - Vec2.det( this.p0, this.p1 ) ) * det_p1_p2_recip;
+        return ( a > 0.0 && b > 0.0 && a + b < 1.0 );
+    }
+    
     circumCenter() {
         // https://de.wikipedia.org/wiki/Umkreis
         const x1 = this.p0.x;
