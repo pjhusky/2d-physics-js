@@ -313,7 +313,7 @@
                 [ 300.0, 300.0 ],  // p1
                 [ 450.0, 300.0 ],  // p2
                 [ 430.0, 450.0 ],  // p3
-                [ 230.0, 300.0 ],  // p4
+                [ 230.0, 340.0 ],  // p4
                 [ 470.0, 290.0 ],  // p5
                 //[ 420.0, 210.0 ],  // p6
                 [ 320.0, 170.0 ],  // p6
@@ -402,17 +402,16 @@
             
             console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
             
-            const show_delaunay_tris = true;
+            const show_delaunay_tris = false;
             let show_voronoi_cells = true;
             const remove_boundary_tris = true; //show_delaunay_tris || !show_voronoi_cells;
-            const show_boundary_tris_extra = true;
-            const show_boundary_edges = true;
+            const show_boundary_tris_extra = false;
+            const show_boundary_edges = false;
             
             let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_input_pts );
             console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
             console.log( `boundary_delaunay_tris.length = ${boundary_delaunay_tris.length}` );
 
-            const delaunay_inner_tris = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
             //voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
             //voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, outer_tri, delaunay_inner_tris, boundary_delaunay_tris );
             voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris );
@@ -434,7 +433,7 @@
                 
                 let delaunay_tri_vis = delaunay_tris;
                 if ( remove_boundary_tris ) {
-                    //delaunay_tri_vis = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
+                    const delaunay_inner_tris = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
                     delaunay_tri_vis = delaunay_inner_tris;
                 }
                 
