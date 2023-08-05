@@ -408,12 +408,14 @@
             const show_boundary_tris_extra = true;
             const show_boundary_edges = true;
             
-            let [ delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_input_pts );
+            let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_input_pts );
             console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
             console.log( `boundary_delaunay_tris.length = ${boundary_delaunay_tris.length}` );
 
+            const delaunay_inner_tris = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
             //voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
-            voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, boundary_delaunay_tris );
+            //voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, outer_tri, delaunay_inner_tris, boundary_delaunay_tris );
+            voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris );
             console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
             
             // delaunay_tris.forEach( (delaunay_tri) => {
@@ -432,7 +434,8 @@
                 
                 let delaunay_tri_vis = delaunay_tris;
                 if ( remove_boundary_tris ) {
-                    delaunay_tri_vis = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, boundary_delaunay_tris );
+                    //delaunay_tri_vis = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
+                    delaunay_tri_vis = delaunay_inner_tris;
                 }
                 
                 //let fill_color = 0x1000FA;
@@ -497,9 +500,21 @@
                 //let fill_color = 0x4000FA;
                 let fill_color = 0x000077;
                 //let fill_color = 0x373737;
-                const alpha = 0.3;
+                const alpha = 0.7;
                 //let loops = 0;
-                voronoi_convex_polygons.forEach( (voronoi_convex_polygon) => {
+                
+                // final data "conversion" / preparation to match the format expected by outside plot function
+                let voronoi_convex_polygons_plot = [];           
+                voronoi_convex_polygons.forEach( (polygon) => {
+                    let voronoi_convex_polygon_coords = new Array();
+                    polygon.forEach( (vertex) => {
+                        voronoi_convex_polygon_coords.push( vertex[ 0 ] );
+                        voronoi_convex_polygon_coords.push( vertex[ 1 ] );
+                    } );
+                    voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
+                } );
+                
+                voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
                     //loops++; if ( loops > 3) {return;}
                     const gfxPolygon = new PIXI.Graphics();
                     const line_width = 1.0;

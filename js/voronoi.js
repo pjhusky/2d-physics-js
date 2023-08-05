@@ -29,16 +29,52 @@ class Voronoi {
         return false;
     }
     
-    static calculateVoronoiCellsAsPolygons( delaunay_tris, bound_delaunay_tris ) {
+    static clipVoronoiCellsToShape( voronoi_polygons, outer_tri, delaunay_inner_tris, boundary_delaunay_tris ) {
+                
+                // check if any of the voronoi cell vertices is inside any delaunay triangle
+                // 1.) if all vertices are inside => keep voronoi polygon "as is"
+                // 2.) if all vertices are outside => remove voronoi polygon entirely
+                // 3.) if some vertices are inside, but some are outside, clip the polygon to the boundary edges
+                
+                // let inside_pt_idx = -1;
+                // let outside_pt_idx = -1;
+                // for ( let s = 0; s < voronoi_cell_poly.length; s++ ) {
+                //     const voronoi_cell_pt_T = Vec2.fromArray( path_angle_and_pt_array[s][1] );
+                //     //for ( let i = 0; i < delaunay_tris.length; i++ ) { 
+                //     for ( let i = 0; i < delaunay_inner_tris.length; i++ ) { 
+                //         //const delaunay_tri = delaunay_tris[i];
+                //         const delaunay_tri = delaunay_inner_tris[i];
+                //         //let pt_as_list = Triangle.fromArray( delaunay_tri ).circumCenter().toArray();
+                //         const curr_T = Triangle.fromArray( delaunay_tri );
+                //         const is_inside = curr_T.isPointInside( voronoi_cell_pt_T );
+                //         if ( is_inside && inside_pt_idx < 0 ) {
+                //             inside_pt_idx = s;
+                //             if ( outside_pt_idx >= 0 ) { break; } // we know we have both inside & outside pts, so we need to clip - no need to test further!
+                //         } else if ( !is_inside && outside_pt_idx < 0 ) {
+                //             outside_pt_idx = s;
+                //             if ( inside_pt_idx >= 0 ) { break; } // we know we have both inside & outside pts, so we need to clip - no need to test further!
+                //         }
+                //     }
+                // }
+                
+                // if ( inside_pt_idx < 0 ) { // no inside pts (all points are outside)
+                //     // there could still be an edge between two outside voronoi-cell vertices that overlaps the shape to be shattered
+                //     continue; // for now...
+                // } else if ( outside_pt_idx >= 0 ) { // there were inside AND outside points ==> clip polygon!
+                // } else { // all points are inside - keep entire voronoi ... however, for concave base shape, we may need to clip as well as an edge may be partly outside
+                // }
+        
+    }
+    
+    static calculateVoronoiCellsAsPolygons( delaunay_tris ) {
         // iterate through all vertices
         // for each vertex, get all triangles that share this vertex as one of their vertices
         // from those triangles get their circumcenters
         // connect the circumcenters CCW => the path forms the voronoi-cell boundary as a polygon
         
-        // for the outermost polys, use bound_delaunay_tris to CSG cut voronoi pattern agains input tris
+        // for the outermost polys, use boundary_delaunay_tris to CSG cut voronoi pattern agains input tris
         
         let voronoi_cell_polygons = new Array();
-        
         let visited_verts = new Array();
         
         //delaunay_tris.array.forEach( (delaunay_tri) => {
@@ -76,7 +112,7 @@ class Voronoi {
                     //voronoi_cell_poly.push( other_pt_as_list[1] );
                 }
                 
-                // TODO: sort CCW!!!
+                // sort voronoi-cell vertices CCW
                 const tri_vertex_T = Vec2.fromArray(tri_vertex);
                 let path_angle_and_pt_array = new Array();
                 for ( let s = 0; s < voronoi_cell_poly.length; s++ ) {
@@ -91,13 +127,21 @@ class Voronoi {
                     return 0;  
                 } );
                 
-                let voronoi_cell_poly_coords = [];
-                for ( let s = 0; s < path_angle_and_pt_array.length; s++ ) {
-                    voronoi_cell_poly_coords.push( path_angle_and_pt_array[s][1][0] );
-                    voronoi_cell_poly_coords.push( path_angle_and_pt_array[s][1][1] );
-                }
+                // now path_angle_and_pt_array contains the current convex voronoi polygon / cell with CCW-sorted vertices
                 
-                voronoi_cell_polygons.push( voronoi_cell_poly_coords );
+                voronoi_cell_poly = new Array();
+                for ( let s = 0; s < path_angle_and_pt_array.length; s++ ) {
+                    voronoi_cell_poly.push( path_angle_and_pt_array[s][1] );
+                }
+                voronoi_cell_polygons.push( voronoi_cell_poly );
+                
+                // final data "conversion" / preparation to match the format expected by outside plot function                
+                // let voronoi_cell_poly_coords = [];
+                // for ( let s = 0; s < path_angle_and_pt_array.length; s++ ) {
+                //     voronoi_cell_poly_coords.push( path_angle_and_pt_array[s][1][0] );
+                //     voronoi_cell_poly_coords.push( path_angle_and_pt_array[s][1][1] );
+                // }                
+                // voronoi_cell_polygons.push( voronoi_cell_poly_coords );
             }
             // );
         } 

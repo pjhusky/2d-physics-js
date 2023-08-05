@@ -189,9 +189,9 @@ class Delaunay {
         
         //return [ new Triangle( points[0], points[1], points[2] ) ];
         
-        const init_tri = this.createBoundingTri( points );
+        const outer_tri = this.createBoundingTri( points );
 
-        let delaunay_tris = new Array( init_tri );
+        let delaunay_tris = new Array( outer_tri );
         
         //! delaunay_tris = Delaunay.uniqueTris( delaunay_tris );
         //const delaunay_tris_unqiue = Delaunay.uniqueTris( delaunay_tris );
@@ -307,7 +307,7 @@ class Delaunay {
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             let tri = delaunay_tris[i];
             for ( let k = 0; k < 3; k++ ) {
-                const init_tri_vertex = init_tri[k];
+                const init_tri_vertex = outer_tri[k];
                 if ( Delaunay.doesTriangleContainVertex( tri, init_tri_vertex ) ) {
                     boundary_tris_to_remove.push( tri );
                     
@@ -349,7 +349,7 @@ class Delaunay {
             
             let contained_tri_vert_indices = [];
             for ( let t = 0; t < 3; t++ ) {
-                const outer_tri_vertex = init_tri[t];
+                const outer_tri_vertex = outer_tri[t];
                 if ( this.doesTriangleContainVertex( current_tri, outer_tri_vertex ) ) { 
                     // num_outer_tri_vertices++; 
                     contained_tri_vert_indices.push(t);
@@ -357,7 +357,7 @@ class Delaunay {
             }
             //if ( num_outer_tri_vertices == 1 ) {
             if ( contained_tri_vert_indices.length == 1 ) {
-                const shared_init_tri_vertex = init_tri[ contained_tri_vert_indices[0] ];
+                const shared_init_tri_vertex = outer_tri[ contained_tri_vert_indices[0] ];
                 let boundary_edge = new Array();
                 for ( let v = 0; v < 3; v++ ) {
                     const current_vertex = current_tri[v];
@@ -371,6 +371,6 @@ class Delaunay {
             
         }
     
-        return [ delaunay_tris, boundary_tris_to_remove, boundary_edges ];
+        return [ outer_tri, delaunay_tris, boundary_tris_to_remove, boundary_edges ];
     }
 }
