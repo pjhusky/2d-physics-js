@@ -37,6 +37,7 @@
         
         <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
+        <script type="text/javascript" src="js/convexHull.js?v=1"></script>
         
         <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
         
@@ -308,12 +309,14 @@
             //     [ 130.0, 180.0 ],  // p9
             //     ];
 
-            const delaunay_input_pts = [ 
+            const delaunay_input_pts_in = [ 
+            //const delaunay_input_pts = [ 
                 // [ 210.0, 410.0 ],  // p1
                 [ 300.0, 300.0 ],  // p1
                 [ 450.0, 300.0 ],  // p2
                 [ 430.0, 450.0 ],  // p3
-                [ 230.0, 340.0 ],  // p4
+                [ 230.0, 300.0 ],  // p4
+                //[ 230.0, 340.0 ],  // p4
                 [ 470.0, 290.0 ],  // p5
                 //[ 420.0, 210.0 ],  // p6
                 [ 320.0, 170.0 ],  // p6
@@ -321,6 +324,7 @@
                 [ 340.0, 290.0 ],  // p8
                 [ 180.0, 280.0 ],  // p9
             ];
+            const delaunay_input_pts = ConvexHull.makeHull( delaunay_input_pts_in );
 
             // regular grid - problems with voronoi-cell polygon clipping!!!
             // const delaunay_input_pts = [];
