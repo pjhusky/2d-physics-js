@@ -207,7 +207,7 @@ class Delaunay {
             
             const curr_pt_to_add = points[curr_pt_idx];
             const curr_vec2 = new Vec2( curr_pt_to_add[0], curr_pt_to_add[1] );
-            console.log( `${curr_pt_idx}: curr_pt = ${curr_pt_to_add}, curr_vec2=${curr_vec2}` );
+            //console.log( `${curr_pt_idx}: curr_pt = ${curr_pt_to_add}, curr_vec2=${curr_vec2}` );
             
             let delaunay_tri_idx = 0;
             let invalid_tris = [];
@@ -311,7 +311,7 @@ class Delaunay {
                 if ( Delaunay.doesTriangleContainVertex( tri, init_tri_vertex ) ) {
                     boundary_tris_to_remove.push( tri );
                     
-                    console.log( `tri to remove = ${Triangle.fromArray( tri )}` );
+                    //! console.log( `tri to remove = ${Triangle.fromArray( tri )}` );
                     
                     // let boundary_edge = new Array();
                     // for ( let j = 0; j < tri.length; j++ ) {
