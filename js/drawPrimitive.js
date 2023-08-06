@@ -221,6 +221,23 @@ var MyDrawPrimitive = (function (exports) {
         
         //polygon.position.set(400, 300);
         
+        { // calc pivot
+            let pivot_x = 0.0;
+            for ( let x = 0; x < vertex_positions.length - 1; x += 2 ) {
+                pivot_x += vertex_positions[x];
+            } 
+            let pivot_y = 0.0;
+            for ( let y = 1; y < vertex_positions.length; y += 2 ) {
+                pivot_y += vertex_positions[y];
+            } 
+            pivot_x /= 0.5 * vertex_positions.length;
+            pivot_y /= 0.5 * vertex_positions.length;
+            
+            polygon.pivot.set( pivot_x, pivot_y );
+            polygon.position.set( pivot_x, pivot_y );
+        }
+        
+        
         return polygon;
     }
     
