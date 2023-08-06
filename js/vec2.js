@@ -32,15 +32,23 @@ class Vec2 {
     static sub( v1, v2 ) {
         return new Vec2( v1.x-v2.x, v1.y-v2.y );
     }
+    
+    static mulScalar( v, s ) {
+        return new Vec2( v.x * s, v.y * s );
+    }
 
     static det( v1, v2 ) {
         return v1.x * v2.y - v1.y * v2.x;
     }
     
+    normalize() {
+        const len_recip = 1.0 / this.len();
+        return this.scale( len_recip );
+    }
+    
     det( v ) {
         return Vec2.det( this, v );
     }
-    
     
     static cross2( v1, v2 ) {
         return Vec2.det( v1, v2 );
@@ -55,6 +63,7 @@ class Vec2 {
         this.y *= s;
         return this;
     }
+    
 
     len() {
         return Math.sqrt( this.x*this.x + this.y*this.y );
