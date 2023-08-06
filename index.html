@@ -503,6 +503,8 @@
                 } );
             }
             
+            let fracture_cells = new Array();
+            let debug_dirs_fracture_cells = new Array();
             if ( show_voronoi_cells ) {
                 //let fill_color = 0x4000FA;
                 let fill_color = 0x000077;
@@ -546,6 +548,26 @@
                         }
                     } );            
                 }
+                voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
+                    
+                    debug_dirs_fracture_cells.push( new Array( Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0 ) );
+                    
+                    // // calc pivot
+                    // let pivot_x = 0.0;
+                    // for ( let x = 0; x < voronoi_convex_polygon.length - 1; x += 2 ) {
+                    //     pivot_x += voronoi_convex_polygon[x];
+                    // } 
+                    // let pivot_y = 0.0;
+                    // for ( let y = 1; y < voronoi_convex_polygon.length; y += 2 ) {
+                    //     pivot_y += voronoi_convex_polygon[y];
+                    // } 
+                    // pivot_x /= 0.5 * voronoi_convex_polygon.length;
+                    // pivot_y /= 0.5 * voronoi_convex_polygon.length;
+                    
+                    // //voronoi_convex_polygon.pivot.set( pivot_x, pivot_y );
+                    // voronoi_convex_polygon.pivot.x = pivot_x;
+                    // voronoi_convex_polygon.pivot.y = pivot_y;
+                } );
                 
                 const draw_builtin_polygon = false;
                 if ( draw_builtin_polygon ) {
@@ -562,6 +584,7 @@
                         gfxPolygon.drawPolygon(voronoi_convex_polygon);
                         gfxPolygon.endFill();
                         app.stage.addChild(gfxPolygon);
+                        fracture_cells.push( gfxPolygon );
                     } );
                 } else {
                     let r = 0.5;
@@ -582,6 +605,7 @@
                         r %= 1;   g %= 1;   b %= 1;
                         triangulated_voronoi_cell.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
                         app.stage.addChild( triangulated_voronoi_cell );
+                        fracture_cells.push( triangulated_voronoi_cell );
                     }
                 }
             }
@@ -1143,6 +1167,12 @@
                 //     }
                 // }
                 
+                for ( let i = 0; i < fracture_cells.length; i++ ) {
+                    let cell = fracture_cells[i];
+                    cell.rotation += 0.02 * debug_dirs_fracture_cells[i][0] * debug_dirs_fracture_cells[i][1];
+                    cell.position.x += debug_dirs_fracture_cells[i][0];
+                    cell.position.y += debug_dirs_fracture_cells[i][1];
+                }
                 
                 primitiveTriangle.rotation += 0.01;
                 primitiveTriangle.shader.uniforms.u_time += 0.1;
