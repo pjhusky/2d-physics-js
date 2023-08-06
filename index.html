@@ -552,41 +552,16 @@
                     
                     debug_dirs_fracture_cells.push( new Array( Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0 ) );
                     
-                    // // calc pivot
-                    // let pivot_x = 0.0;
-                    // for ( let x = 0; x < voronoi_convex_polygon.length - 1; x += 2 ) {
-                    //     pivot_x += voronoi_convex_polygon[x];
-                    // } 
-                    // let pivot_y = 0.0;
-                    // for ( let y = 1; y < voronoi_convex_polygon.length; y += 2 ) {
-                    //     pivot_y += voronoi_convex_polygon[y];
-                    // } 
-                    // pivot_x /= 0.5 * voronoi_convex_polygon.length;
-                    // pivot_y /= 0.5 * voronoi_convex_polygon.length;
-                    
-                    // //voronoi_convex_polygon.pivot.set( pivot_x, pivot_y );
-                    // voronoi_convex_polygon.pivot.x = pivot_x;
-                    // voronoi_convex_polygon.pivot.y = pivot_y;
                 } );
                 
-                const draw_builtin_polygon = true;
+                const draw_builtin_polygon = false;
                 if ( draw_builtin_polygon ) {
                     voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
-                        //loops++; if ( loops > 3) {return;}
+
                         const gfxPolygon = new PIXI.Graphics();
                         
                         { // calc pivot
-                            let pivot_x = 0.0;
-                            for ( let x = 0; x < voronoi_convex_polygon.length - 1; x += 2 ) {
-                                pivot_x += voronoi_convex_polygon[x];
-                            } 
-                            let pivot_y = 0.0;
-                            for ( let y = 1; y < voronoi_convex_polygon.length; y += 2 ) {
-                                pivot_y += voronoi_convex_polygon[y];
-                            } 
-                            pivot_x /= 0.5 * voronoi_convex_polygon.length;
-                            pivot_y /= 0.5 * voronoi_convex_polygon.length;
-                            
+                            const [ pivot_x, pivot_y ] = MyDrawPrimitive.calcPivotForPrimitive(voronoi_convex_polygon);                            
                             gfxPolygon.pivot.set( pivot_x, pivot_y );
                             gfxPolygon.position.set( pivot_x, pivot_y );
                         }
@@ -612,9 +587,8 @@
                         const tex_coords = plot_coords;
                         const indices = [...Array(plot_coords.length/2).keys()];
                         //const indices = [...Array(plot_coords.length-1).keys()].map(i => i + 1);
-                        //const indices = _.range(plot_coords.length);
-                        console.log( `plot_coords = ${plot_coords}` );
-                        console.log( `indices = ${indices}` );
+                        // console.log( `plot_coords = ${plot_coords}` );
+                        // console.log( `indices = ${indices}` );
                         let triangulated_voronoi_cell = MyDrawPrimitive.setupPolygon( plot_coords, tex_coords, indices );
                         //triangulated_voronoi_cell.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
                         triangulated_voronoi_cell.shader.uniforms.u_color = [ r, g, b, alpha  ];

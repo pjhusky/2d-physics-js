@@ -1,17 +1,36 @@
 
 var MyDrawPrimitive = (function (exports) {
 
+    let calcPivotForPrimitive = function calcPivotForPrimitiveFn( vertex_positions_plot ) {
+
+        let pivot_x = 0.0;
+        for ( let x = 0; x < vertex_positions_plot.length - 1; x += 2 ) {
+            pivot_x += vertex_positions_plot[x];
+        } 
+        let pivot_y = 0.0;
+        for ( let y = 1; y < vertex_positions_plot.length; y += 2 ) {
+            pivot_y += vertex_positions_plot[y];
+        } 
+        pivot_x /= 0.5 * vertex_positions_plot.length;
+        pivot_y /= 0.5 * vertex_positions_plot.length;
+        
+        return [ pivot_x, pivot_y ];
+    }
+    
     let setupTriangle = function setupTriangleFn( ccw_p0, ccw_p1, ccw_p2 ) {
+
+        const vertex_positions = [  
+            // -100, -100, // x, y
+            // 100, -100, // x, y
+            // 0, 100 // x, y
+            ccw_p0[0], ccw_p0[1], // x, y
+            ccw_p1[0], ccw_p1[1], // x, y
+            ccw_p2[0], ccw_p2[1], // x, y
+        ];
+
         const geometry = new PIXI.Geometry()
         .addAttribute('aVertexPosition', // the attribute name
-            [  
-                // -100, -100, // x, y
-                // 100, -100, // x, y
-                // 0, 100 // x, y
-                ccw_p0[0], ccw_p0[1], // x, y
-                ccw_p1[0], ccw_p1[1], // x, y
-                ccw_p2[0], ccw_p2[1], // x, y
-            ], // x, y
+            vertex_positions, // x, y
             2) // the size of the attribute
         .addAttribute('aUvs', // the attribute name
             [   0, 0, // u, v
@@ -74,84 +93,91 @@ var MyDrawPrimitive = (function (exports) {
         
         const triangle = new PIXI.Mesh(geometry, shader);
         
-        //triangle.position.set(400, 300);
-        //triangle.scale.set(2);        
+        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
+        triangle.pivot.set( pivot_x, pivot_y );
+        triangle.position.set( pivot_x, pivot_y );
         
         return triangle;
     }
         
     // https://pixijs.io/examples/#/mesh-and-shaders/uniforms.js
-    // let setupQuad = function setupQuadFn( ccw_p0, ccw_p1, ccw_p2, ccw_p3 ) {
+    let setupQuad = function setupQuadFn( ccw_p0, ccw_p1, ccw_p2, ccw_p3 ) {
         
-    //     const geometry = new PIXI.Geometry()
-    //     .addAttribute('aVertexPosition', // the attribute name
-    //         [
-    //             // -100, -100, // x, y
-    //             // 100, -100, // x, y
-    //             // 100, 100, // x, y
-    //             // -100, 100 // x, y
-    //             ccw_p0[0], ccw_p0[1], // x, y
-    //             ccw_p1[0], ccw_p1[1], // x, y
-    //             ccw_p2[0], ccw_p2[1], // x, y
-    //             ccw_p3[0], ccw_p3[1], // x, y
-    //         ], // x, y
-    //         2) // the size of the attribute
-    //     .addAttribute('aUvs', // the attribute name
-    //         [0, 0, // u, v
-    //             1, 0, // u, v
-    //             1, 1,
-    //             0, 1], // u, v
-    //         2) // the size of the attribute
-    //     .addIndex([0, 1, 2, 0, 2, 3]);
+        const vertex_positions = [
+            // -100, -100, // x, y
+            // 100, -100, // x, y
+            // 100, 100, // x, y
+            // -100, 100 // x, y
+            ccw_p0[0], ccw_p0[1], // x, y
+            ccw_p1[0], ccw_p1[1], // x, y
+            ccw_p2[0], ccw_p2[1], // x, y
+            ccw_p3[0], ccw_p3[1], // x, y
+        ];
+        
+        const geometry = new PIXI.Geometry()
+        .addAttribute('aVertexPosition', // the attribute name
+            vertex_positions, // x, y
+            2) // the size of the attribute
+        .addAttribute('aUvs', // the attribute name
+            [0, 0, // u, v
+                1, 0, // u, v
+                1, 1,
+                0, 1], // u, v
+            2) // the size of the attribute
+        .addIndex([0, 1, 2, 0, 2, 3]);
     
-    //     const vertexSrc = `
+        const vertexSrc = `
         
-    //         precision mediump float;
+            precision mediump float;
         
-    //         attribute vec2 aVertexPosition;
-    //         attribute vec2 aUvs;
+            attribute vec2 aVertexPosition;
+            attribute vec2 aUvs;
         
-    //         uniform mat3 translationMatrix;
-    //         uniform mat3 projectionMatrix;
+            uniform mat3 translationMatrix;
+            uniform mat3 projectionMatrix;
         
-    //         varying vec2 vUvs;
+            varying vec2 vUvs;
         
-    //         void main() {
+            void main() {
         
-    //             vUvs = aUvs;
-    //             gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+                vUvs = aUvs;
+                gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
         
-    //         }`;
+            }`;
         
-    //     const fragmentSrc = `
+        const fragmentSrc = `
         
-    //         precision mediump float;
+            precision mediump float;
         
-    //         varying vec2 vUvs;
+            varying vec2 vUvs;
         
-    //         uniform sampler2D uSampler2;
-    //         uniform float time;
+            uniform sampler2D uSampler2;
+            uniform float time;
         
-    //         void main() {
+            void main() {
         
-    //             gl_FragColor = texture2D(uSampler2, vUvs + sin( (time + (vUvs.x) * 14.) ) * 0.1 );
-    //         }`;
+                gl_FragColor = texture2D(uSampler2, vUvs + sin( (time + (vUvs.x) * 14.) ) * 0.1 );
+            }`;
         
-    //     const uniforms = {
-    //         //uSampler2: PIXI.Texture.from('examples/assets/bg_scene_rotate.jpg'),
-    //         uSampler2: PIXI.Texture.from('assets/flowerTop.png'),
-    //         time: 0,
-    //     };
+        const uniforms = {
+            //uSampler2: PIXI.Texture.from('examples/assets/bg_scene_rotate.jpg'),
+            uSampler2: PIXI.Texture.from('assets/flowerTop.png'),
+            time: 0,
+        };
         
-    //     const shader = PIXI.Shader.from(vertexSrc, fragmentSrc, uniforms);
+        const shader = PIXI.Shader.from(vertexSrc, fragmentSrc, uniforms);
         
-    //     const quad = new PIXI.Mesh(geometry, shader);
+        const quad = new PIXI.Mesh(geometry, shader);
+
+        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
+        quad.pivot.set( pivot_x, pivot_y );
+        quad.position.set( pivot_x, pivot_y );
         
-    //     quad.position.set(400, 300);
-    //     quad.scale.set(2);        
+        // quad.position.set(400, 300);
+        // quad.scale.set(2);        
         
-    //     return quad;
-    // }
+        return quad;
+    }
 
     
     
@@ -219,31 +245,17 @@ var MyDrawPrimitive = (function (exports) {
         
         const polygon = new PIXI.Mesh(geometry, shader);
         
-        //polygon.position.set(400, 300);
-        
-        { // calc pivot
-            let pivot_x = 0.0;
-            for ( let x = 0; x < vertex_positions.length - 1; x += 2 ) {
-                pivot_x += vertex_positions[x];
-            } 
-            let pivot_y = 0.0;
-            for ( let y = 1; y < vertex_positions.length; y += 2 ) {
-                pivot_y += vertex_positions[y];
-            } 
-            pivot_x /= 0.5 * vertex_positions.length;
-            pivot_y /= 0.5 * vertex_positions.length;
-            
-            polygon.pivot.set( pivot_x, pivot_y );
-            polygon.position.set( pivot_x, pivot_y );
-        }
-        
-        
+        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
+        polygon.pivot.set( pivot_x, pivot_y );
+        polygon.position.set( pivot_x, pivot_y );
+
         return polygon;
     }
     
 
+    exports.calcPivotForPrimitive = calcPivotForPrimitive;
     exports.setupTriangle = setupTriangle;
-    //exports.setupQuad = setupQuad;
+    exports.setupQuad = setupQuad;
     exports.setupPolygon = setupPolygon;
     
     return exports;
