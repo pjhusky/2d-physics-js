@@ -579,7 +579,8 @@
                 }
                 //const test_rb_circle = new RigidBody_Circle( Vec2.fromArray( [ 1.0, 2.0 ] ), 3.0 );
                 const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
-                const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
+                //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
+                const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
                 //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
                 const test_rb_circle2 = new RigidBody_Circle( [ 350.0, 370.0 ], 40.0 );
                               
@@ -627,12 +628,18 @@
                         go_render_primitive = MyDrawPrimitive.setupPolygon( plot_pts );
                         
                         // DEBUG: also show transparent Bounding Circle
-                        let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
-                        console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
-                        console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
+                        //let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
+                        let bounding_circle = rigid_body.getBoundingCircle();
+                        const com = rigid_body.getCenterOfMass();
+                        bounding_circle[0][0] += com[0];
+                        bounding_circle[0][1] += com[1];
+                        let bounding_circle_gfx = MyDrawPrimitive.setupCircle( bounding_circle[0], rigid_body.getBoundRadius() )
                         
-                        bounding_circle.shader.uniforms.u_color = [ 0.7, 0.7, 0.7, 0.25 ];
-                        app.stage.addChild( bounding_circle );
+                        //console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
+                        //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
+                        
+                        bounding_circle_gfx.shader.uniforms.u_color = [ 0.7, 0.7, 0.7, 0.25 ];
+                        app.stage.addChild( bounding_circle_gfx );
                     }
                     game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
                     app.stage.addChild(go_render_primitive);
