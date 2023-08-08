@@ -38,6 +38,9 @@
         <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
         <script type="text/javascript" src="js/convexHull.js?v=1"></script>
+        <script type="text/javascript" src="js/rigidBody.js?v=1"></script>
+        <script type="text/javascript" src="js/collisions.js?v=1"></script>
+        <script type="text/javascript" src="js/gameObject.js?v=1"></script>
         
         <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
         
@@ -227,14 +230,14 @@
             
             primitiveTriangle = MyDrawPrimitive.setupTriangle( [200.0, 150.0], [400.0, 150.0], [100.0, 250.0] )
             primitiveTriangle.shader.uniforms.u_color = [ 0.5, 0.9, 0.9, 0.6 ];
-            // app.stage.addChild(primitiveTriangle);
+            app.stage.addChild(primitiveTriangle);
 
             // primitivePoly = MyDrawPrimitive.setupPolygon( [-100.0,-50.0 , 100.0,-75.0, 0.0,100.0 , 200.0,100.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,2,1,3] )
             // primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLES;
             primitivePoly = MyDrawPrimitive.setupPolygon( [100.0,450.0 , 300.0,475.0, 200.0,300.0 , 400.0,230.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,3] )
             primitivePoly.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
-            primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP;
-            // app.stage.addChild(primitivePoly);
+            primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP; // triangle fan by default, but won't work for this polygon - override this attrib
+            app.stage.addChild(primitivePoly);
             
             //https://pixijs.io/examples/#/graphics/simple.js
             const path = [800, 370, 900, 460, 980, 420, 930, 570, 790, 520];
@@ -554,8 +557,65 @@
                     
                 } );
                 
-                const draw_builtin_polygon = true;
-                if ( draw_builtin_polygon ) {
+                let rigid_bodies = [];
+                try {
+                    const test_rb = new RigidBody();
+                } catch ( error ) {
+                    //console.error( `Caught exception: '${error}'` );
+                    console.log( `Caught exception:` );
+                    console.error( error );
+                    // console.log( `Caught exception:` + error );
+                    //console.log(error);
+                }
+                try {
+                    const test_rb = new RigidBody( [0.1, -0.2 ] );
+                } catch ( error ) {
+                    //console.error( `Caught exception: '${error}'` );
+                    console.log( `Caught exception:` );
+                    console.error( error );
+                    // console.log( `Caught exception:` + error );
+                    //console.log(error);
+                }
+                //const test_rb_circle = new RigidBody_Circle( Vec2.fromArray( [ 1.0, 2.0 ] ), 3.0 );
+                const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
+                const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
+                //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
+                const test_rb_circle2 = new RigidBody_Circle( [ 350.0, 370.0 ], 40.0 );
+                              
+                const game_objects = new Array();
+                let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
+                go_render_primitive.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
+                game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
+                app.stage.addChild(go_render_primitive);
+                
+                
+                let rigid_bodies_list = new Array();
+                rigid_bodies_list.push(test_rb_circle);
+                rigid_bodies_list.push(test_rb_polygon);
+                rigid_bodies_list.push(test_rb_circle2);
+                console.log( ` --- rigid body loop log START --- ` );
+                rigid_bodies_list.forEach( (rigid_body) => {
+                    console.log( rigid_body );
+                    console.log( ` rigid_body.getCenterOfMass() = ${Vec2.fromArray(rigid_body.getCenterOfMass())} rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()} ` );
+                } );
+                console.log( ` --- rigid body loop log END --- ` );
+                console.log( ` --- rigid body collisions log START --- ` );
+                for ( let i = 0; i < rigid_bodies_list.length; i++ ) {
+                    for ( let j = i + 1; j < rigid_bodies_list.length; j++ ) {
+                        const [ did_collide, collision_info ] = Collisions.collideShapes( rigid_bodies_list[i], rigid_bodies_list[j] );
+                        
+                    }
+                }
+                console.log( ` --- rigid body collisions log END --- ` );
+                
+                
+                // const game_objects = new Array();
+                // rigid_bodies_list.forEach( (rigid_body) => {
+                //     game_objects.push( new GameObject( rigid_body, render_primitive ) );
+                // } );
+                
+                const draw_builtin_polygon = false;
+                if ( draw_builtin_polygon ) { // also has debug vis like edge normals
                     voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
 
                         const gfx_voronoi_polygon = new PIXI.Graphics();
@@ -590,12 +650,13 @@
                             //let edge_normal_vec = new Vec2( edge_vec.y, -edge_vec.x );
                             let edge_normal_vec = new Vec2( -edge_vec.y, edge_vec.x );
                             edge_normal_vec.normalize();
-                            edge_normal_vec.scale(10.0);
+                            //edge_normal_vec.scale(10.0);
                             const edge_normal_line_gfx = new PIXI.Graphics();
                             edge_normal_line_gfx.lineStyle(line_width, 0xFFFFFF, 1.0);
                             //edge_normal_line_gfx.drawLine();
                             edge_normal_line_gfx.moveTo(mid_pt.x, mid_pt.y);
-                            edge_normal_line_gfx.lineTo(mid_pt.x + edge_normal_vec.x, mid_pt.y + edge_normal_vec.y);
+                            const display_scale = 10.0;
+                            edge_normal_line_gfx.lineTo(mid_pt.x + edge_normal_vec.x * display_scale, mid_pt.y + edge_normal_vec.y * display_scale);
                             voronoi_cell_container.addChild( edge_normal_line_gfx );
                         }
                         app.stage.addChild(voronoi_cell_container);
@@ -612,16 +673,16 @@
                     for ( let i = 0; i < voronoi_convex_polygons_plot.length; i++ ) {
                         const plot_coords = voronoi_convex_polygons_plot[i];
                         const tex_coords = plot_coords;
-                        const indices = [...Array(plot_coords.length/2).keys()];
+                        //const indices = [...Array(plot_coords.length/2).keys()];
                         //const indices = [...Array(plot_coords.length-1).keys()].map(i => i + 1);
                         // console.log( `plot_coords = ${plot_coords}` );
                         // console.log( `indices = ${indices}` );
-                        let triangulated_voronoi_cell = MyDrawPrimitive.setupPolygon( plot_coords, tex_coords, indices );
+                        let triangulated_voronoi_cell = MyDrawPrimitive.setupPolygon( plot_coords, tex_coords/*, indices*/ );
                         //triangulated_voronoi_cell.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
                         triangulated_voronoi_cell.shader.uniforms.u_color = [ r, g, b, alpha  ];
                         r += 0.1; g += 0.3; b += 0.73;
                         r %= 1;   g %= 1;   b %= 1;
-                        triangulated_voronoi_cell.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
+                        //triangulated_voronoi_cell.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
                         
                         app.stage.addChild( triangulated_voronoi_cell );
                         
