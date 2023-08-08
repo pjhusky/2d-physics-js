@@ -507,6 +507,11 @@
                 } );
             }
             
+            let game_objects = new Array();
+                // let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
+                // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
+                // app.stage.addChild(go_render_primitive);
+                
             let fracture_cells = new Array();
             let debug_dirs_fracture_cells = new Array();
             if ( show_voronoi_cells ) {
@@ -584,10 +589,6 @@
                 //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
                 const test_rb_circle2 = new RigidBody_Circle( [ 350.0, 370.0 ], 40.0 );
                               
-                const game_objects = new Array();
-                // let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
-                // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
-                // app.stage.addChild(go_render_primitive);
                 
                 
                 let rigid_bodies_list = new Array();
@@ -606,6 +607,7 @@
                     let go_render_primitive = undefined;
                     if ( rigid_body.shape_type == ShapeType.circle ) {
                         go_render_primitive = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() );
+                        //game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
                     } else if ( rigid_body.shape_type == ShapeType.polygon ) {
                         let plot_pts = [];
                         const center_of_mass = rigid_body.getCenterOfMass();
@@ -625,12 +627,18 @@
                         sum_y *= recip_num_pts;
                         console.log( `* calculated com again = ${new Vec2(sum_x, sum_y)}` );
                         
-                        go_render_primitive = MyDrawPrimitive.setupPolygon( plot_pts );
+                        go_render_primitive = new PIXI.Container();
+                        go_render_primitive_shape = MyDrawPrimitive.setupPolygon( plot_pts );
+                        go_render_primitive.addChild(go_render_primitive_shape);
                         
                         // DEBUG: also show transparent Bounding Circle
                         //let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
                         let bounding_circle = rigid_body.getBoundingCircle();
                         const com = rigid_body.getCenterOfMass();
+                        
+                        go_render_primitive.pivot.set( com[0], com[1] );
+                        go_render_primitive.position.set( com[0], com[1] );
+                        
                         bounding_circle[0][0] += com[0];
                         bounding_circle[0][1] += com[1];
                         let bounding_circle_gfx = MyDrawPrimitive.setupCircle( bounding_circle[0], rigid_body.getBoundRadius() )
@@ -639,7 +647,10 @@
                         //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
                         
                         bounding_circle_gfx.shader.uniforms.u_color = [ 0.7, 0.7, 0.7, 0.25 ];
-                        app.stage.addChild( bounding_circle_gfx );
+                        //app.stage.addChild( bounding_circle_gfx );
+                        go_render_primitive.addChild(bounding_circle_gfx);
+                        
+                        //game_objects.push( new GameObject( rigid_body, go_render_primitive_shape ) );
                     }
                     game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
                     app.stage.addChild(go_render_primitive);
@@ -647,7 +658,12 @@
                 } );
                 
                 game_objects.forEach( (game_object) => {
-                    game_object.render_primitive.shader.uniforms.u_color = [ 0.1, 0.2, 0.9, 0.6 ];
+                    if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
+                        game_object.render_primitive.shader.uniforms.u_color = [ 0.1, 0.2, 0.9, 0.6 ];
+                    } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
+                        console.log( game_object );
+                        game_object.render_primitive.children[0].shader.uniforms.u_color = [ 0.1, 0.2, 0.9, 0.6 ];
+                    }
                 } );
                 for ( let i = 0; i < game_objects.length; i++ ) {
                     for ( let j = i + 1; j < game_objects.length; j++ ) {
@@ -1306,6 +1322,12 @@
                     cell.position.x += debug_dirs_fracture_cells[i][0];
                     cell.position.y += debug_dirs_fracture_cells[i][1];
                 }
+                
+                game_objects.forEach( (gobj) => {
+                    gobj.render_primitive.rotation += 0.01;
+                    gobj.render_primitive.position.x += Math.cos( elapsed * 4.0 ) * 3.0; 
+                    gobj.render_primitive.position.y += Math.sin( elapsed * 4.0 ) * 3.0; 
+                } );
                 
                 primitiveTriangle.rotation += 0.01;
                 primitiveTriangle.shader.uniforms.u_time += 0.1;
