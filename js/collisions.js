@@ -33,7 +33,7 @@ class Collisions {
     }
     
     static collideCircleCircle( circ_A, circ_B ) {
-        console.log( `collide circ-circ` );
+        // console.log( `collide circ-circ` );
 
         const radius_A = circ_A.getBoundRadius();
         const radius_B = circ_B.getBoundRadius();
@@ -53,7 +53,7 @@ class Collisions {
     }
 
     static collideBoundingCircle_BroadPhase( shape_A, shape_B ) { // only check for collision, don't calculate any collision info
-        console.log( `collide circ-circ broad phase` );
+        //console.log( `collide circ-circ broad phase` );
         
         const radius_A = shape_A.getBoundRadius();
         const radius_B = shape_B.getBoundRadius();
@@ -63,7 +63,7 @@ class Collisions {
     }
     
     static collideCirclePolygon( circ_A, poly_B ) {
-        console.log( `collide circ-poly` );
+        //console.log( `collide circ-poly` );
         return [ false, CollisionInfo.none ];
     }
 
@@ -72,7 +72,7 @@ class Collisions {
     }
 
     static collidePolygonPolygon( poly_A, poly_B ) {
-        console.log( `collide poly-poly` );
+        //console.log( `collide poly-poly` );
         return [ false, CollisionInfo.none ];
     }
 }
