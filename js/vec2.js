@@ -1,5 +1,3 @@
-
-// export 
 class Vec2 {
     
     constructor(x, y) {
@@ -28,14 +26,30 @@ class Vec2 {
     static add( v1, v2 ) {
         return new Vec2( v1.x+v2.x, v1.y+v2.y );
     }
+    add( other ) {
+        this.x += other.x;
+        this.y += other.y;
+        return this;
+    }
     
     static sub( v1, v2 ) {
         return new Vec2( v1.x-v2.x, v1.y-v2.y );
+    }
+    sub( other ) {
+        this.x -= other.x;
+        this.y -= other.y;
+        return this;
     }
     
     static mulScalar( v, s ) {
         return new Vec2( v.x * s, v.y * s );
     }
+    mulScalar( s ) {
+        this.x *= s;
+        this.y *= s;
+        return this;
+    }
+    
 
     static det( v1, v2 ) {
         return v1.x * v2.y - v1.y * v2.x;
