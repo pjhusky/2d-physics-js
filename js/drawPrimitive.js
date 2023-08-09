@@ -1,11 +1,26 @@
 
 var MyDrawPrimitive = (function (exports) {
 
+    let drawCustom = function drawCustomFm() {
+        return true;
+    }
+    
     let setColorForPrimitive = function setColorForPrimitiveFn( render_primitive, color_array4 ) {
-        render_primitive.shader.uniforms.u_color = color_array4;
+        if ( drawCustom() ) {
+            render_primitive.shader.uniforms.u_color = color_array4;
+        } else {
+            //render_primitive.children[0].
+            render_primitive.tint = ( ( color_array4[0] * 255.0*255.0*255.0 + color_array4[1] * 255.0*255.0 + color_array4[2] * 255.0 ) & 0xFFFFFFFF );
+        }
+    }
+    
+    let setDrawMode = function setDrawModeFn( render_primitive, draw_mode ) {
+        if ( drawCustom() ) {
+            render_primitive.drawMode = draw_mode;
+        }
     }
 
-    let calcPivotForPrimitive = function calcPivotForPrimitiveFn( vertex_positions_plot ) {
+    let calcCenterOfMassForPrimitive = function calcCenterOfMassForPrimitiveFn( vertex_positions_plot ) {
 
         let pivot_x = 0.0;
         for ( let x = 0; x < vertex_positions_plot.length - 1; x += 2 ) {
@@ -53,26 +68,41 @@ var MyDrawPrimitive = (function (exports) {
 
     let setupCircle = function setupCircleFn( center_point, radius, num_segments ) {
         
-        let vertex_positions = [];
-        let tex_coords = [];
-        if ( num_segments == undefined || num_segments <= 0 ) { num_segments = 20.0; }
-        
-        console.log( `num_segments = ${num_segments}` );
-        
-        const segment_step = 2.0 * Math.PI / num_segments;
-        for ( let i = 0; i < 2.0 * Math.PI; i += segment_step ) {
-            const cos_i = Math.cos( i );
-            const sin_i = Math.sin( i );
-            vertex_positions.push( center_point[0] + cos_i * radius );
-            vertex_positions.push( center_point[1] + sin_i * radius );
-            // vertex_positions.push( cos_i * radius );
-            // vertex_positions.push( sin_i * radius );
-            tex_coords.push( cos_i * 0.5 + 0.5 );
-            tex_coords.push( sin_i * 0.5 + 0.5 );
+        if ( drawCustom()) {
+            let vertex_positions = [];
+            let tex_coords = [];
+            if (num_segments == undefined || num_segments <= 0) { num_segments = 20.0; }
+
+            console.log(`num_segments = ${num_segments}`);
+
+            const segment_step = 2.0 * Math.PI / num_segments;
+            for (let i = 0; i < 2.0 * Math.PI; i += segment_step) {
+                const cos_i = Math.cos(i);
+                const sin_i = Math.sin(i);
+                vertex_positions.push(center_point[0] + cos_i * radius);
+                vertex_positions.push(center_point[1] + sin_i * radius);
+                // vertex_positions.push( cos_i * radius );
+                // vertex_positions.push( sin_i * radius );
+                tex_coords.push(cos_i * 0.5 + 0.5);
+                tex_coords.push(sin_i * 0.5 + 0.5);
+            }
+
+            // just return setupPolygon() with the calculated vertex positions, as we basically render the circle as a convex polygon
+            return this.setupPolygon(vertex_positions, tex_coords);
+        } else {
+            let gfx_circle = new PIXI.Graphics()
+                .beginFill(0x770076)
+                .lineStyle({ width: 1, color: 0xFFFFFF, alignment: 0 })
+                .drawCircle(0, 0, radius)
+                .endFill();
+
+            //gfx_circle.pivot.set( center_point[0], center_point[1] );
+            //gfx_circle.pivot.set( 0.0, 0.0 );
+            gfx_circle.position.set( center_point[0], center_point[1] );
+            //gfx_circle.position.set( 0.0, 0.0 );
+                                        
+            return gfx_circle;
         }
-        
-        // just return setupPolygon() with the calculated vertex positions, as we basically render the circle as a convex polygon
-        return this.setupPolygon( vertex_positions, tex_coords );
         
     }
     
@@ -87,7 +117,7 @@ var MyDrawPrimitive = (function (exports) {
             ccw_p1[0], ccw_p1[1], // x, y
             ccw_p2[0], ccw_p2[1], // x, y
         ];
-        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
+        const [ pivot_x, pivot_y ] = calcCenterOfMassForPrimitive( vertex_positions );
 
         const geometry = new PIXI.Geometry()
         .addAttribute('aVertexPosition', // the attribute name
@@ -160,7 +190,7 @@ var MyDrawPrimitive = (function (exports) {
         
         const quad = new PIXI.Mesh(geometry, shader);
 
-        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
+        const [ pivot_x, pivot_y ] = calcCenterOfMassForPrimitive( vertex_positions );
         quad.pivot.set( pivot_x, pivot_y );
         quad.position.set( pivot_x, pivot_y );
         
@@ -169,49 +199,81 @@ var MyDrawPrimitive = (function (exports) {
 
     
     let setupPolygon = function setupPolygonFn( vertex_positions, texture_coords/*, indices*/ ) {
-        const indices = [...Array(vertex_positions.length/2).keys()];
-        
-        // TODO - map from vertex pos to relative vertex pos wrt bounding box and use those for tex coords instead...
-        if ( texture_coords == undefined || texture_coords.length == 0 ) {
-            texture_coords = vertex_positions;
-        }
-        
-        const geometry = new PIXI.Geometry()
-        .addAttribute('aVertexPosition', // the attribute name
-            vertex_positions, // x, y
-            2 ) // the size of the attribute (2D positions)
-        .addAttribute('aUvs', // the attribute name
-            texture_coords, // u, v
-            2 ) // the size of the attribute (2D texture coordinates)
-        .addIndex(indices);
-    
-        const vertexSrc = defaultVertexSource();
-        const fragmentSrc = defaultFragmentSource();
-        
-        viewMat3 = new PIXI.Matrix();
-            
-        const uniforms = {
-            u_viewMatrix: viewMat3,
-            u_Sampler2: PIXI.Texture.from('assets/flowerTop.png'),
-            u_color: [0.5,0.0,0.0,0.5],
-            u_time: 0,
-        };
-        
-        const shader = PIXI.Shader.from(vertexSrc, fragmentSrc, uniforms);
-        
-        const polygon = new PIXI.Mesh(geometry, shader);
-        
-        const [ pivot_x, pivot_y ] = calcPivotForPrimitive( vertex_positions );
-        polygon.pivot.set( pivot_x, pivot_y );
-        polygon.position.set( pivot_x, pivot_y );
 
-        polygon.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
-        
-        return polygon;
+        const [ pivot_x, pivot_y ] = calcCenterOfMassForPrimitive( vertex_positions );
+
+        if (drawCustom()) {
+            const indices = [...Array(vertex_positions.length / 2).keys()];
+
+            // TODO - map from vertex pos to relative vertex pos wrt bounding box and use those for tex coords instead...
+            if (texture_coords == undefined || texture_coords.length == 0) {
+                texture_coords = vertex_positions;
+            }
+
+            const geometry = new PIXI.Geometry()
+                .addAttribute('aVertexPosition', // the attribute name
+                    vertex_positions, // x, y
+                    2) // the size of the attribute (2D positions)
+                .addAttribute('aUvs', // the attribute name
+                    texture_coords, // u, v
+                    2) // the size of the attribute (2D texture coordinates)
+                .addIndex(indices);
+
+            const vertexSrc = defaultVertexSource();
+            const fragmentSrc = defaultFragmentSource();
+
+            viewMat3 = new PIXI.Matrix();
+
+            const uniforms = {
+                u_viewMatrix: viewMat3,
+                u_Sampler2: PIXI.Texture.from('assets/flowerTop.png'),
+                u_color: [0.5, 0.0, 0.0, 0.5],
+                u_time: 0,
+            };
+
+            const shader = PIXI.Shader.from(vertexSrc, fragmentSrc, uniforms);
+
+            const polygon = new PIXI.Mesh(geometry, shader);
+
+            polygon.pivot.set( pivot_x, pivot_y );
+            polygon.position.set( pivot_x, pivot_y );
+                
+
+            polygon.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
+
+            return polygon;
+        } else {
+            const gfx_polygon = new PIXI.Graphics();
+            gfx_container = new PIXI.Container();
+            gfx_container.addChild( gfx_polygon );
+
+            // for ( let i = 0; i < vertex_positions.length; i += 2 ) {
+            //     vertex_positions[i] -= pivot_x;
+            //     vertex_positions[i+1] -= pivot_y;
+            // }
+            
+            const line_width = 1.0;
+            gfx_polygon.lineStyle(line_width, 0xFFFFFF, 1.0);
+            gfx_polygon.beginFill(0x7F0000, 0.5);
+            gfx_polygon.drawPolygon(vertex_positions);
+            gfx_polygon.endFill();
+            gfx_polygon.pivot.set( 0.0, 0.0 );
+            gfx_polygon.position.set( 0.0, 0.0 );
+
+            gfx_container.pivot.set( pivot_x, pivot_y );
+            // gfx_container.pivot.set( 0, 0 );
+            
+            gfx_container.position.set( pivot_x, pivot_y );
+            //gfx_container.position.set( 0, 0 );
+            
+            return gfx_container;
+        }
     }
     
+    exports.drawCustom = drawCustom;
     exports.setColorForPrimitive = setColorForPrimitive;
-    exports.calcPivotForPrimitive = calcPivotForPrimitive;
+    exports.setDrawMode = setDrawMode;
+    exports.calcCenterOfMassForPrimitive = calcCenterOfMassForPrimitive;
     exports.setupCircle = setupCircle;
     exports.setupTriangle = setupTriangle;
     exports.setupQuad = setupQuad;
