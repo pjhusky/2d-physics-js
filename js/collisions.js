@@ -37,7 +37,8 @@ class Collisions {
 
         const radius_A = circ_A.getBoundRadius();
         const radius_B = circ_B.getBoundRadius();
-        const dist_A_B = Vec2.dist( circ_A.getCenterOfMass(), circ_B.getCenterOfMass() );
+        //const dist_A_B = Vec2.dist( circ_A.getCenterOfMass(), circ_B.getCenterOfMass() );
+        const dist_A_B = Vec2.dist( circ_A.getBoundingCircle()[0], circ_B.getBoundingCircle()[0] );
         const collision_depth = ( radius_A + radius_B ) - dist_A_B;
         //if ( dist_A_B > radius_A + radius_B ) {
         //if ( 0.0 > collision_depth ) {
@@ -56,7 +57,8 @@ class Collisions {
         
         const radius_A = shape_A.getBoundRadius();
         const radius_B = shape_B.getBoundRadius();
-        const dist_A_B = Vec2.dist( shape_A.getCenterOfMass(), shape_B.getCenterOfMass() );
+        //const dist_A_B = Vec2.dist( shape_A.getCenterOfMass(), shape_B.getCenterOfMass() );
+        const dist_A_B = Vec2.dist( shape_A.getBoundingCircle()[0], shape_B.getBoundingCircle()[0] );
         return ( dist_A_B < radius_A + radius_B );
     }
     
