@@ -1,18 +1,3 @@
-// https://2ality.com/2020/01/enum-pattern.html
-class ShapeType {
-    // static abstract = new ShapeType( 'Abstract' );
-    static circle = new ShapeType( 'Circle' );
-    static polygon = new ShapeType( 'Polygon' );
-    
-    constructor(name) {
-        this.name = name;
-    }
-    
-    toString() {
-        return `ShapeType.${this.name}`;
-    }
-}
-
 // Abstract
 class RigidBody {
     constructor( center_of_mass) {
@@ -24,6 +9,7 @@ class RigidBody {
         this.angle = 0.0;
     }
     
+    setPosition( pos_array2 ) { this.center_of_mass = pos_array2; }
     getCenterOfMass() { return this.center_of_mass; }
     getBoundingCircle() { return [ this.center_of_mass, 0.0 ]; }
     
@@ -31,11 +17,17 @@ class RigidBody {
 }
 
 class RigidBody_Circle extends RigidBody {
-    constructor( center_of_mass, radius ) {
+    
+    constructor( radius ) {
+        let center_of_mass = new Array( 0.0, 0.0 );
         super( center_of_mass );
+        this.shape_type = ShapeType.circle;
+        
         console.log( `'${this.constructor.name}' ctor` );
         
-        this.shape_type = ShapeType.circle;
+        this.constructorHelper( center_of_mass, radius );
+    }
+    constructorHelper( center_of_mass, radius ) {
         this.radius = radius;
     }
     
@@ -44,16 +36,21 @@ class RigidBody_Circle extends RigidBody {
 }
 
 class RigidBody_Polygon extends RigidBody {
-    constructor( center_of_mass, relative_path_points_ccw ) {
+    constructor( relative_path_points_ccw ) {
+        let center_of_mass = new Array( 0.0, 0.0 );
         super( center_of_mass );
+        this.shape_type = ShapeType.polygon;
+        
         console.log( `'${this.constructor.name}' ctor` );
         
-        this.shape_type = ShapeType.polygon;
-        this.bound_radius = -1;
         this.relative_path_points_ccw = relative_path_points_ccw;
+        this.constructorHelper();
+    }
+    constructorHelper() {
+        this.bound_radius = -1;
         this.bounding_circle = new Array();
         this.getBoundRadius();
-        this.getBoundingCircle();
+        this.getBoundingCircle();    
     }
     
     getBoundingCircle() {
@@ -67,6 +64,7 @@ class RigidBody_Polygon extends RigidBody {
 
             let sum_x = 0.0;
             let sum_y = 0.0;
+            console.log( ` this.relative_path_points_ccw = ${ this.relative_path_points_ccw}` );
             for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
                 const curr_x = this.relative_path_points_ccw[i][0]; // + com[0];
                 const curr_y = this.relative_path_points_ccw[i][1]; // + com[1];

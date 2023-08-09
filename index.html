@@ -39,6 +39,7 @@
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
         <script type="text/javascript" src="js/convexHull.js?v=1"></script>
         <script type="text/javascript" src="js/boundingCircle.js?v=1"></script>
+        <script type="text/javascript" src="js/shapeType.js?v=1"></script>
         <script type="text/javascript" src="js/rigidBody.js?v=1"></script>
         <script type="text/javascript" src="js/collisions.js?v=1"></script>
         <script type="text/javascript" src="js/gameObject.js?v=1"></script>
@@ -58,7 +59,9 @@
         <script type="text/javascript" src="js/delaunay.js?v=1"></script>
         <script type="text/javascript" src="js/voronoi.js?v=1"></script>
         <script type="text/javascript" src="js/drawPrimitive.js?v=1"></script>
-        
+        <script type="text/javascript" src="js/builtinRenderPrimitive.js?v=1"></script>
+
+        <script type="text/javascript" src="js/gameObjectMgr.js?v=1"></script>
         
         <script type="text/javascript" src="js/particleColorsFirefox.js?v=1"></script>
         <script type="text/javascript" src="js/particleColorsChrome.js?v=1"></script>
@@ -237,7 +240,8 @@
             // primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLES;
             primitivePoly = MyDrawPrimitive.setupPolygon( [100.0,450.0 , 300.0,475.0, 200.0,300.0 , 400.0,230.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,3] )
             MyDrawPrimitive.setColorForPrimitive( primitivePoly, [ 0.8, 0.9, 0.4, 0.6 ] );
-            primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP; // triangle fan by default, but won't work for this polygon - override this attrib
+            //primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP;
+            MyDrawPrimitive.setDrawMode( primitivePoly, PIXI.DRAW_MODES.TRIANGLE_STRIP ); // triangle fan by default, but won't work for this polygon - override this attrib
             // app.stage.addChild(primitivePoly);
             
             //https://pixijs.io/examples/#/graphics/simple.js
@@ -511,6 +515,9 @@
                 // let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
                 // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
                 // app.stage.addChild(go_render_primitive);
+            let go_mgr = new GameObjectMgr();
+            let test_circle_go  = go_mgr.addCircleGameObject( 35.0 );
+            let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
                 
             let fracture_cells = new Array();
             let debug_dirs_fracture_cells = new Array();
@@ -583,12 +590,24 @@
                     //console.log(error);
                 }
                 //const test_rb_circle = new RigidBody_Circle( Vec2.fromArray( [ 1.0, 2.0 ] ), 3.0 );
-                const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
+                //const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
+                const test_rb_circle = new RigidBody_Circle( 30.0 ); test_rb_circle.setPosition([ 230.0, 250.0 ]);
                 //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
-                const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+                //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+                const test_rb_polygon = new RigidBody_Polygon( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] ); test_rb_polygon.setPosition( [ 300.0, 150.0 ] );
                 //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
-                const test_rb_circle2 = new RigidBody_Circle( [ 350.0, 370.0 ], 40.0 );
+                const test_rb_circle2 = new RigidBody_Circle( 40.0 ); test_rb_circle2.setPosition( [ 350.0, 370.0 ] );
                               
+                // let go_mgr = new GameObjectMgr();
+                // let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
+                test_circle_go.setPos( new Vec2( 400.0, 320.0 ) );
+                test_polygon_go.setPos( new Vec2( 450.0, 380.0 ) );
+                let gos = go_mgr.getGameObjects();
+                gos.forEach( (go) => {
+                    app.stage.addChild( go.render_primitive.gfx_container );
+                    //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
+                } );
+                go_mgr.updateAllGameObjects();
                 
                 
                 let rigid_bodies_list = new Array();
@@ -657,24 +676,7 @@
 
                 } );
                 
-                game_objects.forEach( (game_object) => {
-                    if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
-                    } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
-                        console.log( game_object );
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
-                    }
-                } );
-                for ( let i = 0; i < game_objects.length; i++ ) {
-                    for ( let j = i + 1; j < game_objects.length; j++ ) {
-                        const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
-                        if ( did_collide ) {
-                            MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.8, 0.9, 0.4, 0.6 ] );
-                            MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.8, 0.9, 0.4, 0.6 ] );
-                        }
-                    }
-                }
+                performCollisionDetection( game_objects );
                 console.log( ` --- rigid body collisions log END --- ` );
                 
                 
@@ -683,18 +685,18 @@
                 //     game_objects.push( new GameObject( rigid_body, render_primitive ) );
                 // } );
                 
-                const draw_builtin_polygon = false;
+                const draw_builtin_polygon = true;
                 if ( draw_builtin_polygon ) { // also has debug vis like edge normals
                     voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
 
-                        const gfx_voronoi_polygon = new PIXI.Graphics();
                         voronoi_cell_container = new PIXI.Container();
+                        const gfx_voronoi_polygon = new PIXI.Graphics();
                         voronoi_cell_container.addChild( gfx_voronoi_polygon );
                         
                         const gfxPolygon = voronoi_cell_container;
                         
                         { // calc pivot
-                            const [ pivot_x, pivot_y ] = MyDrawPrimitive.calcPivotForPrimitive(voronoi_convex_polygon);                            
+                            const [ pivot_x, pivot_y ] = MyDrawPrimitive.calcCenterOfMassForPrimitive(voronoi_convex_polygon);                            
                             gfxPolygon.pivot.set( pivot_x, pivot_y );
                             gfxPolygon.position.set( pivot_x, pivot_y );
                         }
@@ -1324,6 +1326,18 @@
                     it++;
                 } );
                 
+                //test_circle_go.setPos( [ 400.0, 320.0 ] );
+                test_circle_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                it++;
+                //test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                test_polygon_go.rotateBy( -0.03 );
+                go_mgr.updateAllGameObjects();
+
+                
+                performCollisionDetection( game_objects );
+                
+                
+                
                 primitiveTriangle.rotation += 0.01;
                 primitiveTriangle.shader.uniforms.u_time += 0.1;
                 
@@ -1518,7 +1532,41 @@
                 
                 particleFluidSolver.onResolutionChanged( app.screen.width, app.screen.height );
             }
-            
+       
+            function performCollisionDetection( game_objects ) {
+                game_objects.forEach( (game_object) => {
+                    if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
+                    } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
+                        //console.log( game_object );
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
+                    }
+                } );
+                for ( let i = 0; i < game_objects.length; i++ ) {
+                    for ( let j = i + 1; j < game_objects.length; j++ ) {
+                        const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
+                        if ( did_collide ) {
+                            //console.log( `collision game objects ${i} | ${j}` );
+                            if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
+                            } else if ( game_objects[i].rigid_body.shape_type == ShapeType.polygon ) {
+                                //console.log( game_object );
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
+                            }
+                            
+                            if ( game_objects[j].rigid_body.shape_type == ShapeType.circle ) {
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
+                            } else if ( game_objects[j].rigid_body.shape_type == ShapeType.polygon ) {
+                                //console.log( game_object );
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
+                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
+                            }
+                        }
+                    }
+                }
+            }
        
         </script>
         
