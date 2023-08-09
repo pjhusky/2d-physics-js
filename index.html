@@ -230,13 +230,13 @@
             }
             
             primitiveTriangle = MyDrawPrimitive.setupTriangle( [200.0, 150.0], [400.0, 150.0], [100.0, 250.0] )
-            primitiveTriangle.shader.uniforms.u_color = [ 0.5, 0.9, 0.9, 0.6 ];
+            MyDrawPrimitive.setColorForPrimitive( primitiveTriangle, [ 0.5, 0.9, 0.9, 0.6 ] );
             //app.stage.addChild(primitiveTriangle);
 
             // primitivePoly = MyDrawPrimitive.setupPolygon( [-100.0,-50.0 , 100.0,-75.0, 0.0,100.0 , 200.0,100.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,2,1,3] )
             // primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLES;
             primitivePoly = MyDrawPrimitive.setupPolygon( [100.0,450.0 , 300.0,475.0, 200.0,300.0 , 400.0,230.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,3] )
-            primitivePoly.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
+            MyDrawPrimitive.setColorForPrimitive( primitivePoly, [ 0.8, 0.9, 0.4, 0.6 ] );
             primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP; // triangle fan by default, but won't work for this polygon - override this attrib
             // app.stage.addChild(primitivePoly);
             
@@ -646,7 +646,7 @@
                         //console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
                         //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
                         
-                        bounding_circle_gfx.shader.uniforms.u_color = [ 0.7, 0.7, 0.7, 0.25 ];
+                        MyDrawPrimitive.setColorForPrimitive( bounding_circle_gfx, [ 0.7, 0.7, 0.7, 0.25 ] );
                         //app.stage.addChild( bounding_circle_gfx );
                         go_render_primitive.addChild(bounding_circle_gfx);
                         
@@ -659,18 +659,19 @@
                 
                 game_objects.forEach( (game_object) => {
                     if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
-                        game_object.render_primitive.shader.uniforms.u_color = [ 0.1, 0.2, 0.9, 0.6 ];
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
                     } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
                         console.log( game_object );
-                        game_object.render_primitive.children[0].shader.uniforms.u_color = [ 0.1, 0.2, 0.9, 0.6 ];
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
+                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
                     }
                 } );
                 for ( let i = 0; i < game_objects.length; i++ ) {
                     for ( let j = i + 1; j < game_objects.length; j++ ) {
                         const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
                         if ( did_collide ) {
-                            game_objects[i].render_primitive.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
-                            game_objects[j].render_primitive.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
+                            MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.8, 0.9, 0.4, 0.6 ] );
+                            MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.8, 0.9, 0.4, 0.6 ] );
                         }
                     }
                 }
@@ -728,9 +729,7 @@
                             voronoi_cell_container.addChild( edge_normal_line_gfx );
                         }
                         app.stage.addChild(voronoi_cell_container);
-                        // app.stage.addChild(gfx_voronoi_polygon);
-                        
-                        //fracture_cells.push( gfx_voronoi_polygon );
+
                         fracture_cells.push( voronoi_cell_container );
                         
                     } );
@@ -741,16 +740,10 @@
                     for ( let i = 0; i < voronoi_convex_polygons_plot.length; i++ ) {
                         const plot_coords = voronoi_convex_polygons_plot[i];
                         const tex_coords = plot_coords;
-                        //const indices = [...Array(plot_coords.length/2).keys()];
-                        //const indices = [...Array(plot_coords.length-1).keys()].map(i => i + 1);
-                        // console.log( `plot_coords = ${plot_coords}` );
-                        // console.log( `indices = ${indices}` );
                         let triangulated_voronoi_cell = MyDrawPrimitive.setupPolygon( plot_coords, tex_coords/*, indices*/ );
-                        //triangulated_voronoi_cell.shader.uniforms.u_color = [ 0.8, 0.9, 0.4, 0.6 ];
-                        triangulated_voronoi_cell.shader.uniforms.u_color = [ r, g, b, alpha  ];
+                        MyDrawPrimitive.setColorForPrimitive( triangulated_voronoi_cell, [ r, g, b, alpha ] );
                         r += 0.1; g += 0.3; b += 0.73;
                         r %= 1;   g %= 1;   b %= 1;
-                        //triangulated_voronoi_cell.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
                         
                         app.stage.addChild( triangulated_voronoi_cell );
                         
@@ -1323,19 +1316,22 @@
                     cell.position.y += debug_dirs_fracture_cells[i][1];
                 }
                 
+                let it = 0;
                 game_objects.forEach( (gobj) => {
                     gobj.render_primitive.rotation += 0.01;
-                    gobj.render_primitive.position.x += Math.cos( elapsed * 4.0 ) * 3.0; 
-                    gobj.render_primitive.position.y += Math.sin( elapsed * 4.0 ) * 3.0; 
+                    gobj.render_primitive.position.x += Math.cos( elapsed * 4.0 + it ) * 3.0; 
+                    gobj.render_primitive.position.y += Math.sin( elapsed * 4.0 + it ) * 3.0; 
+                    it++;
                 } );
                 
                 primitiveTriangle.rotation += 0.01;
                 primitiveTriangle.shader.uniforms.u_time += 0.1;
-                // primitiveTriangle.shader.uniforms.u_color[0] += 0.02;
-                // primitiveTriangle.shader.uniforms.u_color[0] %= 1.0;
-                primitiveTriangle.shader.uniforms.u_color[0] = Math.cos( 0.5 + elapsed * 1.3 ) * 0.5 + 0.5;
-                primitiveTriangle.shader.uniforms.u_color[1] = Math.cos( elapsed ) * 0.5 + 0.5;
-                primitiveTriangle.shader.uniforms.u_color[2] = Math.cos( 0.7 + 0.33 * elapsed ) * 0.5 + 0.5;
+                
+                MyDrawPrimitive.setColorForPrimitive( primitiveTriangle, [ 
+                    Math.cos( 0.5 + elapsed * 1.3 ) * 0.5 + 0.5, 
+                    Math.cos( elapsed ) * 0.5 + 0.5, 
+                    Math.cos( 0.7 + 0.33 * elapsed ) * 0.5 + 0.5, 
+                    primitiveTriangle.shader.uniforms.u_color[3] ] );
                 
                 // emit new fluid particles    
                 const emissionRate = (isPictureParticleFluidDemoMode) ? 8 : 6;

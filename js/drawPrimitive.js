@@ -1,6 +1,10 @@
 
 var MyDrawPrimitive = (function (exports) {
 
+    let setColorForPrimitive = function setColorForPrimitiveFn( render_primitive, color_array4 ) {
+        render_primitive.shader.uniforms.u_color = color_array4;
+    }
+
     let calcPivotForPrimitive = function calcPivotForPrimitiveFn( vertex_positions_plot ) {
 
         let pivot_x = 0.0;
@@ -206,6 +210,7 @@ var MyDrawPrimitive = (function (exports) {
         return polygon;
     }
     
+    exports.setColorForPrimitive = setColorForPrimitive;
     exports.calcPivotForPrimitive = calcPivotForPrimitive;
     exports.setupCircle = setupCircle;
     exports.setupTriangle = setupTriangle;
