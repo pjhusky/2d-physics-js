@@ -99,4 +99,10 @@ class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
 
         this.gfx_container.addChild( this.gfx_bounding_circle );
     }
+    
+    setFillColor( fill_color_array3 ) {
+        const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array3 );
+        this.gfx_polygon.tint = fill_rgb;
+    }
+    
 }
