@@ -6,12 +6,19 @@ class RigidBody {
         }
         // this.shape_type = ShapeType.abstract;
         this.center_of_mass = center_of_mass;
-        this.angle = 0.0;
+        this.center_of_mass_WS = center_of_mass;
+        this.angle_rad = 0.0;
+        this.model_matrix = Mat2x3.createIdentity();
     }
     
     setPosition( pos_array2 ) { this.center_of_mass = pos_array2; }
+    setRotation( angle_rad ) { this.angle_rad = angle_rad; }
+    setModelMatrix( model_matrix ) { this.model_matrix = model_matrix; }
     getCenterOfMass() { return this.center_of_mass; }
     getBoundingCircle() { return [ this.center_of_mass, 0.0 ]; }
+    getBoundingCircleWS() { return [ this.center_of_mass_WS, 0.0 ]; }
+    
+    //transformToWorldSpace() {}
     
     toString() { return `'${this.constructor.name}'`; }
 }
@@ -33,6 +40,13 @@ class RigidBody_Circle extends RigidBody {
     
     getBoundRadius() { return this.radius; }
     getBoundingCircle() { return [ this.center_of_mass, this.radius ]; }
+    getBoundingCircleWS() { return [ this.center_of_mass_WS, this.radius ]; }
+    
+    transformToWorldSpace() {
+        // for now, nothing to do, until we add friction which will cause circles to spin 
+        // currently we wouldn't even see the spinning on a solid-colored circle without position marker(s)
+        this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+    }
 }
 
 class RigidBody_Polygon extends RigidBody {
@@ -44,6 +58,7 @@ class RigidBody_Polygon extends RigidBody {
         console.log( `'${this.constructor.name}' ctor` );
         
         this.relative_path_points_ccw = relative_path_points_ccw;
+        this.world_space_points_ccw = new Array();
         this.constructorHelper();
     }
     constructorHelper() {
@@ -112,6 +127,11 @@ class RigidBody_Polygon extends RigidBody {
         
         return this.bounding_circle;
     }
+    getBoundingCircleWS() { 
+        const bounding_circle = this.getBoundingCircle();
+        const bounding_circle_center_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( bounding_circle[0] ) );
+        return [ [ bounding_circle_center_WS.x, bounding_circle_center_WS.y ], bounding_circle[1] ]; 
+    }
     
     getBoundRadius() {
         if ( this.bound_radius < 0.0 ) {
@@ -121,5 +141,17 @@ class RigidBody_Polygon extends RigidBody {
         }
         return this.bound_radius;
     }
-    
+ 
+    transformToWorldSpace() {
+        this.world_space_points_ccw = new Array();
+        for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
+            const rel_pt_array = this.relative_path_points_ccw[i];
+            //console.log( rel_pt_array );
+            const rel_pt_vec2 = new Vec2( rel_pt_array[0], rel_pt_array[1] );
+            const world_pos = Mat2x3.mulPosition( this.model_matrix, rel_pt_vec2 );
+            this.world_space_points_ccw.push( world_pos );
+        }
+        
+        this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+    }
 }

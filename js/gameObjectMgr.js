@@ -6,8 +6,27 @@ class GameObjectMgr {
     getGameObjects() { return this.game_objects; }
     
     updateAllGameObjects() {
+        this.performCollisionDetection( this.game_objects );
         this.game_objects.forEach( (go) => { go.update(); } );
     }
+    
+    performCollisionDetection( game_objects ) {
+        game_objects.forEach( (game_object) => {
+            game_object.render_primitive.setFillColor( [ 0.1, 0.2, 0.9, 0.6 ] );
+        } );
+        for ( let i = 0; i < game_objects.length; i++ ) {
+            for ( let j = i + 1; j < game_objects.length; j++ ) {
+                const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
+                if ( did_collide ) {
+                    console.log( `collision game objects ${i} | ${j}` );
+
+                    game_objects[i].render_primitive.setFillColor( [ 0.9, 0.2, 0.1, 0.6 ] );
+                    game_objects[j].render_primitive.setFillColor( [ 0.9, 0.2, 0.1, 0.6 ] );
+                }
+            }
+        }
+    }
+
     
     addCircleGameObject( radius ) {
         let rigid_body = new RigidBody_Circle( radius );

@@ -37,6 +37,7 @@
         
         <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
+        <script type="text/javascript" src="js/mat2x3.js?v=1"></script>
         <script type="text/javascript" src="js/convexHull.js?v=1"></script>
         <script type="text/javascript" src="js/boundingCircle.js?v=1"></script>
         <script type="text/javascript" src="js/shapeType.js?v=1"></script>
@@ -517,7 +518,9 @@
                 // app.stage.addChild(go_render_primitive);
             let go_mgr = new GameObjectMgr();
             let test_circle_go  = go_mgr.addCircleGameObject( 35.0 );
-            let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 150.0 ], [ -30.0, 50.0 ] ] );
+            let test_polygon_go = go_mgr.addCircleGameObject( 65.0 );
                 
             let fracture_cells = new Array();
             let debug_dirs_fracture_cells = new Array();
@@ -1329,7 +1332,7 @@
                 //test_circle_go.setPos( [ 400.0, 320.0 ] );
                 test_circle_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
                 it++;
-                //test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
                 test_polygon_go.rotateBy( -0.03 );
                 go_mgr.updateAllGameObjects();
 
