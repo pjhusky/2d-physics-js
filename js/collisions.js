@@ -15,6 +15,8 @@ class Collisions {
         if ( shape_A.shape_type == ShapeType.circle && shape_B.shape_type == ShapeType.circle ) {
             return this.collideCircleCircle( shape_A, shape_B );
         } else {
+            //return this.collideCircleCircle( shape_A, shape_B );
+            
             // broad phase first => circ-circ
             const broad_phase_collision_detected = this.collideBoundingCircle_BroadPhase( shape_A, shape_B );
             
@@ -39,7 +41,8 @@ class Collisions {
         const radius_A = circ_A.getBoundRadius();
         const radius_B = circ_B.getBoundRadius();
         //const dist_A_B = Vec2.dist( circ_A.getCenterOfMass(), circ_B.getCenterOfMass() );
-        const dist_A_B = Vec2.dist( circ_A.getBoundingCircleWS()[0], circ_B.getBoundingCircleWS()[0] );
+        //const dist_A_B = Vec2.dist( circ_A.getBoundingCircleWS()[0], circ_B.getBoundingCircleWS()[0] );
+        const dist_A_B = Vec2.dist( Vec2.fromArray( circ_A.getBoundingCircleWS()[0] ), Vec2.fromArray( circ_B.getBoundingCircleWS()[0] ) );
         const collision_depth = ( radius_A + radius_B ) - dist_A_B;
         //if ( dist_A_B > radius_A + radius_B ) {
         //if ( 0.0 > collision_depth ) {
@@ -59,7 +62,7 @@ class Collisions {
         const radius_A = shape_A.getBoundRadius();
         const radius_B = shape_B.getBoundRadius();
         //const dist_A_B = Vec2.dist( shape_A.getCenterOfMass(), shape_B.getCenterOfMass() );
-        const dist_A_B = Vec2.dist( shape_A.getBoundingCircleWS()[0], shape_B.getBoundingCircleWS()[0] );
+        const dist_A_B = Vec2.dist( Vec2.fromArray( shape_A.getBoundingCircleWS()[0] ), Vec2.fromArray( shape_B.getBoundingCircleWS()[0] ) );
         return ( dist_A_B < radius_A + radius_B );
     }
     

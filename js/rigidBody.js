@@ -15,8 +15,8 @@ class RigidBody {
     setRotation( angle_rad ) { this.angle_rad = angle_rad; }
     setModelMatrix( model_matrix ) { this.model_matrix = model_matrix; }
     getCenterOfMass() { return this.center_of_mass; }
-    getBoundingCircle() { return [ this.center_of_mass, 0.0 ]; }
-    getBoundingCircleWS() { return [ this.center_of_mass_WS, 0.0 ]; }
+    // getBoundingCircle() { return [ this.center_of_mass, 0.0 ]; }
+    // getBoundingCircleWS() { return [ this.center_of_mass_WS.toArray(), 0.0 ]; }
     
     //transformToWorldSpace() {}
     
@@ -40,7 +40,7 @@ class RigidBody_Circle extends RigidBody {
     
     getBoundRadius() { return this.radius; }
     getBoundingCircle() { return [ this.center_of_mass, this.radius ]; }
-    getBoundingCircleWS() { return [ this.center_of_mass_WS, this.radius ]; }
+    getBoundingCircleWS() { return [ this.center_of_mass_WS.toArray(), this.radius ]; }
     
     transformToWorldSpace() {
         // for now, nothing to do, until we add friction which will cause circles to spin 
@@ -129,16 +129,24 @@ class RigidBody_Polygon extends RigidBody {
     }
     getBoundingCircleWS() { 
         const bounding_circle = this.getBoundingCircle();
-        console.log( `bounding circle center OS = ${Vec2.fromArray( bounding_circle[0] )} ` )
-        const bounding_circle_center_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( bounding_circle[0] ) );
-        console.log( `bounding circle center WS = ${bounding_circle_center_WS}` );
-        return [ [ bounding_circle_center_WS.x, bounding_circle_center_WS.y ], bounding_circle[1] ]; 
+        //console.log( `bounding circle center OS = ${Vec2.fromArray( bounding_circle[0] )} ` )
+        this.bounding_circle_center_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( bounding_circle[0] ) );
+        // console.log( `bounding circle center WS = ${this.bounding_circle_center_WS}` );
+        // console.log( `this.center_of_mass_WS    = ${this.center_of_mass_WS}` );
+        //console.log( `this.center_of_mass_WS - this.bounding_circle_center_WS = ${Vec2.sub( this.center_of_mass_WS, this.bounding_circle_center_WS )}` );
+        //console.log( `len this.center_of_mass_WS - this.bounding_circle_center_WS = ${Vec2.sub( this.center_of_mass_WS, this.bounding_circle_center_WS ).len()}` );
+        
+        //return [ [ this.bounding_circle_center_WS.x, this.bounding_circle_center_WS.y ], bounding_circle[1] ]; 
+        
+        return [ this.bounding_circle_center_WS.toArray(), bounding_circle[1] ]; 
+        //return [ this.center_of_mass_WS, this.radius ];
+        //return [ this.center_of_mass_WS, bounding_circle[1] ];
     }
     
     getBoundRadius() {
         //if ( this.bound_radius < 0.0 ) {      
             this.getBoundingCircle();
-            //console.log( `this.bound_radius = ${this.bound_radius}` );
+            // console.log( `this.bound_radius = ${this.bound_radius}` );
         //}
         return this.bound_radius;
     }
