@@ -18,6 +18,9 @@ class Vec2 {
     toArray() {
         return new Array( this.x, this.y );
     }
+    static toArray( vec ) {
+        return vec.toArray();
+    }
     
     static fromArray( vec2_as_array ) {
         return new Vec2( vec2_as_array[0], vec2_as_array[1] );
