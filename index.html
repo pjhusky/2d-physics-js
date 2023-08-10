@@ -517,10 +517,14 @@
                 // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
                 // app.stage.addChild(go_render_primitive);
             let go_mgr = new GameObjectMgr();
+            
             let test_circle_go  = go_mgr.addCircleGameObject( 35.0 );
+            //let test_circle_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
+            
             //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
-            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 150.0 ], [ -30.0, 50.0 ] ] );
-            let test_polygon_go = go_mgr.addCircleGameObject( 65.0 );
+            let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ] );
+            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
+            //let test_polygon_go = go_mgr.addCircleGameObject( 75.0 );
                 
             let fracture_cells = new Array();
             let debug_dirs_fracture_cells = new Array();
@@ -573,38 +577,38 @@
                     
                 } );
                 
-                let rigid_bodies = [];
-                try {
-                    const test_rb = new RigidBody();
-                } catch ( error ) {
-                    //console.error( `Caught exception: '${error}'` );
-                    console.log( `Caught exception:` );
-                    console.error( error );
-                    // console.log( `Caught exception:` + error );
-                    //console.log(error);
-                }
-                try {
-                    const test_rb = new RigidBody( [0.1, -0.2 ] );
-                } catch ( error ) {
-                    //console.error( `Caught exception: '${error}'` );
-                    console.log( `Caught exception:` );
-                    console.error( error );
-                    // console.log( `Caught exception:` + error );
-                    //console.log(error);
-                }
+                // let rigid_bodies = [];
+                // try {
+                //     const test_rb = new RigidBody();
+                // } catch ( error ) {
+                //     //console.error( `Caught exception: '${error}'` );
+                //     console.log( `Caught exception:` );
+                //     console.error( error );
+                //     // console.log( `Caught exception:` + error );
+                //     //console.log(error);
+                // }
+                // try {
+                //     const test_rb = new RigidBody( [0.1, -0.2 ] );
+                // } catch ( error ) {
+                //     //console.error( `Caught exception: '${error}'` );
+                //     console.log( `Caught exception:` );
+                //     console.error( error );
+                //     // console.log( `Caught exception:` + error );
+                //     //console.log(error);
+                // }
                 //const test_rb_circle = new RigidBody_Circle( Vec2.fromArray( [ 1.0, 2.0 ] ), 3.0 );
                 //const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
-                const test_rb_circle = new RigidBody_Circle( 30.0 ); test_rb_circle.setPosition([ 230.0, 250.0 ]);
-                //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
-                //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
-                const test_rb_polygon = new RigidBody_Polygon( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] ); test_rb_polygon.setPosition( [ 300.0, 150.0 ] );
-                //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
-                const test_rb_circle2 = new RigidBody_Circle( 40.0 ); test_rb_circle2.setPosition( [ 350.0, 370.0 ] );
+                // const test_rb_circle = new RigidBody_Circle( 30.0 ); test_rb_circle.setPosition([ 230.0, 250.0 ]);
+                // //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
+                // //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+                // const test_rb_polygon = new RigidBody_Polygon( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] ); test_rb_polygon.setPosition( [ 300.0, 150.0 ] );
+                // //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
+                // const test_rb_circle2 = new RigidBody_Circle( 40.0 ); test_rb_circle2.setPosition( [ 350.0, 370.0 ] );
                               
                 // let go_mgr = new GameObjectMgr();
                 // let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
-                test_circle_go.setPos( new Vec2( 400.0, 320.0 ) );
-                test_polygon_go.setPos( new Vec2( 450.0, 380.0 ) );
+                test_circle_go.setPos( new Vec2( 270.0, 290.0 ) );
+                test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
                 let gos = go_mgr.getGameObjects();
                 gos.forEach( (go) => {
                     app.stage.addChild( go.render_primitive.gfx_container );
@@ -613,74 +617,74 @@
                 go_mgr.updateAllGameObjects();
                 
                 
-                let rigid_bodies_list = new Array();
-                rigid_bodies_list.push(test_rb_circle);
-                rigid_bodies_list.push(test_rb_polygon);
-                rigid_bodies_list.push(test_rb_circle2);
-                console.log( ` --- rigid body loop log START --- ` );
-                rigid_bodies_list.forEach( (rigid_body) => {
-                    console.log( rigid_body );
-                    console.log( ` rigid_body.getCenterOfMass() = ${Vec2.fromArray(rigid_body.getCenterOfMass())} rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()} ` );
-                } );
-                console.log( ` --- rigid body loop log END --- ` );
-                console.log( ` --- rigid body collisions log START --- ` );
+                // let rigid_bodies_list = new Array();
+                // rigid_bodies_list.push(test_rb_circle);
+                // rigid_bodies_list.push(test_rb_polygon);
+                // rigid_bodies_list.push(test_rb_circle2);
+                // console.log( ` --- rigid body loop log START --- ` );
+                // rigid_bodies_list.forEach( (rigid_body) => {
+                //     console.log( rigid_body );
+                //     console.log( ` rigid_body.getCenterOfMass() = ${Vec2.fromArray(rigid_body.getCenterOfMass())} rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()} ` );
+                // } );
+                // console.log( ` --- rigid body loop log END --- ` );
+                // console.log( ` --- rigid body collisions log START --- ` );
 
-                rigid_bodies_list.forEach( (rigid_body) => {
-                    let go_render_primitive = undefined;
-                    if ( rigid_body.shape_type == ShapeType.circle ) {
-                        go_render_primitive = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() );
-                        //game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
-                    } else if ( rigid_body.shape_type == ShapeType.polygon ) {
-                        let plot_pts = [];
-                        const center_of_mass = rigid_body.getCenterOfMass();
-                        rigid_body.relative_path_points_ccw.forEach( (pt_vec2) => {
-                            plot_pts.push( pt_vec2[0] + center_of_mass[0] );
-                            plot_pts.push( pt_vec2[1] + center_of_mass[1] );
-                        } );
-                        console.log( `* plot_pts = ${plot_pts}` );
-                        let sum_x = 0.0;
-                        let sum_y = 0.0;
-                        for ( let i = 0; i < plot_pts.length; i += 2 ) {
-                            sum_x += plot_pts[ i ];
-                            sum_y += plot_pts[ i + 1 ];
-                        }
-                        const recip_num_pts = 1.0 / ( plot_pts.length / 2 );
-                        sum_x *= recip_num_pts;
-                        sum_y *= recip_num_pts;
-                        console.log( `* calculated com again = ${new Vec2(sum_x, sum_y)}` );
+                // rigid_bodies_list.forEach( (rigid_body) => {
+                //     let go_render_primitive = undefined;
+                //     if ( rigid_body.shape_type == ShapeType.circle ) {
+                //         go_render_primitive = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() );
+                //         //game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
+                //     } else if ( rigid_body.shape_type == ShapeType.polygon ) {
+                //         let plot_pts = [];
+                //         const center_of_mass = rigid_body.getCenterOfMass();
+                //         rigid_body.relative_path_points_ccw.forEach( (pt_vec2) => {
+                //             plot_pts.push( pt_vec2[0] + center_of_mass[0] );
+                //             plot_pts.push( pt_vec2[1] + center_of_mass[1] );
+                //         } );
+                //         console.log( `* plot_pts = ${plot_pts}` );
+                //         let sum_x = 0.0;
+                //         let sum_y = 0.0;
+                //         for ( let i = 0; i < plot_pts.length; i += 2 ) {
+                //             sum_x += plot_pts[ i ];
+                //             sum_y += plot_pts[ i + 1 ];
+                //         }
+                //         const recip_num_pts = 1.0 / ( plot_pts.length / 2 );
+                //         sum_x *= recip_num_pts;
+                //         sum_y *= recip_num_pts;
+                //         console.log( `* calculated com again = ${new Vec2(sum_x, sum_y)}` );
                         
-                        go_render_primitive = new PIXI.Container();
-                        go_render_primitive_shape = MyDrawPrimitive.setupPolygon( plot_pts );
-                        go_render_primitive.addChild(go_render_primitive_shape);
+                //         go_render_primitive = new PIXI.Container();
+                //         go_render_primitive_shape = MyDrawPrimitive.setupPolygon( plot_pts );
+                //         go_render_primitive.addChild(go_render_primitive_shape);
                         
-                        // DEBUG: also show transparent Bounding Circle
-                        //let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
-                        let bounding_circle = rigid_body.getBoundingCircle();
-                        const com = rigid_body.getCenterOfMass();
+                //         // DEBUG: also show transparent Bounding Circle
+                //         //let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
+                //         let bounding_circle = rigid_body.getBoundingCircle();
+                //         const com = rigid_body.getCenterOfMass();
                         
-                        go_render_primitive.pivot.set( com[0], com[1] );
-                        go_render_primitive.position.set( com[0], com[1] );
+                //         go_render_primitive.pivot.set( com[0], com[1] );
+                //         go_render_primitive.position.set( com[0], com[1] );
                         
-                        bounding_circle[0][0] += com[0];
-                        bounding_circle[0][1] += com[1];
-                        let bounding_circle_gfx = MyDrawPrimitive.setupCircle( bounding_circle[0], rigid_body.getBoundRadius() )
+                //         bounding_circle[0][0] += com[0];
+                //         bounding_circle[0][1] += com[1];
+                //         let bounding_circle_gfx = MyDrawPrimitive.setupCircle( bounding_circle[0], rigid_body.getBoundRadius() )
                         
-                        //console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
-                        //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
+                //         //console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
+                //         //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
                         
-                        MyDrawPrimitive.setColorForPrimitive( bounding_circle_gfx, [ 0.7, 0.7, 0.7, 0.25 ] );
-                        //app.stage.addChild( bounding_circle_gfx );
-                        go_render_primitive.addChild(bounding_circle_gfx);
+                //         MyDrawPrimitive.setColorForPrimitive( bounding_circle_gfx, [ 0.7, 0.7, 0.7, 0.25 ] );
+                //         //app.stage.addChild( bounding_circle_gfx );
+                //         go_render_primitive.addChild(bounding_circle_gfx);
                         
-                        //game_objects.push( new GameObject( rigid_body, go_render_primitive_shape ) );
-                    }
-                    game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
-                    app.stage.addChild(go_render_primitive);
+                //         //game_objects.push( new GameObject( rigid_body, go_render_primitive_shape ) );
+                //     }
+                //     game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
+                //     app.stage.addChild(go_render_primitive);
 
-                } );
+                // } );
                 
-                //performCollisionDetection( game_objects );
-                console.log( ` --- rigid body collisions log END --- ` );
+                // //performCollisionDetection( game_objects );
+                // console.log( ` --- rigid body collisions log END --- ` );
                 
                 
                 // const game_objects = new Array();
