@@ -20,6 +20,7 @@ class Collisions {
             
             // if broad-phase collision detection didn't detect a collision, the enclosed shapes can't collide either!
             if (!broad_phase_collision_detected) { return [false, CollisionInfo.none]; }
+            else { return [ true, new CollisionInfo() ]; } // TODO: DEBUG for now!!!
 
             // did we pass broad-phase collision detection? well then, enter narrow-phase collision detection!
             if (shape_A.shape_type == ShapeType.circle && shape_B.shape_type == ShapeType.polygon) {

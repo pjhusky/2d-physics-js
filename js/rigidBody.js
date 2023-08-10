@@ -129,16 +129,17 @@ class RigidBody_Polygon extends RigidBody {
     }
     getBoundingCircleWS() { 
         const bounding_circle = this.getBoundingCircle();
+        console.log( `bounding circle center OS = ${Vec2.fromArray( bounding_circle[0] )} ` )
         const bounding_circle_center_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( bounding_circle[0] ) );
+        console.log( `bounding circle center WS = ${bounding_circle_center_WS}` );
         return [ [ bounding_circle_center_WS.x, bounding_circle_center_WS.y ], bounding_circle[1] ]; 
     }
     
     getBoundRadius() {
-        if ( this.bound_radius < 0.0 ) {
-                
+        //if ( this.bound_radius < 0.0 ) {      
             this.getBoundingCircle();
-            console.log( `this.bound_radius = ${this.bound_radius}` );
-        }
+            //console.log( `this.bound_radius = ${this.bound_radius}` );
+        //}
         return this.bound_radius;
     }
  

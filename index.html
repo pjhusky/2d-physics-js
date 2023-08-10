@@ -679,7 +679,7 @@
 
                 } );
                 
-                performCollisionDetection( game_objects );
+                //performCollisionDetection( game_objects );
                 console.log( ` --- rigid body collisions log END --- ` );
                 
                 
@@ -1337,7 +1337,7 @@
                 go_mgr.updateAllGameObjects();
 
                 
-                performCollisionDetection( game_objects );
+                //performCollisionDetection( game_objects );
                 
                 
                 
@@ -1536,40 +1536,40 @@
                 particleFluidSolver.onResolutionChanged( app.screen.width, app.screen.height );
             }
        
-            function performCollisionDetection( game_objects ) {
-                game_objects.forEach( (game_object) => {
-                    if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
-                    } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
-                        //console.log( game_object );
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
-                        MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
-                    }
-                } );
-                for ( let i = 0; i < game_objects.length; i++ ) {
-                    for ( let j = i + 1; j < game_objects.length; j++ ) {
-                        const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
-                        if ( did_collide ) {
-                            //console.log( `collision game objects ${i} | ${j}` );
-                            if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
-                            } else if ( game_objects[i].rigid_body.shape_type == ShapeType.polygon ) {
-                                //console.log( game_object );
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
-                            }
+            // function performCollisionDetection( game_objects ) {
+            //     game_objects.forEach( (game_object) => {
+            //         if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
+            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
+            //         } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
+            //             //console.log( game_object );
+            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
+            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
+            //         }
+            //     } );
+            //     for ( let i = 0; i < game_objects.length; i++ ) {
+            //         for ( let j = i + 1; j < game_objects.length; j++ ) {
+            //             const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
+            //             if ( did_collide ) {
+            //                 //console.log( `collision game objects ${i} | ${j}` );
+            //                 if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
+            //                 } else if ( game_objects[i].rigid_body.shape_type == ShapeType.polygon ) {
+            //                     //console.log( game_object );
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
+            //                 }
                             
-                            if ( game_objects[j].rigid_body.shape_type == ShapeType.circle ) {
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
-                            } else if ( game_objects[j].rigid_body.shape_type == ShapeType.polygon ) {
-                                //console.log( game_object );
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
-                                MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
-                            }
-                        }
-                    }
-                }
-            }
+            //                 if ( game_objects[j].rigid_body.shape_type == ShapeType.circle ) {
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
+            //                 } else if ( game_objects[j].rigid_body.shape_type == ShapeType.polygon ) {
+            //                     //console.log( game_object );
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
+            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
        
         </script>
         

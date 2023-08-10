@@ -6,8 +6,8 @@ class GameObjectMgr {
     getGameObjects() { return this.game_objects; }
     
     updateAllGameObjects() {
-        this.performCollisionDetection( this.game_objects );
         this.game_objects.forEach( (go) => { go.update(); } );
+        this.performCollisionDetection( this.game_objects );
     }
     
     performCollisionDetection( game_objects ) {
@@ -18,7 +18,7 @@ class GameObjectMgr {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
                 const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
                 if ( did_collide ) {
-                    console.log( `collision game objects ${i} | ${j}` );
+                    //console.log( `collision game objects ${i} | ${j}` );
 
                     game_objects[i].render_primitive.setFillColor( [ 0.9, 0.2, 0.1, 0.6 ] );
                     game_objects[j].render_primitive.setFillColor( [ 0.9, 0.2, 0.1, 0.6 ] );
