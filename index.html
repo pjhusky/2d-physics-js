@@ -607,7 +607,9 @@
                               
                 // let go_mgr = new GameObjectMgr();
                 // let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
-                test_circle_go.setPos( new Vec2( 270.0, 290.0 ) );
+                //test_circle_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                test_circle_go.setPos( new Vec2( 300.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                //test_circle_go.setPos( new Vec2( 410.0, 290.0 ) ); // good setting for checking circle-inside-polygon
                 test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
                 let gos = go_mgr.getGameObjects();
                 gos.forEach( (go) => {
