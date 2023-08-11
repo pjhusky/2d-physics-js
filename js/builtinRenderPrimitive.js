@@ -1,6 +1,6 @@
 // Abstract Base Class
 class BuiltinRenderPrimitive_Base {
-    constructor( shape_type ) {
+    constructor() {
         if (this.constructor == BuiltinRenderPrimitive_Base ) {
             throw new Error( `Abstract class '${this.constructor.name}' can't be instantiated.`);
         }        
@@ -32,6 +32,14 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
             .endFill();
 
         this.gfx_container.addChild( this.gfx_circle );
+        
+        this.gfx_center_circle = new PIXI.Graphics()
+            .beginFill( fill_rgb, 0xFFFFFF - fill_color_array4[3] )
+            .lineStyle({ width: 1, color: 0xFFFFFF - line_rgb, alignment: 0 })
+            .drawCircle(0, 0, radius * 0.1)
+            .endFill();
+        this.gfx_container.addChild( this.gfx_center_circle );            
+        
     }
     
     resetFillColor() {
