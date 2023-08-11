@@ -23,9 +23,17 @@ class GameObjectMgr {
                 const [ did_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
                 if ( did_collide ) {
                     //console.log( `collision game objects ${i} | ${j}` );
-
                     game_objects[i].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
                     game_objects[j].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
+                    
+                    if ( collision_info.outside == false && game_objects[i].rigid_body.shape_type != game_objects[j].rigid_body.shape_type) {
+                        //console.log( "inside!" );
+                        if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
+                            game_objects[i].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );
+                        } else {
+                            game_objects[j].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );                            
+                        }
+                    }
                 }
                 else if ( did_broad_phase_collide ) {
                     game_objects[i].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
@@ -35,7 +43,6 @@ class GameObjectMgr {
         }
     }
 
-    
     addCircleGameObject( radius ) {
         let rigid_body = new RigidBody_Circle( radius );
         const line_color = [ 1.0, 1.0, 1.0, 1.0 ];

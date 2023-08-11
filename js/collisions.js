@@ -5,6 +5,7 @@ class CollisionInfo {
         this.normal = new Vec2(0, 0);
         this.start = new Vec2(0, 0);
         this.end = new Vec2(0, 0);
+        this.outside = true;
     }
 }
 
@@ -76,18 +77,58 @@ class Collisions {
         const circ_center_WS_vec2 = Vec2.fromArray( circ_bounding_info[0] );
         const circ_radius = circ_bounding_info[1];
     
-        let min_dist = MathUtil.f32_LargestPosVal();
+        let intersection_dist = MathUtil.f32_LargestPosVal();
+        let intersection_t = undefined;
+        let intersection_edge_s = undefined;
+        let intersection_edge_e = undefined;
         for ( let i = 0; i < poly_B.world_space_points_ccw_vec2.length; i++ ) {
             const j = ( ( i + 1 ) % poly_B.world_space_points_ccw_vec2.length);
             const line_segment_start_vec2 = poly_B.world_space_points_ccw_vec2[i];
             const line_segment_end_vec2 = poly_B.world_space_points_ccw_vec2[j];
             
-            const curr_dist = MathUtil.distPointToLineSegment( circ_center_WS_vec2, line_segment_start_vec2, line_segment_end_vec2 );
-            min_dist = Math.min( min_dist, curr_dist );
+            let t = undefined; // t=0 => edge start pt, t=1 => edge end pt, t "between 0 and 1" => pt along the edge
+            const curr_dist = MathUtil.distPointToLineSegment( circ_center_WS_vec2, line_segment_start_vec2, line_segment_end_vec2, t );
+            
+            //min_dist = Math.min( min_dist, curr_dist );
+            if ( curr_dist < intersection_dist ) {
+                intersection_dist = curr_dist;
+                intersection_edge_s = line_segment_start_vec2;
+                intersection_edge_e = line_segment_end_vec2;
+                intersection_t = t;
+            }
         }
         
-        if ( min_dist < circ_radius ) {
-            return [ true, true, new CollisionInfo() ];
+        /*
+        // check inside / outside case
+        const intersection_edge_dir = Vec2.sub( intersection_edge_e, intersection_edge_s );
+        const edge_normal = new Vec2( intersection_edge_dir.y, -intersection_edge_dir.x );
+        //const edge_normal = new Vec2( -intersection_edge_dir.y, intersection_edge_dir.x );
+        let outside = true;
+        if ( Vec2.dot( Vec2.sub( circ_center_WS_vec2, intersection_edge_s ), edge_normal ) < 0.0 ) {
+            outside = false;
+        }
+        */
+        let outside = false;
+        for ( let i = 0; i < poly_B.world_space_points_ccw_vec2.length; i++ ) {
+            const j = ( ( i + 1 ) % poly_B.world_space_points_ccw_vec2.length);
+            const line_segment_start_vec2 = poly_B.world_space_points_ccw_vec2[i];
+            const line_segment_end_vec2 = poly_B.world_space_points_ccw_vec2[j];
+
+            const edge_dir = Vec2.sub( line_segment_end_vec2, line_segment_start_vec2 );
+            const edge_normal = new Vec2( edge_dir.y, -edge_dir.x );
+            
+            if ( Vec2.dot( Vec2.sub( circ_center_WS_vec2, line_segment_start_vec2 ), edge_normal ) > 0.0 ) {
+                outside = true;
+                break;
+            }
+        }
+        
+        let collision_info = new CollisionInfo();
+        collision_info.depth = circ_radius - intersection_dist;
+        collision_info.outside = outside;
+        
+        if ( intersection_dist < circ_radius ) {
+            return [ true, true, collision_info ];
         }
         
         return [ false, true, CollisionInfo.none ];
