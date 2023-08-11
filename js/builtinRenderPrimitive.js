@@ -34,10 +34,36 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
         this.gfx_container.addChild( this.gfx_circle );
     }
     
-    setFillColor( fill_color_array3 ) {
-        const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array3 );
-        this.gfx_circle.tint = fill_rgb;
+    resetFillColor() {
+        this.gfx_circle.tint = 0xFFFFFF;
+        this.gfx_circle.alpha = 1.0;
     }
+    
+    setFillColor( fill_color_array4 ) {
+        const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array4 );
+        this.gfx_circle.tint = fill_rgb;
+        this.gfx_circle.alpha = fill_color_array4[3];
+    }
+    
+    // setLineColor( line_color_array3 ) {
+    //     const line_rgb = MathUtil.rgbFloatsToHexColor( line_color_array3 );
+    //     // this.gfx_circle.graphicsData.forEach( (gfx_data) => {
+    //     //     // https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/
+    //     //     gfx_data.lineColor = fill_rgb;  
+    //     // } );
+    //     //this.gfx_circle._lineStyle.color = line_rgb;
+    //     //this.gfx_circle.batchDirty = 1;
+        
+    //     this.gfx_circle._geometry.graphicsData.forEach(data => {
+    //         //if (width!=null) { data.lineStyle.width = width; }
+    //         //if (color!=null) { data.lineStyle.color = color; }
+    //         //if (alpha!=null) { data.lineStyle.alpha = alpha; }
+    //         data.lineStyle.color = line_rgb;
+    //     });
+    //     //this.gfx_circle._geometry._lineStyle.color = line_rgb;
+
+    //     this.gfx_circle._geometry.invalidate();        
+    // }
 }
 
 class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
@@ -100,9 +126,34 @@ class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
         this.gfx_container.addChild( this.gfx_bounding_circle );
     }
     
-    setFillColor( fill_color_array3 ) {
-        const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array3 );
-        this.gfx_polygon.tint = fill_rgb;
+    resetFillColor() {
+        this.gfx_polygon.tint = 0xFFFFFF;
+        this.gfx_polygon.alpha = 1.0;
     }
+    
+    setFillColor( fill_color_array4 ) {
+        const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array4 );
+        this.gfx_polygon.tint = fill_rgb;
+        this.gfx_polygon.alpha = fill_color_array4[3];
+    }
+
+    // setLineColor( line_color_array3 ) {
+    //     const line_rgb = MathUtil.rgbFloatsToHexColor( line_color_array3 );
+    //     // this.gfx_polygon.graphicsData.forEach( (gfx_data) => {
+    //     //     // https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/
+    //     //     gfx_data.lineColor = fill_rgb;  
+    //     // } );
+    //     // this.gfx_polygon.lineColor = line_rgb;
+    //     // this.gfx_polygon.batchDirty = 1;
+    //     // this.gfx_polygon._lineStyle.color = line_rgb;
+    //     this.gfx_polygon._geometry.graphicsData.forEach(data => {
+    //         //if (width!=null) { data.lineStyle.width = width; }
+    //         //if (color!=null) { data.lineStyle.color = color; }
+    //         //if (alpha!=null) { data.lineStyle.alpha = alpha; }
+    //         data.lineStyle.color = line_rgb;
+    //     });
+    //     this.gfx_polygon._geometry.invalidate();        
+        
+    // }
     
 }
