@@ -20,8 +20,8 @@ class GameObjectMgr {
         } );
         for ( let i = 0; i < game_objects.length; i++ ) {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
-                const [ did_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
-                if ( did_collide ) {
+                const [ did_narrow_phase_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
+                if ( did_narrow_phase_collide ) {
                     //console.log( `collision game objects ${i} | ${j}` );
                     game_objects[i].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
                     game_objects[j].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
