@@ -106,6 +106,10 @@ class Vec2 {
         //return Math.hypot(dx, dy);
         return Math.sqrt( this.distSquared(v1,v2) );
     }
+    
+    static dot( v1, v2 ) {
+        return ( v1.x * v2.x + v1.y * v2.y );
+    }
 }
 
 // var MyMathLib = (function (exports) {
