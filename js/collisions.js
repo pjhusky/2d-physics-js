@@ -22,7 +22,7 @@ class Collisions {
             
             // if broad-phase collision detection didn't detect a collision, the enclosed shapes can't collide either!
             if (!broad_phase_collision_detected) { return [false, CollisionInfo.none]; }
-            else { return [ true, new CollisionInfo() ]; } // TODO: DEBUG for now!!!
+            //else { return [ true, new CollisionInfo() ]; } // TODO: DEBUG for now!!!
 
             // did we pass broad-phase collision detection? well then, enter narrow-phase collision detection!
             if (shape_A.shape_type == ShapeType.circle && shape_B.shape_type == ShapeType.polygon) {
@@ -66,8 +66,30 @@ class Collisions {
         return ( dist_A_B < radius_A + radius_B );
     }
     
+    
+    
     static collideCirclePolygon( circ_A, poly_B ) {
         //console.log( `collide circ-poly` );
+        
+        // determine closest edge to circle center
+        const circ_bounding_info = circ_A.getBoundingCircleWS();
+        const circ_center_WS_vec2 = Vec2.fromArray( circ_bounding_info[0] );
+        const circ_radius = circ_bounding_info[1];
+    
+        let min_dist = MathUtil.f32_LargestPosVal();
+        for ( let i = 0; i < poly_B.world_space_points_ccw_vec2.length; i++ ) {
+            const j = ( ( i + 1 ) % poly_B.world_space_points_ccw_vec2.length);
+            const line_segment_start_vec2 = poly_B.world_space_points_ccw_vec2[i];
+            const line_segment_end_vec2 = poly_B.world_space_points_ccw_vec2[j];
+            
+            const curr_dist = MathUtil.distPointToLineSegment( circ_center_WS_vec2, line_segment_start_vec2, line_segment_end_vec2 );
+            min_dist = Math.min( min_dist, curr_dist );
+        }
+        
+        if ( min_dist < circ_radius ) {
+            return [ true, new CollisionInfo() ];
+        }
+        
         return [ false, CollisionInfo.none ];
     }
 

@@ -58,7 +58,7 @@ class RigidBody_Polygon extends RigidBody {
         console.log( `'${this.constructor.name}' ctor` );
         
         this.relative_path_points_ccw = relative_path_points_ccw;
-        this.world_space_points_ccw = new Array();
+        this.world_space_points_ccw_vec2 = new Array();
         this.constructorHelper();
     }
     constructorHelper() {
@@ -152,13 +152,13 @@ class RigidBody_Polygon extends RigidBody {
     }
  
     transformToWorldSpace() {
-        this.world_space_points_ccw = new Array();
+        this.world_space_points_ccw_vec2 = new Array();
         for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
             const rel_pt_array = this.relative_path_points_ccw[i];
             //console.log( rel_pt_array );
             const rel_pt_vec2 = new Vec2( rel_pt_array[0], rel_pt_array[1] );
             const world_pos = Mat2x3.mulPosition( this.model_matrix, rel_pt_vec2 );
-            this.world_space_points_ccw.push( world_pos );
+            this.world_space_points_ccw_vec2.push( world_pos );
         }
         
         this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
