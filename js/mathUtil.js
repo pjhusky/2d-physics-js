@@ -13,7 +13,11 @@ class MathUtil {
     
     //static normalizedFloatToByte( 
     static rgbFloatsToHexColor( float_array ) {
-        return ( ( ( ( float_array[0] * 255.0 + float_array[1] ) * 255.0 + float_array[2] ) * 255.0 ) & 0xFFFFFF );
+        //return ( ( ( ( float_array[0] * 255.0 + float_array[1] ) * 255.0 + float_array[2] ) * 255.0 ) & 0xFFFFFF );
+        //return ( ( float_array[0] * 255.0 * 256.0*256.0 + float_array[1] * 255.0 * 256.0 + float_array[2] * 255.0 ) & 0xFFFFFF );
+        return ( ( ( (float_array[0] * 255.0) & 0xFF ) << 16 ) | 
+                 ( ( (float_array[1] * 255.0) & 0xFF ) <<  8 ) |
+                   ( (float_array[2] * 255.0) & 0xFF ) ) ;
     }
     
     // adapted from https://stackoverflole_vec2.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
