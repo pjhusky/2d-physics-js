@@ -21,7 +21,7 @@ class Collisions {
             const broad_phase_collision_detected = this.collideBoundingCircle_BroadPhase( shape_A, shape_B );
             
             // if broad-phase collision detection didn't detect a collision, the enclosed shapes can't collide either!
-            if (!broad_phase_collision_detected) { return [false, CollisionInfo.none]; }
+            if (!broad_phase_collision_detected) { return [false, false, CollisionInfo.none]; }
             //else { return [ true, new CollisionInfo() ]; } // TODO: DEBUG for now!!!
 
             // did we pass broad-phase collision detection? well then, enter narrow-phase collision detection!
@@ -53,7 +53,7 @@ class Collisions {
         let collisionInfo = new CollisionInfo();
         collisionInfo.depth = collision_depth;
         
-        return [ true, collisionInfo ];
+        return [ true, true, collisionInfo ];
     }
 
     static collideBoundingCircle_BroadPhase( shape_A, shape_B ) { // only check for collision, don't calculate any collision info
@@ -87,10 +87,10 @@ class Collisions {
         }
         
         if ( min_dist < circ_radius ) {
-            return [ true, new CollisionInfo() ];
+            return [ true, true, new CollisionInfo() ];
         }
         
-        return [ false, CollisionInfo.none ];
+        return [ false, true, CollisionInfo.none ];
     }
 
     static collidePolygonCircle( poly_A, circ_B ) {
