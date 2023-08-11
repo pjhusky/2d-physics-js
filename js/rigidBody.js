@@ -59,6 +59,7 @@ class RigidBody_Polygon extends RigidBody {
         
         this.relative_path_points_ccw = relative_path_points_ccw;
         this.world_space_points_ccw_vec2 = new Array();
+        this.world_space_edge_normals_ccw_vec2 = new Array();
         this.constructorHelper();
     }
     constructorHelper() {
@@ -160,6 +161,20 @@ class RigidBody_Polygon extends RigidBody {
             const world_pos = Mat2x3.mulPosition( this.model_matrix, rel_pt_vec2 );
             this.world_space_points_ccw_vec2.push( world_pos );
         }
+        
+        // calculate the edge normals
+        this.world_space_edge_normals_ccw_vec2 = new Array();
+        for ( let i = 0; i < this.world_space_points_ccw_vec2.length; i++ ) {
+            const j = ( ( i + 1 ) % this.world_space_points_ccw_vec2.length);
+            const line_segment_start_vec2 = this.world_space_points_ccw_vec2[i];
+            const line_segment_end_vec2 = this.world_space_points_ccw_vec2[j];
+
+            const edge_dir = Vec2.sub( line_segment_end_vec2, line_segment_start_vec2 );
+            const edge_normal = new Vec2( edge_dir.y, -edge_dir.x );
+            edge_normal.normalize();
+            this.world_space_edge_normals_ccw_vec2.push( edge_normal );
+        }        
+        
         
         this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
     }

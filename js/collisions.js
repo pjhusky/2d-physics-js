@@ -48,7 +48,7 @@ class Collisions {
         //if ( dist_A_B > radius_A + radius_B ) {
         //if ( 0.0 > collision_depth ) {
         if ( collision_depth < 0.0 ) {
-            return [ false, CollisionInfo.none ];
+            return [ false, false, CollisionInfo.none ]; // narrow-phase collision, broad-phase collision, collision info
         }
         
         let collisionInfo = new CollisionInfo();
@@ -138,8 +138,59 @@ class Collisions {
         return this.collideCirclePolygon( circ_B, poly_A );
     }
 
+    static getSupportPoint( query_dir_vec2, query_pt_vec2, points_vec2 ) {
+        let max_dist = MathUtil.f32_LargestNegVal();
+        let support_pt_idx = -1;
+        for ( let i = 0; i < points_vec2.length; i++ ) {
+            const curr_dist = Vec2.dot( query_dir_vec2, Vec2.sub( points_vec2[i], query_pt_vec2 ) );
+            //const curr_dist = Vec2.dot( query_dir_vec2, Vec2.sub( query_pt_vec2, points_vec2[i] ) );
+            if ( curr_dist > max_dist ) {
+                max_dist = curr_dist;
+                support_pt_idx = i;
+            }
+        }
+        
+        if ( max_dist < 0.0 ) { // no support pt found
+            return [ false, -1, -1.0 ];
+        }
+        return [ true, support_pt_idx, max_dist ];
+    }
+
+    
     static collidePolygonPolygon( poly_A, poly_B ) {
         //console.log( `collide poly-poly` );
-        return [ false, CollisionInfo.none ];
+        
+        // for poly_A - test poly_B
+        for ( let i = 0; i < poly_A.world_space_edge_normals_ccw_vec2.length; i++ ) {
+            //const query_dir_vec2 = poly_A.world_space_edge_normals_ccw_vec2[i];
+            const normal_dir_vec2 = poly_A.world_space_edge_normals_ccw_vec2[i];
+            const query_dir_vec2 = Vec2.mulScalar( normal_dir_vec2, -1.0 );
+            
+            const query_pt_vec2 = poly_A.world_space_points_ccw_vec2[i];
+            
+            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_B.world_space_points_ccw_vec2 );
+            
+            if ( support_pt_info[ 0 ] == false ) {
+                return [ false, true, CollisionInfo.none ];
+            }
+        }
+
+        // for poly_B - test poly_A        
+        for ( let i = 0; i < poly_B.world_space_edge_normals_ccw_vec2.length; i++ ) {
+            const normal_dir_vec2 = poly_B.world_space_edge_normals_ccw_vec2[i];
+            const query_dir_vec2 = Vec2.mulScalar( normal_dir_vec2, -1.0 );
+            
+            const query_pt_vec2 = poly_B.world_space_points_ccw_vec2[i];
+            
+            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_A.world_space_points_ccw_vec2 );
+            
+            if ( support_pt_info[ 0 ] == false ) {
+                return [ false, true, CollisionInfo.none ];
+            }
+        }
+        
+        
+        //return [ false, CollisionInfo.none ];
+        return [ true, true, new CollisionInfo() ];
     }
 }
