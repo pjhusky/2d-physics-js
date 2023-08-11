@@ -82,19 +82,29 @@ class Vec2 {
     }
     
 
+    lenSquared() {
+        return ( this.x*this.x + this.y*this.y );
+    }
     len() {
-        return Math.sqrt( this.x*this.x + this.y*this.y );
+        return Math.sqrt( this.lenSquared() );
     }
     
+    static lenSquared(v) {
+        return ( v.x*v.x + v.y*v.y );
+    }
     static len(v) {
-        return Math.sqrt( v.x*v.x + v.y*v.y );
+        return Math.sqrt( this.lenSquared(v) );
+    }
+    
+    static distSquared(v1, v2) {
+        const dx = v1.x - v2.x;
+        const dy = v1.y - v2.y;
+        return ( dx*dx + dy*dy );
     }
     
     static dist(v1, v2) {
-        const dx = v1.x - v2.x;
-        const dy = v1.y - v2.y;
         //return Math.hypot(dx, dy);
-        return Math.sqrt( dx*dx + dy*dy );
+        return Math.sqrt( this.distSquared(v1,v2) );
     }
 }
 
