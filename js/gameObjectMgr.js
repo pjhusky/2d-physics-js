@@ -54,7 +54,44 @@ class GameObjectMgr {
         return new_go;
     }
 
-    addPolygonGameObject( path_as_array_of_array2 ) {
+    //addPolygonGameObject( path_as_array_of_array2 ) {
+    addPolygonGameObject( path_as_array_of_array2_in ) {
+
+        let path_as_array_of_array2 = [];
+        { // make sure points are given CCW
+            // calc center of mass
+            let com = new Vec2( 0.0, 0.0 );
+            for ( let v = 0; v < path_as_array_of_array2_in.length; v++ ) {
+                const polygon_vertex = path_as_array_of_array2_in[v];
+                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
+                com.add( polygon_vertex_T );
+            }
+            com.scale( 1.0 / path_as_array_of_array2_in.length );
+
+            // sort CCW
+            let path_angle_and_pt_array = new Array();
+            for ( let v = 0; v < path_as_array_of_array2_in.length; v++ ) {
+                const polygon_vertex = path_as_array_of_array2_in[v];
+                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
+                const dvec = Vec2.sub( polygon_vertex_T, com );
+                const angle_rad = Math.atan2( dvec.y, dvec.x );
+                path_angle_and_pt_array.push( new Array( angle_rad, polygon_vertex ) );
+            }
+            path_angle_and_pt_array.sort( (a,b) => { 
+                if ( a[0] < b[0] ) { return -1; }
+                else if ( a[0] > b[0] ) { return 1; }
+                return 0;  
+            } );
+            
+            for ( let v = 0; v < path_angle_and_pt_array.length; v++ ) {
+                path_as_array_of_array2.push( path_angle_and_pt_array[v][1] );
+            }
+        }
+        
+        console.log( `in: ${path_as_array_of_array2_in}` );
+        console.log( `in CCW: ${path_as_array_of_array2}` );
+        
+        
         let rigid_body = new RigidBody_Polygon( path_as_array_of_array2 );
         
         this.bounding_circle = rigid_body.getBoundingCircle();
