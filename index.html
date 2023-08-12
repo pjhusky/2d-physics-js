@@ -34,7 +34,8 @@
         
         <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
         <!-- '?v=1' forces refresh -->
-        
+ 
+        <script type="text/javascript" src="js/input.js?v=1"></script>
         <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
         <script type="text/javascript" src="js/vec2.js?v=1"></script>
         <script type="text/javascript" src="js/mat2x3.js?v=1"></script>
@@ -512,11 +513,12 @@
                 } );
             }
             
+            let go_mgr = new GameObjectMgr();
             let game_objects = new Array();
                 // let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
                 // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
                 // app.stage.addChild(go_render_primitive);
-            let go_mgr = new GameObjectMgr();
+            
             
             // const fix_circle  = true;
             const fix_circle  = false;
@@ -1255,9 +1257,7 @@
             // };
             // requestAnimationFrame(redraw);
                         
-            let keyObject_SPACE = AppUtils.keyboard( " " );
-            let keyObject_r = AppUtils.keyboard( "r" );
-            
+            let keyObject_SPACE = AppUtils.keyboard( " " );            
             if ( recordingEnabled == true ) { // recordings
                 keyObject_SPACE.press = () => {
                     //key object pressed
@@ -1271,6 +1271,7 @@
                 };
             }
 
+            let keyObject_r = AppUtils.keyboard( "r" );
             keyObject_r.release = async () => {
                 if ( fluidAsBlobs ) {
                     metaballContainer.removeChildren(
@@ -1284,6 +1285,127 @@
                 particleFluidSolver.setActiveParticleCount( 0 );
                 seed = startRandomSeed;
             };
+            
+            // let keyObject_0 = AppUtils.keyboard( "0" );
+            // keyObject_0.release = async () => {
+            //     console.log( `key 0 released` );
+            // };
+            // let keyObject_1 = AppUtils.keyboard( "1" );
+            // keyObject_1.release = async () => {
+            //     console.log( `key 1 released` );
+            // };
+            
+            // callback hooks to switch active game object with digit keys
+            let prev_active_game_object_idx = -1;
+            let active_game_object_idx = 0;
+            key_digit_objects = [];
+            for ( let digit = 0; digit <= 9; digit++ ) {
+                let key_obj = AppUtils.keyboard( digit.toString() );
+                key_obj.release = async () => {
+                    console.log( `key ${digit} released` );
+                    active_game_object_idx = digit;
+                };
+            }
+            // key_arrow_objects = [];
+            // document.onkeydown = checkKey;
+            // function checkKey(e) {
+            //     e = e || window.event;
+            //     if (e.keyCode == '38') {
+            //         // up arrow
+            //         console.log( `arrow up!` );
+            //     }
+            //     else if (e.keyCode == '40') {
+            //         // down arrow
+            //     }
+            //     else if (e.keyCode == '37') {
+            //     // left arrow
+            //     }
+            //     else if (e.keyCode == '39') {
+            //     // right arrow
+            //     }
+            // }
+
+            // const callback = {
+            //     "ArrowLeft"  : ()=>{},//leftHandler,
+            //     "ArrowRight" : ()=>{},//rightHandler,
+            //     "ArrowUp"    : ()=>{console.log( `arrow up!` )}, //upHandler,
+            //     "ArrowDown"  : ()=>{},//downHandler,
+            // }[event.key]
+            // callback?.();
+
+
+            // document.addEventListener('keydown', function(event) {
+            //     const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
+
+            //     switch (event.key) {
+            //         case "ArrowLeft":
+            //             // Left pressed
+            //             break;
+            //         case "ArrowRight":
+            //             // Right pressed
+            //             break;
+            //         case "ArrowUp":
+            //             // Up pressed
+            //             console.log( `arrow up!` );
+            //             break;
+            //         case "ArrowDown":
+            //             // Down pressed
+            //             break;
+            //     }            
+            // });
+            
+            //addEventListener("keydown", (event) => { console.log(`keydown`) });
+            // onkeydown = (event) => {console.log(`keydown`)};
+                   
+            // Arrow key movement. Repeat key every 1.0/60.0 sec = 16.666 ms 
+            // Input.KeyboardController( document, window,
+            //     {
+            //         37: () => { console.log( `arrow left` ); },
+            //         38: () => { console.log( `arrow up` ); },
+            //         39: () => { console.log( `arrow right` ); },
+            //         40: () => { console.log( `arrow down` ); }
+            //     }, 
+            //     1.0/60.0
+            // );      
+            let translation_speed = 1.0;
+            let rotation_radians_speed = 0.01;
+            // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
+            Input.KeyboardController( document, window, //go_mgr,
+                {
+                    37: () => { 
+                        //console.log( `arrow left` ); 
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.translateBy( {x: -translation_speed, y: 0.0} );
+                    },
+                    38: () => { 
+                        //console.log( `arrow up` ); },
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.translateBy( {x: 0.0, y: -translation_speed} );
+                    },
+                    39: () => { 
+                        //console.log( `arrow right` ); 
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.translateBy( {x: translation_speed, y: 0.0} );
+                    },
+                    40: () => { 
+                        //console.log( `arrow down` ); 
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.translateBy( {x: 0.0, y: translation_speed} );
+                    },
+                    69: () => {  // "e"
+                        //console.log( `e` ); 
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.rotateBy( rotation_radians_speed );
+                    },
+                    81: () => {  // "q"
+                        //console.log( `q` ); 
+                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                        selected_go.rotateBy( -rotation_radians_speed );
+                    },
+                }, 
+                1.0/60.0
+            );      
+            
             
             app.stage.eventMode = "dynamic";
             app.stage.hitArea = app.screen;
@@ -1350,14 +1472,20 @@
                 } );
                 
                 //test_circle_go.setPos( [ 400.0, 320.0 ] );
-                if (!fix_circle) {
-                    test_circle_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                // if (!fix_circle) {
+                //     test_circle_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                // }
+                // it++;
+                // if (!fix_polygon) {
+                //     test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
+                //     test_polygon_go.rotateBy( -0.03 );
+                // }
+                if ( prev_active_game_object_idx != active_game_object_idx ) {
+                    console.log( `switched active game object to idx ${active_game_object_idx}` );
+                    let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
+                    prev_active_game_object_idx = active_game_object_idx;
                 }
-                it++;
-                if (!fix_polygon) {
-                    test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
-                    test_polygon_go.rotateBy( -0.03 );
-                }
+                
                 go_mgr.updateAllGameObjects();
 
                 
