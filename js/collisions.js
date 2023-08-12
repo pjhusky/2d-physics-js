@@ -161,6 +161,7 @@ class Collisions {
         //console.log( `collide poly-poly` );
         
         // for poly_A - test poly_B
+        let support_pt_info_min_penetration_depth = [ undefined, undefined, MathUtil.f32_LargestPosVal() ];
         for ( let i = 0; i < poly_A.world_space_edge_normals_ccw_vec2.length; i++ ) {
             //const query_dir_vec2 = poly_A.world_space_edge_normals_ccw_vec2[i];
             const normal_dir_vec2 = poly_A.world_space_edge_normals_ccw_vec2[i];
@@ -172,6 +173,10 @@ class Collisions {
             
             if ( support_pt_info[ 0 ] == false ) {
                 return [ false, true, CollisionInfo.none ];
+            }
+            
+            if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
+                support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
             }
         }
 
@@ -187,8 +192,15 @@ class Collisions {
             if ( support_pt_info[ 0 ] == false ) {
                 return [ false, true, CollisionInfo.none ];
             }
+
+            if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
+                support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
+            }
         }
-        
+
+        // now we have the axis of least penetration => see "Building a Physics Engine" p.57 on how to use this info for penetration resolving
+        // array contains true, support_pt_idx, max_dist
+        // TODO: support_pt_info_min_penetration_depth
         
         //return [ false, CollisionInfo.none ];
         return [ true, true, new CollisionInfo() ];
