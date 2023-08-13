@@ -173,7 +173,7 @@
                 //sceneMapTex = PIXI.Texture.from('assets/ivilpc-logo-2.png'); // when recording
             }
             
-            console.log(useCircleOutline);
+            //console.log(useCircleOutline);
             
             const app = new PIXI.Application({
                 //resizeTo: window, // Auto fill the screen
@@ -264,7 +264,7 @@
             dist_AB = Vec2.dist(testVec2_A, testVec2_B);
             len_B = Vec2.len( testVec2_B );
             thisLen_B = testVec2_B.len();
-            console.log(`###here! \n dist_AB=${dist_AB} \n len_B=${len_B} \n thisLen_B=${thisLen_B}`);
+            //console.log(`###here! \n dist_AB=${dist_AB} \n len_B=${len_B} \n thisLen_B=${thisLen_B}`);
             
             testTriangle = new Triangle( testVec2_A, testVec2_B, new Vec2( -3.0, -4.0 ) );
             // console.log( `testTriangle.points() p0 = ${testTriangle.points[0].x} ${testTriangle.points[0].y}` );
@@ -416,7 +416,7 @@
             const delaunay_input_pts = delaunay_input_pts_in;
 
             
-            console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
+            //console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
             
             const show_delaunay_tris = false;
             let show_voronoi_cells = true;
@@ -425,15 +425,15 @@
             const show_boundary_edges = false;
             
             let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_input_pts );
-            console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
-            console.log( `boundary_delaunay_tris.length = ${boundary_delaunay_tris.length}` );
+            //console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
+            //console.log( `boundary_delaunay_tris.length = ${boundary_delaunay_tris.length}` );
 
             //boundary_edges = ConvexHull.makeHull( boundary_edges );
             
             //voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
             //voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, outer_tri, delaunay_inner_tris, boundary_delaunay_tris );
             voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris );
-            console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
+            //console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
             
             // delaunay_tris.forEach( (delaunay_tri) => {
             //     primitiveTri = MyDrawPrimitive.setupTriangle( 

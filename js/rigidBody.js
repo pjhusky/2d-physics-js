@@ -80,7 +80,7 @@ class RigidBody_Polygon extends RigidBody {
 
             let sum_x = 0.0;
             let sum_y = 0.0;
-            console.log( ` this.relative_path_points_ccw = ${ this.relative_path_points_ccw}` );
+            //console.log( ` this.relative_path_points_ccw = ${ this.relative_path_points_ccw}` );
             for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
                 const curr_x = this.relative_path_points_ccw[i][0]; // + com[0];
                 const curr_y = this.relative_path_points_ccw[i][1]; // + com[1];
@@ -91,7 +91,7 @@ class RigidBody_Polygon extends RigidBody {
             sum_x *= recip_num_pts;
             sum_y *= recip_num_pts;
             const com_v = new Vec2( sum_x, sum_y );
-            console.log( `com_v = ${com_v}` );
+            //console.log( `com_v = ${com_v}` );
 
             // recenter pivot (center of mass) to object-space origin
             for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
@@ -174,7 +174,6 @@ class RigidBody_Polygon extends RigidBody {
             edge_normal.normalize();
             this.world_space_edge_normals_ccw_vec2.push( edge_normal );
         }        
-        
         
         this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
     }

@@ -107,10 +107,10 @@ class Delaunay {
         let min_AABB_vec2 = new Vec2( min_AABB_pt[0], min_AABB_pt[1] );
         let max_AABB_vec2 = new Vec2( max_AABB_pt[0], max_AABB_pt[1] );
         
-        console.log( `AABB B4:\n min=${min_AABB_pt.toString()}\n max=${max_AABB_pt}` );
+        //console.log( `AABB B4:\n min=${min_AABB_pt.toString()}\n max=${max_AABB_pt}` );
         
         const center_AABB_vec2 = Vec2.add( min_AABB_vec2, max_AABB_vec2 ).scale(0.5);
-        console.log( ` ## center_AABB_vec2 = ${center_AABB_vec2}` );
+        //console.log( ` ## center_AABB_vec2 = ${center_AABB_vec2}` );
         // const AABB_scale_up = 2.1;
         // min_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( min_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
         // max_AABB_vec2 = Vec2.add( center_AABB_vec2, Vec2.sub( max_AABB_vec2, center_AABB_vec2 ).scale( AABB_scale_up ) );
@@ -126,7 +126,7 @@ class Delaunay {
 
         min_AABB_vec2 = Vec2.add( min_AABB_vec2, new Vec2( -max_len, -max_len ) );
         max_AABB_vec2 = Vec2.add( max_AABB_vec2, new Vec2(  max_len,  max_len ) );
-        console.log( ` ## min_AABB_vec2 = ${min_AABB_vec2}, max_AABB_vec2 = ${max_AABB_vec2}` );
+        //console.log( ` ## min_AABB_vec2 = ${min_AABB_vec2}, max_AABB_vec2 = ${max_AABB_vec2}` );
         
         const deg30_in_radians = ( Math.PI / 180.0 ) * 30.0;
         const tan_30_deg = Math.tan( deg30_in_radians );
@@ -136,7 +136,7 @@ class Delaunay {
         const tan_60_deg = Math.tan( deg60_in_radians );
         const len_y = len_x * tan_60_deg - max_len;
         
-        console.log( `max_len = ${max_len}, len_x = ${len_x}, len_y = ${len_y}` );
+        //console.log( `max_len = ${max_len}, len_x = ${len_x}, len_y = ${len_y}` );
         
         const center_btm = Vec2.add( center_AABB_vec2, new Vec2( 0.0, -max_len ) );
         const left_x = Vec2.add( center_btm, new Vec2( -len_x, 0.0 ) );
@@ -153,7 +153,7 @@ class Delaunay {
         // max_AABB_pt[1] = max_AABB_vec2.y;
         // console.log( ` ## min_AABB_pt = ${min_AABB_pt}, min_AABB_vec2 = ${min_AABB_vec2}` );
 
-        console.log( ` ## center_top = ${center_top}, left_x = ${left_x}, right_x = ${right_x}` );
+        //console.log( ` ## center_top = ${center_top}, left_x = ${left_x}, right_x = ${right_x}` );
         
         return new Array( 
             // new Array( min_AABB_pt[0],min_AABB_pt[1] ), 
@@ -170,7 +170,7 @@ class Delaunay {
     }
 
     static delaunayTrisWithoutBoundTris( delaunay_tris, boundary_tris_to_remove ) {
-        console.log( `boundary_tris_to_remove = ${boundary_tris_to_remove}, count = ${boundary_tris_to_remove.length}` );
+        //console.log( `boundary_tris_to_remove = ${boundary_tris_to_remove}, count = ${boundary_tris_to_remove.length}` );
         
         let delaunay_tris_ret = new Array();
         delaunay_tris.forEach( (tri) => {
@@ -198,7 +198,7 @@ class Delaunay {
         //console.log( ` ## delaunay_tris_unqiue = ${delaunay_tris_unqiue}` );
         
         
-        console.log( ` ## delaunay_tris = ${delaunay_tris}` );
+        //console.log( ` ## delaunay_tris = ${delaunay_tris}` );
         
         let curr_pt_idx = 0;
         const num_pts = points.length;
@@ -398,7 +398,7 @@ class Delaunay {
                     if ( MathUtil.isApproxEqual( last_sorted_vertex[0], curr_edge[1][0] ) &&
                         MathUtil.isApproxEqual( last_sorted_vertex[1], curr_edge[1][1] ) ) {
                         boundary_edges.push( new Array( curr_edge[1], curr_edge[0] ) );
-                        console.log( `boundary_edges.length = ${boundary_edges.length}` );                    
+                        //console.log( `boundary_edges.length = ${boundary_edges.length}` );                    
                         boundary_edges_not_sorted.splice(i,1);
                         break;
                     }
