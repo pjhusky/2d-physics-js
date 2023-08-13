@@ -1,6 +1,6 @@
 class GameObjectMgr {
     constructor() {
-        this.game_objects = new Array();
+        this.game_objects = [];
     }
     
     getGameObjects() { return this.game_objects; }
@@ -17,6 +17,7 @@ class GameObjectMgr {
             game_object.render_primitive.resetFillColor( );
             //game_object.render_primitive.setFillColor( [ 0.8, 0.8, 0.8, 0.9 ] );
             //game_object.render_primitive.setLineColor( [ 1.0, 1.0, 1.0, 1.0 ] );
+            game_object.render_primitive.setPenetrationInfoVis( false, undefined );
         } );
         for ( let i = 0; i < game_objects.length; i++ ) {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
@@ -34,6 +35,9 @@ class GameObjectMgr {
                             game_objects[j].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );                            
                         }
                     }
+                    game_objects[i].render_primitive.setPenetrationInfoVis( true, collision_info );
+                    collision_info.normal.scale(-1.0);
+                    game_objects[j].render_primitive.setPenetrationInfoVis( true, collision_info );
                 }
                 else if ( did_broad_phase_collide ) {
                     game_objects[i].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
