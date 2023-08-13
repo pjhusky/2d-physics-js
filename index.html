@@ -628,6 +628,7 @@
                 //test_polygon_go.setPos( new Vec2( 390.0, 438.0 ) ); test_polygon_go.rotateBy( -23.58 ); // wrong collsion reported SAT
                 
                 let gos = go_mgr.getGameObjects();
+                app.stage.addChild( go_mgr.gfx_debug_container );
                 gos.forEach( (go) => {
                     app.stage.addChild( go.render_primitive.gfx_container );
                     //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );

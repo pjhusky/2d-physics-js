@@ -1,11 +1,17 @@
 class GameObjectMgr {
     constructor() {
         this.game_objects = [];
+        this.gfx_debug_container = new PIXI.Container();
     }
     
     getGameObjects() { return this.game_objects; }
     
     updateAllGameObjects() {
+        
+        while(this.gfx_debug_container.children[0]) { 
+            this.gfx_debug_container.removeChild(this.gfx_debug_container.children[0]);
+        }
+        
         this.game_objects.forEach( (go) => { go.update(); } );
         this.performCollisionDetection( this.game_objects );
     }
@@ -15,9 +21,6 @@ class GameObjectMgr {
             const fill_color = [ 0.5, 0.5, 0.5, 0.9 ];
             //game_object.render_primitive.setFillColor( fill_color );
             game_object.render_primitive.resetFillColor( );
-            //game_object.render_primitive.setFillColor( [ 0.8, 0.8, 0.8, 0.9 ] );
-            //game_object.render_primitive.setLineColor( [ 1.0, 1.0, 1.0, 1.0 ] );
-            game_object.render_primitive.setPenetrationInfoVis( false, undefined );
         } );
         for ( let i = 0; i < game_objects.length; i++ ) {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
@@ -35,9 +38,8 @@ class GameObjectMgr {
                             game_objects[j].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );                            
                         }
                     }
-                    game_objects[i].render_primitive.setPenetrationInfoVis( true, collision_info );
-                    collision_info.normal.scale(-1.0);
-                    game_objects[j].render_primitive.setPenetrationInfoVis( true, collision_info );
+
+                    this.visualizePenetrationInfo( collision_info );                    
                 }
                 else if ( did_broad_phase_collide ) {
                     game_objects[i].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
@@ -45,6 +47,26 @@ class GameObjectMgr {
                 }
             }
         }
+    }
+    
+    visualizePenetrationInfo( collision_info ) {
+        let penetration_info_gfx = new PIXI.Graphics();
+        const line_width = 2.5;
+        penetration_info_gfx.lineStyle(line_width, 0x66FF66, 1.0);
+
+        const pt_x = collision_info.start.x;
+        const pt_y = collision_info.start.y;
+        penetration_info_gfx.moveTo(pt_x, pt_y);
+        penetration_info_gfx.lineTo(collision_info.end.x, collision_info.end.y);
+
+        let gfx_penetration_vis_center_circle = new PIXI.Graphics()
+        .beginFill( 0x55AA55, 1.0 )
+        .lineStyle({ width: 1, color: 0x66FF66, alignment: 0 })
+        .drawCircle(pt_x, pt_y, 4.0)
+        .endFill();
+        this.gfx_debug_container.addChild( gfx_penetration_vis_center_circle );
+                
+        this.gfx_debug_container.addChild( penetration_info_gfx );
     }
 
     addCircleGameObject( radius ) {
