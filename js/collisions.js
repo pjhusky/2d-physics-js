@@ -151,9 +151,11 @@ class Collisions {
         }
         
         if ( max_dist < 0.0 ) { // no support pt found
-            return [ false, -1, -1.0 ];
+            //return [ false, -1, -1.0 ];
+            return { found_support_pt: false, query_dir_vec2: query_dir_vec2, support_pt_idx: -1, support_depth: -1.0 };
         }
-        return [ true, support_pt_idx, max_dist ];
+        //return [ true, support_pt_idx, max_dist ];
+        return { found_support_pt: true, query_dir_vec2: query_dir_vec2, support_pt_idx: support_pt_idx, support_depth: max_dist };
     }
 
     
@@ -171,12 +173,15 @@ class Collisions {
             
             const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_B.world_space_points_ccw_vec2 );
             
-            if ( support_pt_info[ 0 ] == false ) {
+            //if ( support_pt_info[ 0 ] == false ) {
+            if ( support_pt_info.found_support_pt == false ) {
                 return [ false, true, CollisionInfo.none ];
             }
             
-            if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
-                support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
+            //if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
+            if ( support_pt_info.support_depth < support_pt_info_min_penetration_depth.support_depth ) {
+                //support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
+                support_pt_info_min_penetration_depth = support_pt_info;
             }
         }
 
@@ -189,20 +194,34 @@ class Collisions {
             
             const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_A.world_space_points_ccw_vec2 );
             
-            if ( support_pt_info[ 0 ] == false ) {
+            // if ( support_pt_info[ 0 ] == false ) {
+            if ( support_pt_info.found_support_pt == false ) {
                 return [ false, true, CollisionInfo.none ];
             }
 
-            if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
-                support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
+            // if ( support_pt_info[2] < support_pt_info_min_penetration_depth[2] ) {
+            //     support_pt_info_min_penetration_depth = [ support_pt_info[0], support_pt_info[1], support_pt_info[2] ];
+            // }
+            if ( support_pt_info.support_depth < support_pt_info_min_penetration_depth.support_depth ) {
+                support_pt_info_min_penetration_depth = support_pt_info;
             }
         }
 
         // now we have the axis of least penetration => see "Building a Physics Engine" p.57 on how to use this info for penetration resolving
-        // array contains true, support_pt_idx, max_dist
+        // array contains: true, support_pt_idx, max_dist
         // TODO: support_pt_info_min_penetration_depth
         
+        const support_pt_idx = support_pt_info_min_penetration_depth.support_pt_idx;
+        const support_pt = poly_B.world_space_points_ccw_vec2[support_pt_idx];
+        
+        let new_collision_info = new CollisionInfo();
+        new_collision_info.depth = support_pt_info_min_penetration_depth.support_depth;
+        new_collision_info.normal = Vec2.mulScalar( support_pt_info_min_penetration_depth, -1.0 );
+        new_collision_info.start = support_pt;
+        new_collision_info.end = Vec2.mulScalar( new_collision_info.normal, new_collision_info.depth );
+        new_collision_info.outside = true;
+        
         //return [ false, CollisionInfo.none ];
-        return [ true, true, new CollisionInfo() ];
+        return [ true, true, new_collision_info ];
     }
 }
