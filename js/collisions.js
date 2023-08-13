@@ -10,11 +10,12 @@ class CollisionInfo {
 }
 
 class SupportPointInfo {
-    constructor( found_support_pt, query_dir_vec2, support_pt_idx, support_depth ) {
+    constructor( found_support_pt, query_dir_vec2, support_pt_idx, support_depth, on_polygon_a_b ) {
         this.found_support_pt = found_support_pt;
         this.query_dir_vec2 = query_dir_vec2;
         this.support_pt_idx = support_pt_idx;
         this.support_depth = support_depth;
+        this.on_polygon_a_b = on_polygon_a_b;
     }
     
     //{ found_support_pt: false, query_dir_vec2: query_dir_vec2, support_pt_idx: -1, support_depth: -1.0 }
@@ -149,7 +150,7 @@ class Collisions {
         return this.collideCirclePolygon( circ_B, poly_A );
     }
 
-    static getSupportPoint( query_dir_vec2, query_pt_vec2, points_vec2 ) {
+    static getSupportPoint( query_dir_vec2, query_pt_vec2, points_vec2, on_polygon_a_b ) {
         let max_dist = MathUtil.f32_LargestNegVal();
         let support_pt_idx = -1;
         for ( let i = 0; i < points_vec2.length; i++ ) {
@@ -169,7 +170,7 @@ class Collisions {
             //const query_dir_vec2 = query_dir_vec2;
             const support_pt_idx = -1; 
             const support_depth = -1.0;
-            return new SupportPointInfo( found_support_pt, query_dir_vec2, support_pt_idx, support_depth );
+            return new SupportPointInfo( found_support_pt, query_dir_vec2, support_pt_idx, support_depth, on_polygon_a_b );
         }
         //return [ true, support_pt_idx, max_dist ];
         //return { found_support_pt: true, query_dir_vec2: query_dir_vec2, support_pt_idx: support_pt_idx, support_depth: max_dist };
@@ -179,7 +180,7 @@ class Collisions {
         //const query_dir_vec2 = query_dir_vec2;
         //const support_pt_idx = support_pt_idx;
         const support_depth = max_dist;
-        return new SupportPointInfo( found_support_pt, query_dir_vec2, support_pt_idx, support_depth );
+        return new SupportPointInfo( found_support_pt, query_dir_vec2, support_pt_idx, support_depth, on_polygon_a_b );
     }
 
     
@@ -198,7 +199,7 @@ class Collisions {
             
             const query_pt_vec2 = poly_A.world_space_points_ccw_vec2[i];
             
-            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_B.world_space_points_ccw_vec2 );
+            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_B.world_space_points_ccw_vec2, "polygonB" );
             
             //if ( support_pt_info[ 0 ] == false ) {
             if ( support_pt_info.found_support_pt == false ) {
@@ -219,7 +220,7 @@ class Collisions {
             
             const query_pt_vec2 = poly_B.world_space_points_ccw_vec2[i];
             
-            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_A.world_space_points_ccw_vec2 );
+            const support_pt_info = this.getSupportPoint( query_dir_vec2, query_pt_vec2, poly_A.world_space_points_ccw_vec2, "polygonA" );
             
             // if ( support_pt_info[ 0 ] == false ) {
             if ( support_pt_info.found_support_pt == false ) {
@@ -239,14 +240,20 @@ class Collisions {
         // TODO: support_pt_info_min_penetration_depth
         
         const support_pt_idx = support_pt_info_min_penetration_depth.support_pt_idx;
-        const support_pt = poly_B.world_space_points_ccw_vec2[support_pt_idx];
+        
+        let support_pt = undefined;
+        if ( support_pt_info_min_penetration_depth.on_polygon_a_b == "polygonA" ) {
+            support_pt = poly_A.world_space_points_ccw_vec2[support_pt_idx];
+        } else if ( support_pt_info_min_penetration_depth.on_polygon_a_b == "polygonB" ) {
+            support_pt = poly_B.world_space_points_ccw_vec2[support_pt_idx];
+        }
         
         let new_collision_info = new CollisionInfo();
         new_collision_info.depth = support_pt_info_min_penetration_depth.support_depth;
         //new_collision_info.normal = Vec2.mulScalar( support_pt_info_min_penetration_depth.query_dir_vec2, -1.0 );
-        new_collision_info.normal = support_pt_info_min_penetration_depth.query_dir_vec2;
+        new_collision_info.normal = Vec2.mulScalar( support_pt_info_min_penetration_depth.query_dir_vec2, -1.0 );
         new_collision_info.start = support_pt;
-        new_collision_info.end = Vec2.mulScalar( new_collision_info.normal, new_collision_info.depth );
+        new_collision_info.end = Vec2.add( support_pt, Vec2.mulScalar( new_collision_info.normal, new_collision_info.depth ) );
         new_collision_info.outside = true;
         
         //return [ false, CollisionInfo.none ];
