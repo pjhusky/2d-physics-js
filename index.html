@@ -1459,8 +1459,8 @@
                 for ( let i = 0; i < fracture_cells.length; i++ ) {
                     let cell = fracture_cells[i];
                     cell.rotation += 0.066 * debug_dirs_fracture_cells[i][0] * debug_dirs_fracture_cells[i][1];
-                    cell.position.x += debug_dirs_fracture_cells[i][0];
-                    cell.position.y += debug_dirs_fracture_cells[i][1];
+                    cell.position.x += debug_dirs_fracture_cells[i][0] * 10.0;
+                    cell.position.y += debug_dirs_fracture_cells[i][1] * 10.0;
                 }
                 
                 let it = 0;
