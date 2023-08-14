@@ -527,6 +527,11 @@
             // #############################################################################################################################
             // ### *** ### ATTENTION!!! Due to y being flipped, I inadvertently flipped the order from the desired CCW to CW !!! ### *** ###
             // #############################################################################################################################
+
+            {
+                let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
+                test_circle_go.setPos( new Vec2( 240, 400 ) );
+            }
             
             //let test_circle_go  = go_mgr.addCircleGameObject( 50.0 );
             let test_circle_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
