@@ -627,12 +627,24 @@
                 test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
                 //test_polygon_go.setPos( new Vec2( 390.0, 438.0 ) ); test_polygon_go.rotateBy( -23.58 ); // wrong collsion reported SAT
                 
+                {
+                    let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
+                    test_circle_go.setPos( new Vec2( 120, 500 ) );
+                }
+                {
+                    let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
+                    //test_circle_go.setPos( new Vec2( 190, 500 ) );
+                    test_circle_go.setPos( new Vec2( 120, 500 ) );
+                }
+                
+                
                 let gos = go_mgr.getGameObjects();
-                app.stage.addChild( go_mgr.gfx_debug_container );
                 gos.forEach( (go) => {
                     app.stage.addChild( go.render_primitive.gfx_container );
                     //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
                 } );
+                app.stage.addChild( go_mgr.gfx_debug_container ); // add debug vis last, so it's always overlayed "on top of" the game objects
+
                 go_mgr.updateAllGameObjects();
                 
                 
