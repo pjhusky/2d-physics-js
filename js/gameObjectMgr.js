@@ -3,7 +3,7 @@ class GameObjectMgr {
         this.game_objects = [];
         this.gfx_debug_container = new PIXI.Container();
     }
-    
+        
     getGameObjects() { return this.game_objects; }
     
     updateAllGameObjects() {
@@ -22,6 +22,7 @@ class GameObjectMgr {
             //game_object.render_primitive.setFillColor( fill_color );
             game_object.render_primitive.resetFillColor( );
         } );
+        let collision_detected = new Set();
         for ( let i = 0; i < game_objects.length; i++ ) {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
                 const [ did_narrow_phase_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
@@ -30,10 +31,14 @@ class GameObjectMgr {
                     game_objects[i].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
                     game_objects[j].render_primitive.setFillColor( [ 0.9, 0.1, 0.1, 0.9 ] );
                     
+                    collision_detected.add( i );
+                    collision_detected.add( j );
+                    
                     if ( collision_info.outside == false && game_objects[i].rigid_body.shape_type != game_objects[j].rigid_body.shape_type) {
                         //console.log( "inside!" );
                         if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
                             game_objects[i].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );
+                            
                         } else {
                             game_objects[j].render_primitive.setFillColor( [ 0.1, 0.9, 0.9, 0.9 ] );                            
                         }
@@ -42,8 +47,13 @@ class GameObjectMgr {
                     this.visualizePenetrationInfo( collision_info );                    
                 }
                 else if ( did_broad_phase_collide ) {
-                    game_objects[i].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
-                    game_objects[j].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
+                    if ( !collision_detected.has( i ) ) {
+                        game_objects[i].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
+                    }
+                    
+                    if ( !collision_detected.has( j ) ) {
+                        game_objects[j].render_primitive.setFillColor( [ 0.1, 0.1, 0.9, 0.9 ] );
+                    }
                 }
             }
         }
