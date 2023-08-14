@@ -58,6 +58,9 @@ class Vec2 {
         return v1.x * v2.y - v1.y * v2.x;
     }
     
+    static normalize( v ) {
+        return v.normalize();
+    }
     normalize() {
         const len_recip = 1.0 / this.len();
         return this.scale( len_recip );
