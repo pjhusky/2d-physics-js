@@ -53,20 +53,45 @@ class Collisions {
 
         const radius_A = circ_A.getBoundRadius();
         const radius_B = circ_B.getBoundRadius();
-        //const dist_A_B = Vec2.dist( circ_A.getCenterOfMass(), circ_B.getCenterOfMass() );
-        //const dist_A_B = Vec2.dist( circ_A.getBoundingCircleWS()[0], circ_B.getBoundingCircleWS()[0] );
-        const dist_A_B = Vec2.dist( Vec2.fromArray( circ_A.getBoundingCircleWS()[0] ), Vec2.fromArray( circ_B.getBoundingCircleWS()[0] ) );
-        const collision_depth = ( radius_A + radius_B ) - dist_A_B;
+        
+        const circ_A_center_vec2 = Vec2.fromArray( circ_A.getBoundingCircleWS()[0] );
+        const circ_B_center_vec2 = Vec2.fromArray( circ_B.getBoundingCircleWS()[0] );
+        const dir_center_A_to_B_vec2 = Vec2.sub( circ_B_center_vec2, circ_A_center_vec2 ); // definition: point from A to B
+        
+        //const dist_A_B = Vec2.dist( circ_A_center_vec2, circ_B_center_vec2 );
+        const dist_A_B = dir_center_A_to_B_vec2.len();
+        const radius_sum = radius_A + radius_B;
+        const collision_depth = radius_sum - dist_A_B;
+
         //if ( dist_A_B > radius_A + radius_B ) {
         //if ( 0.0 > collision_depth ) {
         if ( collision_depth < 0.0 ) {
             return [ false, false, CollisionInfo.none ]; // narrow-phase collision, broad-phase collision, collision info
         }
         
+        const dist_squared = dir_center_A_to_B_vec2.lenSquared();
+        if ( MathUtil.isApproxEqual( dist_squared, 0.0 ) ) { // circles are centered at same pos
+            let collisionInfo = new CollisionInfo();
+            collisionInfo.depth = radius_sum; //Math.max( radius_A, radius_B );
+            collisionInfo.normal = new Vec2( 0.0, -1.0 ); // upward
+            collisionInfo.start = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collisionInfo.normal, -Math.max( radius_A, radius_B ) ) );
+            collisionInfo.end   = Vec2.add( collisionInfo.start, Vec2.mulScalar( collisionInfo.normal, collisionInfo.depth ) );
+            
+            return [ true, true, collisionInfo ];
+        }
+        
+        //const collision_normal = Vec2.normalize( dir_center_A_to_B_vec2 );
+        const collision_normal = dir_center_A_to_B_vec2.scale( 1.0 / Math.sqrt(dist_squared) );
+        
         // TODO - CollisionInfo !!!
         let collisionInfo = new CollisionInfo();
         collisionInfo.depth = collision_depth;
         
+        collisionInfo.normal = collision_normal;
+        collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
+        collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
+        collisionInfo.outside = true;
+                
         return [ true, true, collisionInfo ];
     }
 
