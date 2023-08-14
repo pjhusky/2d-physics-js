@@ -35,8 +35,8 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
         
         this.gfx_center_circle = new PIXI.Graphics()
             .beginFill( fill_rgb, 0xFFFFFF - fill_color_array4[3] )
-            .lineStyle({ width: 1, color: 0xFFFFFF - line_rgb, alignment: 0 })
-            .drawCircle(0, 0, radius * 0.1)
+            .lineStyle({ width: 1.25, color: 0xFFFFFF, alignment: 0 })
+            .drawCircle(0, 0, 3.5)
             .endFill();
         this.gfx_container.addChild( this.gfx_center_circle );            
     }
@@ -98,7 +98,15 @@ class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
             .endFill();
         this.gfx_bounding_circle.position.set( bounding_circle_array3[0][0], bounding_circle_array3[0][1] );
 
+        this.gfx_bounding_circle_center = new PIXI.Graphics()
+            .beginFill( 0x7F7F7F, 0.15 )
+            .lineStyle({ width: 1, color: 0xFFFFFF, alignment: 0 })
+            .drawCircle(0, 0, 3.5)
+            .endFill();
+        this.gfx_bounding_circle_center.position.set( bounding_circle_array3[0][0], bounding_circle_array3[0][1] );
+        
         this.gfx_container.addChild( this.gfx_bounding_circle );
+        this.gfx_container.addChild( this.gfx_bounding_circle_center );
     }
     
     resetFillColor() {
