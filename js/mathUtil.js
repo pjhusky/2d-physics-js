@@ -21,12 +21,13 @@ class MathUtil {
     }
     
     // adapted from https://stackoverflole_vec2.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
-    static distPointToLineSegment( p_vec2, ls_vec2, le_vec2, t ) {
+    static distPointToLineSegment( p_vec2, ls_vec2, le_vec2 ) {
         var l2 = Vec2.distSquared(ls_vec2, le_vec2);
-        if ( this.isApproxEqual( l2, 0.0 ) ) { return Vec2.distSquared(p_vec2, ls_vec2); }
-        t = ((p_vec2.x - ls_vec2.x) * (le_vec2.x - ls_vec2.x) + (p_vec2.y - ls_vec2.y) * (le_vec2.y - ls_vec2.y)) / l2;
+        if ( this.isApproxEqual( l2, 0.0 ) ) { return { dist: Vec2.dist(p_vec2, ls_vec2), t: 0.0 }; }
+        let t = ((p_vec2.x - ls_vec2.x) * (le_vec2.x - ls_vec2.x) + (p_vec2.y - ls_vec2.y) * (le_vec2.y - ls_vec2.y)) / l2;
         t = Math.max(0, Math.min(1, t));
-        return Vec2.dist( p_vec2, new Vec2( ls_vec2.x + t * (le_vec2.x - ls_vec2.x),
-                                            ls_vec2.y + t * (le_vec2.y - ls_vec2.y) ) );
+        // console.log( `t = ${t}` );
+        return { dist: Vec2.dist( p_vec2, new Vec2( ls_vec2.x + t * (le_vec2.x - ls_vec2.x),
+                                                    ls_vec2.y + t * (le_vec2.y - ls_vec2.y) ) ), t: t };
     }
 }

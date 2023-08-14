@@ -83,7 +83,7 @@ class Collisions {
         //const collision_normal = Vec2.normalize( dir_center_A_to_B_vec2 );
         const collision_normal = dir_center_A_to_B_vec2.scale( 1.0 / Math.sqrt(dist_squared) );
         
-        // TODO - CollisionInfo !!!
+        
         let collisionInfo = new CollisionInfo();
         collisionInfo.depth = collision_depth;
         
@@ -122,17 +122,22 @@ class Collisions {
             const line_segment_start_vec2 = poly_B.world_space_points_ccw_vec2[i];
             const line_segment_end_vec2 = poly_B.world_space_points_ccw_vec2[j];
             
-            let t = undefined; // t=0 => edge start pt, t=1 => edge end pt, t "between 0 and 1" => pt along the edge
-            const curr_dist = MathUtil.distPointToLineSegment( circ_center_WS_vec2, line_segment_start_vec2, line_segment_end_vec2, t );
+            const curr_dist_info = MathUtil.distPointToLineSegment( circ_center_WS_vec2, line_segment_start_vec2, line_segment_end_vec2 );
+            const curr_dist = curr_dist_info.dist;
+            const t = curr_dist_info.t; // t=0 => edge start pt, t=1 => edge end pt, t "between 0 and 1" => pt along the edge
             
             //min_dist = Math.min( min_dist, curr_dist );
             if ( curr_dist < intersection_dist ) {
                 intersection_dist = curr_dist;
                 intersection_edge_s = line_segment_start_vec2;
                 intersection_edge_e = line_segment_end_vec2;
+                //console.log( `t = ${t}` );
                 intersection_t = t;
             }
         }
+        
+        const closest_line_seg_dir_vec2 = Vec2.sub( intersection_edge_e, intersection_edge_s );
+        const closest_intersection_pt = Vec2.add( intersection_edge_s, Vec2.mulScalar( closest_line_seg_dir_vec2, intersection_t ) );
         
         /*
         // check inside / outside case
@@ -158,13 +163,18 @@ class Collisions {
                 break;
             }
         }
-        
-        let collision_info = new CollisionInfo();
-        collision_info.depth = circ_radius - intersection_dist;
-        collision_info.outside = outside;
-        
+                
         if ( intersection_dist < circ_radius ) {
             // TODO - CollisionInfo !!!
+            let collision_info = new CollisionInfo();
+            collision_info.depth = circ_radius - intersection_dist;
+
+            collision_info.normal = Vec2.sub( circ_center_WS_vec2, closest_intersection_pt ).normalize();
+
+            collision_info.start = closest_intersection_pt; // ???
+            collision_info.end = Vec2.add( closest_intersection_pt, Vec2.mulScalar( collision_info.normal, -collision_info.depth ) );
+            collision_info.outside = outside;
+                
             return [ true, true, collision_info ];
         }
         
