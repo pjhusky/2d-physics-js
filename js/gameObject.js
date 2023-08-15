@@ -16,7 +16,7 @@ class GameObject {
         
         // safe assign
         if ( mass != undefined ) {
-            this.mass = mass; 
+            this.recip_mass = mass; 
         } else {
             this.recip_mass = 1.0;
         }
@@ -43,7 +43,7 @@ class GameObject {
         }
     }
 
-    static gravity() { return new Vec2( 0.0, 9.81 ); } 
+    static gravity() { return new Vec2( 0.0, 9.81 ); } // TODO: move to some global parameter file/class
     
     update( dt ) {
         
@@ -76,15 +76,20 @@ class GameObject {
         this.pos_vec2 = pos_vec2;
     }
     translateBy( translation_delta_vec2 ) {
-        //this.pos_vec2.add( translation_delta_vec2 );
-        this.vel_vec2.add( translation_delta_vec2 );
+        this.pos_vec2.add( translation_delta_vec2 );
+    }
+    applyLinearVelocity( delta_linear_vel_vec2 ) {
+        this.vel_vec2.add( delta_linear_vel_vec2 );        
     }
     
     setAngle( angle_rad ) {
         this.angle_rad = angle_rad;
     }
     rotateBy( delta_angle_rad ) {
-        //this.angle_rad += delta_angle_rad;
-        this.angular_vel += delta_angle_rad;
+        this.angle_rad += delta_angle_rad;
+        
+    }
+    applyAngularVelocity( delta_angle_vel_rad ) {
+        this.angular_vel += delta_angle_vel_rad;
     }
 }

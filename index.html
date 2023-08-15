@@ -530,7 +530,7 @@
 
             {
                 let test_circle_go = go_mgr.addCircleGameObject( 50.0 );
-                test_circle_go.setPos( new Vec2( 240, 400 ) );
+                test_circle_go.setPos( new Vec2( 340, 400 ) );
             }
             
             //let test_circle_go  = go_mgr.addCircleGameObject( 50.0 );
@@ -634,10 +634,10 @@
                 
                 {
                     let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
-                    test_circle_go.setPos( new Vec2( 120, 500 ) );
+                    test_circle_go.setPos( new Vec2( 580, 100 ) );
                 }
 
-                {
+                if ( false ) {
                     let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
                     //test_circle_go.setPos( new Vec2( 190, 500 ) );
                     test_circle_go.setPos( new Vec2( 120, 500 ) );
@@ -648,7 +648,7 @@
                     const radius = 50.0;
                     const mass = 0.0;
                     let test_circle_go = go_mgr.addCircleGameObject( radius, mass );
-                    test_circle_go.setPos( new Vec2( 190, 500 ) );
+                    test_circle_go.setPos( new Vec2( 190, 400 ) );
                 }
 
                 {
@@ -1418,32 +1418,39 @@
                     37: () => { 
                         //console.log( `arrow left` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.translateBy( {x: -translation_speed, y: 0.0} );
+                        //selected_go.translateBy( {x: -translation_speed, y: 0.0} );
+                        selected_go.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
                     },
                     38: () => { 
                         //console.log( `arrow up` ); },
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.translateBy( {x: 0.0, y: -translation_speed} );
+                        //selected_go.translateBy( {x: 0.0, y: -translation_speed} );
+                        selected_go.applyLinearVelocity( {x: 0.0, y: -translation_speed} );
                     },
                     39: () => { 
                         //console.log( `arrow right` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.translateBy( {x: translation_speed, y: 0.0} );
+                        //selected_go.translateBy( {x: translation_speed, y: 0.0} );
+                        selected_go.applyLinearVelocity( {x: translation_speed, y: 0.0} );
                     },
                     40: () => { 
                         //console.log( `arrow down` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.translateBy( {x: 0.0, y: translation_speed} );
+                        //selected_go.translateBy( {x: 0.0, y: translation_speed} );
+                        selected_go.applyLinearVelocity( {x: 0.0, y: translation_speed} );
                     },
+                    
                     69: () => {  // "e"
                         //console.log( `e` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.rotateBy( rotation_radians_speed );
+                        //selected_go.rotateBy( rotation_radians_speed );
+                        selected_go.applyAngularVelocity( rotation_radians_speed );
                     },
                     81: () => {  // "q"
                         //console.log( `q` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        selected_go.rotateBy( -rotation_radians_speed );
+                        //selected_go.rotateBy( -rotation_radians_speed );
+                        selected_go.applyAngularVelocity( -rotation_radians_speed );
                     },
                 }, 
                 1.0/60.0
