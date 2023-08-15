@@ -71,7 +71,8 @@
     </head>
     <body ontouchstart="">
     
-        <script> 
+        <script>
+            //"use strict"; 
             let browserEnum = new AppUtils.BrowserEnum();
             
             let a = 7321;        
@@ -674,13 +675,22 @@
                     test_polygon_go.rotateBy( Math.PI * 0.33 );
                 }
 
-                {
+                { // floor
                     const x_extent_half = 350.0;
                     const y_extent_half = 10.0;
                     const path_pts = [ [ -x_extent_half, y_extent_half ], [ x_extent_half, y_extent_half ], [ x_extent_half, -y_extent_half ], [ -x_extent_half, -y_extent_half ] ];
                     const mass = 0.0;
                     let ground_floor_go = go_mgr.addPolygonGameObject( path_pts, mass );
                     ground_floor_go.setPos( new Vec2( 400.0, 550.0 ) );
+                }
+                { // right wall
+                    const x_extent_half = 270.0;
+                    const y_extent_half = 10.0;
+                    const path_pts = [ [ -x_extent_half, y_extent_half ], [ x_extent_half, y_extent_half ], [ x_extent_half, -y_extent_half ], [ -x_extent_half, -y_extent_half ] ];
+                    const mass = 0.0;
+                    let ground_floor_go = go_mgr.addPolygonGameObject( path_pts, mass );
+                    ground_floor_go.setPos( new Vec2( 730.0, 300.0 ) );
+                    ground_floor_go.setAngle( Math.PI * 0.5 );
                 }
                 
                 let gos = go_mgr.getGameObjects();
