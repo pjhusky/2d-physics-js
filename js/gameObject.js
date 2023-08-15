@@ -1,12 +1,58 @@
 class GameObject {
-    constructor( rigid_body, render_primitive ) {
+    constructor( rigid_body, render_primitive, mass, restitution, friction ) {
         this.rigid_body = rigid_body;
         this.render_primitive = render_primitive;
+        
         this.pos_vec2 = new Vec2( 0.0, 0.0 );
+        
+        this.vel_vec2 = new Vec2( 0.0, 0.0 );
+        this.accel_vec2 = GameObject.gravity();
+        //this.vel_vec2 = new Vec2( 0.0, 0.0 );
         this.angle_rad = 0.0;
-    }
+        this.angular_vel = 0.0;
+        this.angular_accel = 0.0;
+        
+        this.inertia = 0.0;
+        
+        // safe assign
+        if ( mass != undefined ) {
+            this.mass = mass; 
+        } else {
+            this.recip_mass = 1.0;
+        }
+        if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
+            this.accel_vec2 = new Vec2( 0.0, 0.0 ); // convention: static object has mass 0, thus no acceleration!
+        } else {
+            this.recip_mass = 1.0 / this.recip_mass;
+        }
+        if ( this.recip_mass != 0.0 ) {
+            this.rigid_body.getInertia();
+        }
     
-    update() {
+        
+        if ( friction != undefined ) {
+            this.friction = friction;
+        } else {
+            this.friction = 0.9;
+        }
+
+        if ( restitution != undefined ) {
+            this.restitution = restitution;
+        } else {
+            this.restitution = 0.5;
+        }
+    }
+
+    static gravity() { return new Vec2( 0.0, 9.81 ); } 
+    
+    update( dt ) {
+        
+        this.vel_vec2 = Vec2.add( this.vel_vec2, Vec2.mulScalar( this.accel_vec2, dt ) );
+        this.pos_vec2 = Vec2.add( this.pos_vec2, Vec2.mulScalar( this.vel_vec2, dt ) );
+        
+        this.angular_vel += this.angular_accel * dt;
+        this.angle_rad += this.angular_vel * dt;
+        
         // update pose - both for rigid body, as well as for render_primitive
         this.render_primitive.setPosition( this.pos_vec2.x, this.pos_vec2.y );
         this.render_primitive.setRotation( this.angle_rad );

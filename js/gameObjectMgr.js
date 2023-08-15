@@ -6,13 +6,13 @@ class GameObjectMgr {
         
     getGameObjects() { return this.game_objects; }
     
-    updateAllGameObjects() {
+    updateAllGameObjects( dt ) {
         
         while(this.gfx_debug_container.children[0]) { 
             this.gfx_debug_container.removeChild(this.gfx_debug_container.children[0]);
         }
         
-        this.game_objects.forEach( (go) => { go.update(); } );
+        this.game_objects.forEach( (go) => { go.update( dt ); } );
         this.performCollisionDetection( this.game_objects );
     }
     
@@ -79,19 +79,19 @@ class GameObjectMgr {
         this.gfx_debug_container.addChild( penetration_info_gfx );
     }
 
-    addCircleGameObject( radius ) {
+    addCircleGameObject( radius, mass, restitution, friction ) {
         let rigid_body = new RigidBody_Circle( radius );
         const line_color = [ 1.0, 1.0, 1.0, 1.0 ];
         const fill_color = [ 0.5, 0.5, 0.5, 0.7 ];
         let render_primitive = new BuiltinRenderPrimitive_Circle( radius, line_color, fill_color );
         
-        let new_go = new GameObject( rigid_body, render_primitive );
+        let new_go = new GameObject( rigid_body, render_primitive, mass, restitution, friction );
         this.game_objects.push( new_go );
         return new_go;
     }
 
     //addPolygonGameObject( path_as_array_of_array2 ) {
-    addPolygonGameObject( path_as_array_of_array2_in ) {
+    addPolygonGameObject( path_as_array_of_array2_in, mass, restitution, friction ) {
 
         let path_as_array_of_array2 = [];
         { // make sure points are given CCW
@@ -142,7 +142,7 @@ class GameObjectMgr {
         const fill_color = [ 0.5, 0.5, 0.5, 0.7 ];
         let render_primitive = new BuiltinRenderPrimitive_Polygon( path_as_xy_sequence, this.bounding_circle, line_color, fill_color );
         
-        let new_go = new GameObject( rigid_body, render_primitive );
+        let new_go = new GameObject( rigid_body, render_primitive, mass, restitution, friction );
         this.game_objects.push( new_go );        
         return new_go;
     }
