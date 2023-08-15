@@ -65,6 +65,11 @@ class Vec2 {
         const len_recip = 1.0 / this.len();
         return this.scale( len_recip );
     }
+    normalizeSafe() {
+        const div_len = Math.max( MathUtil.f32_Eps(), this.len() );
+        const len_recip = 1.0 / div_len;
+        return this.scale( len_recip );
+    }
     
     det( v ) {
         return Vec2.det( this, v );
