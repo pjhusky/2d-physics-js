@@ -529,7 +529,7 @@
             // #############################################################################################################################
 
             {
-                let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
+                let test_circle_go = go_mgr.addCircleGameObject( 50.0 );
                 test_circle_go.setPos( new Vec2( 240, 400 ) );
             }
             
@@ -636,12 +636,29 @@
                     let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
                     test_circle_go.setPos( new Vec2( 120, 500 ) );
                 }
+
                 {
                     let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
                     //test_circle_go.setPos( new Vec2( 190, 500 ) );
                     test_circle_go.setPos( new Vec2( 120, 500 ) );
                 }
+
                 
+                {
+                    const radius = 50.0;
+                    const mass = 0.0;
+                    let test_circle_go = go_mgr.addCircleGameObject( radius, mass );
+                    test_circle_go.setPos( new Vec2( 190, 500 ) );
+                }
+
+                {
+                    const path_pts = [ [ -80.0, -50.0 ], [ 30.0, -50.0 ], [ 0.0, 70.0 ], [ -30.0, 60.0 ] ];
+                    const mass = 0.0;
+                    let test_polygon_go = go_mgr.addPolygonGameObject( path_pts, mass );
+                    test_polygon_go.setPos( new Vec2( 420, 180 ) );
+                    test_polygon_go.rotateBy( Math.PI * 0.33 );
+                }
+
                 
                 let gos = go_mgr.getGameObjects();
                 gos.forEach( (go) => {
@@ -650,7 +667,7 @@
                 } );
                 app.stage.addChild( go_mgr.gfx_debug_container ); // add debug vis last, so it's always overlayed "on top of" the game objects
 
-                go_mgr.updateAllGameObjects();
+                go_mgr.updateAllGameObjects( 1.0 / 60.0 );
                 
                 
                 // let rigid_bodies_list = new Array();
@@ -1504,7 +1521,7 @@
                     prev_active_game_object_idx = active_game_object_idx;
                 }
                 
-                go_mgr.updateAllGameObjects();
+                go_mgr.updateAllGameObjects( dt );
 
                 
                 //performCollisionDetection( game_objects );
