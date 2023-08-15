@@ -23,6 +23,7 @@ class BuiltinRenderPrimitive_Base {
 class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
     constructor( radius, line_color_array4, fill_color_array4 ) {
         super();
+        this.radius = radius;
         const fill_rgb = MathUtil.rgbFloatsToHexColor( fill_color_array4 );
         const line_rgb = MathUtil.rgbFloatsToHexColor( line_color_array4 );
         this.gfx_circle = new PIXI.Graphics()
@@ -30,7 +31,6 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
             .lineStyle({ width: 1, color: line_rgb, alignment: 0 })
             .drawCircle(0, 0, radius)
             .endFill();
-
         this.gfx_container.addChild( this.gfx_circle );
         
         this.gfx_center_circle = new PIXI.Graphics()
@@ -39,6 +39,16 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
             .drawCircle(0, 0, 3.5)
             .endFill();
         this.gfx_container.addChild( this.gfx_center_circle );            
+
+        this.gfx_angle_vis = new PIXI.Graphics();
+        const line_width = 2.5;
+        this.gfx_angle_vis.lineStyle(line_width, 0x666666, 1.0);
+        const pt_x = 0.0;
+        const pt_y = 0.0;
+        this.gfx_angle_vis.moveTo(pt_x, pt_y);
+        this.gfx_angle_vis.lineTo(pt_x + radius, pt_y);
+        
+        this.gfx_container.addChild( this.gfx_angle_vis );            
     }
     
     resetFillColor() {
