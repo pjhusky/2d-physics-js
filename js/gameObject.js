@@ -76,13 +76,15 @@ class GameObject {
         this.pos_vec2 = pos_vec2;
     }
     translateBy( translation_delta_vec2 ) {
-        this.pos_vec2.add( translation_delta_vec2 );
+        //this.pos_vec2.add( translation_delta_vec2 );
+        this.vel_vec2.add( translation_delta_vec2 );
     }
     
     setAngle( angle_rad ) {
         this.angle_rad = angle_rad;
     }
     rotateBy( delta_angle_rad ) {
-        this.angle_rad += delta_angle_rad;
+        //this.angle_rad += delta_angle_rad;
+        this.angular_vel += delta_angle_rad;
     }
 }
