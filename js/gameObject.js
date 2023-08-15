@@ -7,7 +7,6 @@ class GameObject {
         
         this.vel_vec2 = new Vec2( 0.0, 0.0 );
         this.accel_vec2 = GameObject.gravity();
-        //this.vel_vec2 = new Vec2( 0.0, 0.0 );
         this.angle_rad = 0.0;
         this.angular_vel = 0.0;
         this.angular_accel = 0.0;
@@ -18,7 +17,8 @@ class GameObject {
         if ( mass != undefined ) {
             this.recip_mass = mass; 
         } else {
-            this.recip_mass = 1.0;
+            //this.recip_mass = 1.0;
+            this.recip_mass = 4.0;
         }
         if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
             this.accel_vec2 = new Vec2( 0.0, 0.0 ); // convention: static object has mass 0, thus no acceleration!
@@ -49,9 +49,20 @@ class GameObject {
     
     update( dt ) {
         
+        // if ( isNaN( this.vel_vec2.x ) ) {
+        //     console.error( `isNan 3!!!` );
+        // }
         this.vel_vec2 = Vec2.add( this.vel_vec2, Vec2.mulScalar( this.accel_vec2, dt ) );
         this.vel_vec2.scale( GameObject.linear_friction() ); // friction
+        // if ( isNaN( this.vel_vec2.x ) ) {
+        //     console.error( `isNan 3!!!` );
+        // }
+
         this.pos_vec2 = Vec2.add( this.pos_vec2, Vec2.mulScalar( this.vel_vec2, dt ) );
+
+        // if ( isNaN( this.vel_vec2.x ) ) {
+        //     console.error( `isNan 4!!!` );
+        // }
         
         this.angular_vel += this.angular_accel * dt;
         this.angular_vel *= GameObject.angular_friction();
@@ -85,6 +96,9 @@ class GameObject {
     applyLinearVelocity( delta_linear_vel_vec2 ) {
         //this.pos_vec2.add( Vec2.mulScalar( delta_linear_vel_vec2, 0.5 ) );
         this.vel_vec2.add( delta_linear_vel_vec2 );        
+        // if ( isNaN( this.vel_vec2.x ) ) {
+        //     console.error( `isNan input!!!` );
+        // }
     }
     
     setAngle( angle_rad ) {
