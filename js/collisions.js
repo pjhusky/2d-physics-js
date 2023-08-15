@@ -214,7 +214,8 @@ class Collisions {
             }
         }
         
-        if ( max_dist < 0.0 ) { // no support pt found
+        //if ( max_dist < 0.0 ) { // no support pt found
+        if ( max_dist <= 0.0 ) { // no support pt found
             //return [ false, -1, -1.0 ];
             //return { found_support_pt: false, query_dir_vec2: query_dir_vec2, support_pt_idx: -1, support_depth: -1.0 };
             
@@ -297,6 +298,9 @@ class Collisions {
         if ( support_pt_info_min_penetration_depth.on_polygon_a_b == "polygonA" ) {
             support_pt = poly_A.world_space_points_ccw_vec2[support_pt_idx];
         } else if ( support_pt_info_min_penetration_depth.on_polygon_a_b == "polygonB" ) {
+            //support_pt_info_min_penetration_depth.normal.mulScalar( -1.0 );
+            support_pt_info_min_penetration_depth.query_dir_vec2.mulScalar( -1.0 );
+            
             support_pt = poly_B.world_space_points_ccw_vec2[support_pt_idx];
         }
         
