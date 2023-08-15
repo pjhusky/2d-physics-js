@@ -33,13 +33,13 @@ class GameObject {
         if ( friction != undefined ) {
             this.friction = friction;
         } else {
-            this.friction = 0.9;
+            this.friction = 0.1;
         }
 
         if ( restitution != undefined ) {
             this.restitution = restitution;
         } else {
-            this.restitution = 0.5;
+            this.restitution = 0.6;
         }
     }
 
