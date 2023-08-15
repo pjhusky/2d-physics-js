@@ -18,7 +18,7 @@ class GameObject {
             this.recip_mass = mass; 
         } else {
             //this.recip_mass = 1.0;
-            this.recip_mass = 4.0;
+            this.recip_mass = 5.0;
         }
         if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
             this.accel_vec2 = new Vec2( 0.0, 0.0 ); // convention: static object has mass 0, thus no acceleration!
