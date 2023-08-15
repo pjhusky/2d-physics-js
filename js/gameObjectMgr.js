@@ -14,6 +14,37 @@ class GameObjectMgr {
         
         this.game_objects.forEach( (go) => { go.update( dt ); } );
         this.performCollisionDetection( this.game_objects );
+        
+        this.collisionDetectionWithResolve( this.game_objects );
+    }
+    
+    collisionDetectionWithResolve( game_objects ) {
+        const max_relaxations = 15;
+        for ( let relaxation_counter = 0; relaxation_counter < max_relaxations; relaxation_counter++ ) {
+            // basically the collision function again, but without extra gfx-vis for debugging
+            for ( let i = 0; i < game_objects.length; i++ ) {
+                for ( let j = i + 1; j < game_objects.length; j++ ) {
+                    const [ did_narrow_phase_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
+                    if ( did_narrow_phase_collide ) {
+                        this.penetrationRelaxation( game_objects[i], game_objects[j], collision_info );
+                    }
+                }
+            }
+        }
+    }
+    
+    penetrationRelaxation( go1, go2, penetration_info ) {
+        //const relaxation_factor = 0.75;
+        const relaxation_factor = 1.0 / 15.0;
+
+        const rb1 = go1.rigid_body;
+        const rb2 = go2.rigid_body;
+        
+        const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
+        const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
+        
+        go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
+        go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
     }
     
     performCollisionDetection( game_objects ) {
