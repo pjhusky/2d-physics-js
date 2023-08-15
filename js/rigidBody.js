@@ -15,10 +15,14 @@ class RigidBody {
     setRotation( angle_rad ) { this.angle_rad = angle_rad; }
     setModelMatrix( model_matrix ) { this.model_matrix = model_matrix; }
     getCenterOfMass() { return this.center_of_mass; }
-    // getBoundingCircle() { return [ this.center_of_mass, 0.0 ]; }
-    // getBoundingCircleWS() { return [ this.center_of_mass_WS.toArray(), 0.0 ]; }
     
-    //transformToWorldSpace() {}
+    getBoundRadius() {}
+    getBoundingCircle() { /*return [ this.center_of_mass, 0.0 ];*/ }
+    getBoundingCircleWS() { /*return [ this.center_of_mass_WS.toArray(), 0.0 ];*/ }
+    
+    transformToWorldSpace() {}
+    
+    getInertia() {}
     
     toString() { return `'${this.constructor.name}'`; }
 }
@@ -46,6 +50,18 @@ class RigidBody_Circle extends RigidBody {
         // for now, nothing to do, until we add friction which will cause circles to spin 
         // currently we wouldn't even see the spinning on a solid-colored circle without position marker(s)
         this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+    }
+    
+    getInertia() {
+        // https://kamroncelcarter.blogspot.com/2022/08/moment-of-inertia-of-circle.html
+        const diameter = this.radius * 2.0;
+        
+        const diameter_pow2 = diameter * diameter;
+        const diameter_pow4 = diameter_pow2 * diameter_pow2;
+        const I_xx = Math.PI * diameter_pow4 * ( 1.0 / 64.0 );
+        const I_yy = I_xx;
+        const I_zz = I_xx + I_yy;
+        return I_zz;
     }
 }
 
@@ -176,5 +192,9 @@ class RigidBody_Polygon extends RigidBody {
         }        
         
         this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+    }
+    
+    getInertia() {
+        return 1.0; // TODO!!!
     }
 }
