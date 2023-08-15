@@ -16,6 +16,8 @@ class GameObjectMgr {
         this.performCollisionDetection( this.game_objects );
         
         this.collisionDetectionWithResolve( this.game_objects );
+        
+        //console.log( `vel go 0: ${this.game_objects[0].vel_vec2}` );
     }
     
     static max_relaxations() { return 20.0; } // TODO: move to some global parameter file/class
@@ -27,8 +29,14 @@ class GameObjectMgr {
             for ( let i = 0; i < game_objects.length; i++ ) {
                 for ( let j = i + 1; j < game_objects.length; j++ ) {
                     const [ did_narrow_phase_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
-                    if ( did_narrow_phase_collide ) {
+                    
+                    if ( did_narrow_phase_collide ) 
+                    {
+                        if ( Vec2.dot( collision_info.normal, Vec2.sub( game_objects[j].pos_vec2, game_objects[i].pos_vec2 ) ) < 0.0 ) {
+                            collision_info.normal = Vec2.mulScalar( collision_info.normal, -1.0 );
+                        }
                         this.penetrationRelaxation( game_objects[i], game_objects[j], collision_info );
+                        //this.penetrationRelaxation( game_objects[j], game_objects[i], collision_info );
                     }
                 }
             }
@@ -36,31 +44,118 @@ class GameObjectMgr {
     }
     
     penetrationRelaxation( go1, go2, penetration_info ) {
+        
+        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
+        
         //const relaxation_factor = 0.75;
         //const relaxation_factor = 1.0 / 15.0;
         //const relaxation_factor = 1.0 / 18.0;
         const relaxation_factor = 1.0 / (GameObjectMgr.max_relaxations() * 0.9);
 
-        const rb1 = go1.rigid_body;
-        const rb2 = go2.rigid_body;
+        // const rb1 = go1.rigid_body;
+        // const rb2 = go2.rigid_body;
         
         const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
         
         if ( go1.recip_mass > 2.0 * MathUtil.f32_Eps() && go1.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
-            go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
-        } else {
-            //go1.vel_vec2 = new Vec2( 0.0, 0.0 );
-        }
-        if ( go2.recip_mass > 2.0 * MathUtil.f32_Eps() && go2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
-            go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
-        } else {
-            //go2.vel_vec2 = new Vec2( 0.0, 0.0 );
-        }
+            //go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
+            go1.translateBy( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
+        } 
         
+        if ( go2.recip_mass > 2.0 * MathUtil.f32_Eps() && go2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
+            //go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
+            go2.translateBy( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
+            
+        } 
         // funny, looks like spring-mass system on bounce...
         //go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
         //go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
+        
+        // return;
+        
+        // #####################################################
+        // #### "dynamics" part: ####
+        const N_vec2 = penetration_info.normal;
+        //const N_vec2 = Vec2.mulScalar( penetration_info.normal, -1.0 );
+        // if ( isNaN( N_vec2.x ) ) {
+        //     console.error( `N_vec2 was NaN!!!` );
+        // }
+        
+        const v1 = go1.vel_vec2;
+        // if ( isNaN( go1.vel_vec2.x ) ) {
+        //     console.error( `isNan 9!!!` );
+        // }
+
+        const v2 = go2.vel_vec2;
+        const relative_vel_vec2 = Vec2.sub( v2, v1 );
+
+        // relative velocity in normal direction
+        const rel_vel_magnitude_N = Vec2.dot( relative_vel_vec2, N_vec2 );
+
+        // ignore objects that are moving in opposite dirs
+        //if (rel_vel_magnitude_N > 0.0) { return; }
+        if (rel_vel_magnitude_N >= 0.0) { return; }
+
+        // apply response impulses
+        const new_restitution = Math.min( go1.restitution, go2.restitution );
+        const new_friction    = Math.min( go1.friction,    go2.friction );
+
+        // Calc impulse scalar - http://www.myphysicslab.com/collision.html
+        let j_N = -(1.0 + new_restitution) * rel_vel_magnitude_N;
+        j_N = j_N / ( go1.recip_mass + go2.recip_mass);
+        //j_N = j_N / Math.max( MathUtil.f32_Eps(), go1.recip_mass + go2.recip_mass);
+
+        //impulse is in direction of normal ( from s1 to s2)
+        let impulse_vec2 = Vec2.mulScalar( N_vec2, j_N );
+        // impulse = F dt = m * delta_v
+        // delta_v = impulse / m
+        // if ( isNaN( go1.vel_vec2.x ) ) {
+        //     console.error( `NaN before 1!!!` );
+        // }
+        go1.vel_vec2 = go1.vel_vec2.sub( impulse_vec2.mulScalar( go1.recip_mass ) );
+        // if ( isNaN( go1.vel_vec2.x ) ) {
+        //     console.error( `NaN after 1!!!` );
+        // }
+        
+        go2.vel_vec2 = go2.vel_vec2.add( impulse_vec2.mulScalar( go2.recip_mass ) );
+
+        /***
+        let tangent_vec2 = relative_vel_vec2.sub( N_vec2.mulScalar( relative_vel_vec2.dot(N_vec2)));
+        // if ( isNaN( tangent_vec2.x ) ) {
+        //     console.error( `tangent_vec2 isNaN` );
+        // }
+        // if ( tangent_vec2.len() <= MathUtil.f32_Eps() ) {
+        //     console.error( `tangent_vec2 has almost zero length` );
+        // }
+        
+        // relativeVelocity.dot(tangent) should less than 0
+        tangent_vec2 = tangent_vec2.normalize().mulScalar(-1.0);
+        // if ( isNaN( tangent_vec2.x ) ) {
+        //     console.error( `tangent_vec2 isNaN 2` );
+        // }
+
+        let j_T = -(1.0 + new_restitution) * relative_vel_vec2.dot(tangent_vec2) * new_friction;
+        j_T = j_T / (go1.recip_mass + go2.recip_mass);
+
+        // friction should be smaller than force in normal direction
+        if ( j_T > j_N ) {
+            j_T = j_N;
+        }
+
+        //impulse is from go1 to go2 (in opposite dir of velocity)
+        impulse_vec2 = tangent_vec2.mulScalar( j_T );
+
+        // if ( isNaN( go1.vel_vec2.x ) ) {
+        //     console.error( `NaN before 2!!!` );
+        // }
+        go1.vel_vec2 = go1.vel_vec2.sub(impulse_vec2.scale(go1.recip_mass));
+        // if ( isNaN( go1.vel_vec2.x ) ) {
+        //     console.error( `NaN after 2!!!` );
+        // }
+        go2.vel_vec2 = go2.vel_vec2.add(impulse_vec2.scale(go2.recip_mass));
+        
+        ***/
     }
     
     performCollisionDetection( game_objects ) {
@@ -111,10 +206,10 @@ class GameObjectMgr {
         const line_width = 2.5;
         penetration_info_gfx.lineStyle(line_width, 0x66FF66, 1.0);
 
-        const pt_x = collision_info.start.x;
-        const pt_y = collision_info.start.y;
+        const pt_x = collision_info.start_collision_pt.x;
+        const pt_y = collision_info.start_collision_pt.y;
         penetration_info_gfx.moveTo(pt_x, pt_y);
-        penetration_info_gfx.lineTo(collision_info.end.x, collision_info.end.y);
+        penetration_info_gfx.lineTo(collision_info.end_collision_pt.x, collision_info.end_collision_pt.y);
 
         let gfx_penetration_vis_center_circle = new PIXI.Graphics()
         .beginFill( 0x55AA55, 1.0 )

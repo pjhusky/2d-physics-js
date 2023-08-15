@@ -1,10 +1,12 @@
 class CollisionInfo {
+    
     static none = new CollisionInfo();
+    
     constructor() {
         this.depth = 0.0;
         this.normal = new Vec2(0, 0);
-        this.start = new Vec2(0, 0);
-        this.end = new Vec2(0, 0);
+        this.start_collision_pt = new Vec2(0, 0);
+        this.end_collision_pt = new Vec2(0, 0);
         this.outside = true;
     }
 }
@@ -77,8 +79,8 @@ class Collisions {
             collisionInfo.depth = radius_sum; //Math.max( radius_A, radius_B );
             collisionInfo.normal = new Vec2( 0.0, -1.0 ); // upward
             //collisionInfo.normal = new Vec2( 0.0, 1.0 ); // upward (?)
-            collisionInfo.start = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collisionInfo.normal, -Math.max( radius_A, radius_B ) ) );
-            collisionInfo.end   = Vec2.add( collisionInfo.start, Vec2.mulScalar( collisionInfo.normal, collisionInfo.depth ) );
+            collisionInfo.start_collision_pt = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collisionInfo.normal, -Math.max( radius_A, radius_B ) ) );
+            collisionInfo.end_collision_pt   = Vec2.add( collisionInfo.start_collision_pt, Vec2.mulScalar( collisionInfo.normal, collisionInfo.depth ) );
             
             return [ true, true, collisionInfo ];
         }
@@ -97,8 +99,8 @@ class Collisions {
         collisionInfo.normal = collision_normal;
         // collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
         // collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
-        collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, radius_B ) );
-        collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, -radius_A ) );;
+        collisionInfo.start_collision_pt = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, radius_B ) );
+        collisionInfo.end_collision_pt   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, -radius_A ) );;
         collisionInfo.outside = true;
                 
         return [ true, true, collisionInfo ];
@@ -187,8 +189,8 @@ class Collisions {
             collision_info.normal = dir_vec2.normalize();
             //collision_info.normal = dir_vec2.normalizeSafe();
 
-            collision_info.start = closest_intersection_pt; // ???
-            collision_info.end = Vec2.add( closest_intersection_pt, Vec2.mulScalar( collision_info.normal, -collision_info.depth ) );
+            collision_info.start_collision_pt = closest_intersection_pt; // ???
+            collision_info.end_collision_pt = Vec2.add( closest_intersection_pt, Vec2.mulScalar( collision_info.normal, -collision_info.depth ) );
             collision_info.outside = outside;
                 
             return [ true, true, collision_info ];
@@ -308,8 +310,8 @@ class Collisions {
         new_collision_info.depth = support_pt_info_min_penetration_depth.support_depth;
         //new_collision_info.normal = Vec2.mulScalar( support_pt_info_min_penetration_depth.query_dir_vec2, -1.0 );
         new_collision_info.normal = Vec2.mulScalar( support_pt_info_min_penetration_depth.query_dir_vec2, -1.0 );
-        new_collision_info.start = support_pt;
-        new_collision_info.end = Vec2.add( support_pt, Vec2.mulScalar( new_collision_info.normal, new_collision_info.depth ) );
+        new_collision_info.start_collision_pt = support_pt;
+        new_collision_info.end_collision_pt = Vec2.add( support_pt, Vec2.mulScalar( new_collision_info.normal, new_collision_info.depth ) );
         new_collision_info.outside = true;
         
         //return [ false, CollisionInfo.none ];
