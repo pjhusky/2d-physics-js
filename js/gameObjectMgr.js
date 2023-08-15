@@ -18,8 +18,10 @@ class GameObjectMgr {
         this.collisionDetectionWithResolve( this.game_objects );
     }
     
+    static max_relaxations() { return 20.0; } // TODO: move to some global parameter file/class
+    
     collisionDetectionWithResolve( game_objects ) {
-        const max_relaxations = 20;
+        const max_relaxations = GameObjectMgr.max_relaxations();
         for ( let relaxation_counter = 0; relaxation_counter < max_relaxations; relaxation_counter++ ) {
             // basically the collision function again, but without extra gfx-vis for debugging
             for ( let i = 0; i < game_objects.length; i++ ) {
@@ -35,7 +37,9 @@ class GameObjectMgr {
     
     penetrationRelaxation( go1, go2, penetration_info ) {
         //const relaxation_factor = 0.75;
-        const relaxation_factor = 1.0 / 15.0;
+        //const relaxation_factor = 1.0 / 15.0;
+        //const relaxation_factor = 1.0 / 18.0;
+        const relaxation_factor = 1.0 / (GameObjectMgr.max_relaxations() * 0.9);
 
         const rb1 = go1.rigid_body;
         const rb2 = go2.rigid_body;
