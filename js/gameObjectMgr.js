@@ -19,7 +19,7 @@ class GameObjectMgr {
     }
     
     collisionDetectionWithResolve( game_objects ) {
-        const max_relaxations = 15;
+        const max_relaxations = 20;
         for ( let relaxation_counter = 0; relaxation_counter < max_relaxations; relaxation_counter++ ) {
             // basically the collision function again, but without extra gfx-vis for debugging
             for ( let i = 0; i < game_objects.length; i++ ) {
@@ -43,8 +43,20 @@ class GameObjectMgr {
         const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
         
-        go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
-        go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
+        if ( go1.recip_mass > 2.0 * MathUtil.f32_Eps() && go1.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
+            go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
+        } else {
+            //go1.vel_vec2 = new Vec2( 0.0, 0.0 );
+        }
+        if ( go2.recip_mass > 2.0 * MathUtil.f32_Eps() && go2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
+            go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
+        } else {
+            //go2.vel_vec2 = new Vec2( 0.0, 0.0 );
+        }
+        
+        // funny, looks like spring-mass system on bounce...
+        //go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
+        //go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
     }
     
     performCollisionDetection( game_objects ) {
