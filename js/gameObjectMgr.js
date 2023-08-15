@@ -94,8 +94,7 @@ class GameObjectMgr {
         const rel_vel_magnitude_N = Vec2.dot( relative_vel_vec2, N_vec2 );
 
         // ignore objects that are moving in opposite dirs
-        //if (rel_vel_magnitude_N > 0.0) { return; }
-        if (rel_vel_magnitude_N >= 0.0) { return; }
+        if (rel_vel_magnitude_N > 0.0) { return; }
 
         // apply response impulses
         const new_restitution = Math.min( go1.restitution, go2.restitution );
