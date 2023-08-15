@@ -6,6 +6,22 @@ class BuiltinRenderPrimitive_Base {
         }        
         this.gfx_container = new PIXI.Container();
     }
+ 
+    addLabel( text ) {
+        const gfx_text = new PIXI.Text(text, {
+            fontFamily: 'Arial',
+            fontSize: 18,
+            fill: 0xAAAAAA,
+            align: 'center',
+        });
+        gfx_text.position.set( -6.0, 6.0 );
+        // const gfx_text = new PIXI.BitmapText('text using a fancy font!', {
+        //     fontName: 'Arial',
+        //     fontSize: 35,
+        //     align: 'right',
+        // });        
+        this.gfx_container.addChild( gfx_text );
+    }
     
     setPivot( x, y ) {
         this.gfx_container.pivot.set( x, y );
