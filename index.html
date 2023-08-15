@@ -528,19 +528,44 @@
             // ### *** ### ATTENTION!!! Due to y being flipped, I inadvertently flipped the order from the desired CCW to CW !!! ### *** ###
             // #############################################################################################################################
 
-            {
-                let test_circle_go = go_mgr.addCircleGameObject( 50.0 );
+            const many_game_objects = true;
+            
+            if ( many_game_objects ) {
+                const mass = 10.0;
+                //const mass = 1.0;
+                let test_circle_go = go_mgr.addCircleGameObject( 50.0, mass );
                 test_circle_go.setPos( new Vec2( 340, 400 ) );
             }
+
+            //if ( many_game_objects ) 
+            {
+                //let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
+                let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
+                //let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 0.0, 38.0 ], [ 50.0, -50.0 ] ] );
+                                // let go_mgr = new GameObjectMgr();
+                // let test_shape_go = go_mgr.addCircleGameObject( 35.0 );
+                test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                //test_shape_go.setPos( new Vec2( 300.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                //test_shape_go.setPos( new Vec2( 410.0, 290.0 ) ); // good setting for checking circle-inside-polygon
+                
+                //test_shape_go.setPos( new Vec2( 305.0, 360.0 ) ); // wrong collsion reported SAT
+            }
             
-            //let test_circle_go  = go_mgr.addCircleGameObject( 50.0 );
-            let test_circle_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
-            //let test_circle_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 0.0, 38.0 ], [ 50.0, -50.0 ] ] );
+            if ( false ) {
+                let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
+                test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+            }
             
-            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
-            let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ] );
-            //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
-            //let test_polygon_go = go_mgr.addCircleGameObject( 75.0 );
+            if ( many_game_objects ) {
+                //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
+                let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ] );
+                //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
+                //let test_polygon_go = go_mgr.addCircleGameObject( 75.0 );
+                                
+                test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
+                //test_polygon_go.setPos( new Vec2( 390.0, 438.0 ) ); test_polygon_go.rotateBy( -23.58 ); // wrong collsion reported SAT
+                
+            }
                 
             let fracture_cells = new Array();
             let debug_dirs_fracture_cells = new Array();
@@ -621,23 +646,13 @@
                 // //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
                 // const test_rb_circle2 = new RigidBody_Circle( 40.0 ); test_rb_circle2.setPosition( [ 350.0, 370.0 ] );
                               
-                // let go_mgr = new GameObjectMgr();
-                // let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
-                test_circle_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
-                //test_circle_go.setPos( new Vec2( 300.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
-                //test_circle_go.setPos( new Vec2( 410.0, 290.0 ) ); // good setting for checking circle-inside-polygon
-                
-                //test_circle_go.setPos( new Vec2( 305.0, 360.0 ) ); // wrong collsion reported SAT
-                
-                test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
-                //test_polygon_go.setPos( new Vec2( 390.0, 438.0 ) ); test_polygon_go.rotateBy( -23.58 ); // wrong collsion reported SAT
                 
                 {
                     let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
                     test_circle_go.setPos( new Vec2( 580, 100 ) );
                 }
 
-                if ( false ) {
+                if ( many_game_objects ) {
                     let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
                     //test_circle_go.setPos( new Vec2( 190, 500 ) );
                     test_circle_go.setPos( new Vec2( 120, 500 ) );
@@ -651,7 +666,7 @@
                     test_circle_go.setPos( new Vec2( 190, 400 ) );
                 }
 
-                {
+                if ( many_game_objects ) {
                     const path_pts = [ [ -80.0, -50.0 ], [ 30.0, -50.0 ], [ 0.0, 70.0 ], [ -30.0, 60.0 ] ];
                     const mass = 0.0;
                     let test_polygon_go = go_mgr.addPolygonGameObject( path_pts, mass );
@@ -673,6 +688,9 @@
                     app.stage.addChild( go.render_primitive.gfx_container );
                     //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
                 } );
+                for ( i = 0; i < gos.length; i++ ) {
+                    gos[i].render_primitive.addLabel( i );
+                }
                 app.stage.addChild( go_mgr.gfx_debug_container ); // add debug vis last, so it's always overlayed "on top of" the game objects
 
                 go_mgr.updateAllGameObjects( 1.0 / 60.0 );
@@ -1410,7 +1428,7 @@
             //     }, 
             //     1.0/60.0
             // );      
-            let translation_speed = 1.0;
+            let translation_speed = 3.0;
             let rotation_radians_speed = 0.01;
             // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
             Input.KeyboardController( document, window, //go_mgr,
