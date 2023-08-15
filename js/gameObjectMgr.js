@@ -112,15 +112,17 @@ class GameObjectMgr {
         // if ( isNaN( go1.vel_vec2.x ) ) {
         //     console.error( `NaN before 1!!!` );
         // }
-        go1.vel_vec2 = go1.vel_vec2.sub( impulse_vec2.mulScalar( go1.recip_mass ) );
+        go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
         // if ( isNaN( go1.vel_vec2.x ) ) {
         //     console.error( `NaN after 1!!!` );
         // }
         
-        go2.vel_vec2 = go2.vel_vec2.add( impulse_vec2.mulScalar( go2.recip_mass ) );
+        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
 
         /***
-        let tangent_vec2 = relative_vel_vec2.sub( N_vec2.mulScalar( relative_vel_vec2.dot(N_vec2)));
+        // ############################
+        // ### tangential component ###
+        let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
         // if ( isNaN( tangent_vec2.x ) ) {
         //     console.error( `tangent_vec2 isNaN` );
         // }
@@ -129,12 +131,12 @@ class GameObjectMgr {
         // }
         
         // relativeVelocity.dot(tangent) should less than 0
-        tangent_vec2 = tangent_vec2.normalize().mulScalar(-1.0);
+        tangent_vec2 = Vec2.mulScalar( Vec2.normalize( tangent_vec2 ), -1.0);
         // if ( isNaN( tangent_vec2.x ) ) {
         //     console.error( `tangent_vec2 isNaN 2` );
         // }
 
-        let j_T = -(1.0 + new_restitution) * relative_vel_vec2.dot(tangent_vec2) * new_friction;
+        let j_T = -(1.0 + new_restitution) * Vec2.dot( relative_vel_vec2, tangent_vec2 ) * new_friction;
         j_T = j_T / (go1.recip_mass + go2.recip_mass);
 
         // friction should be smaller than force in normal direction
@@ -143,17 +145,16 @@ class GameObjectMgr {
         }
 
         //impulse is from go1 to go2 (in opposite dir of velocity)
-        impulse_vec2 = tangent_vec2.mulScalar( j_T );
+        impulse_vec2 = Vec2.mulScalar( tangent_vec2, j_T );
 
         // if ( isNaN( go1.vel_vec2.x ) ) {
         //     console.error( `NaN before 2!!!` );
         // }
-        go1.vel_vec2 = go1.vel_vec2.sub(impulse_vec2.scale(go1.recip_mass));
+        go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
         // if ( isNaN( go1.vel_vec2.x ) ) {
         //     console.error( `NaN after 2!!!` );
         // }
-        go2.vel_vec2 = go2.vel_vec2.add(impulse_vec2.scale(go2.recip_mass));
-        
+        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
         ***/
     }
     
