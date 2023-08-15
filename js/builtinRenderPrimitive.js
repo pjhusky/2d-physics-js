@@ -104,9 +104,17 @@ class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
             .drawCircle(0, 0, 3.5)
             .endFill();
         this.gfx_bounding_circle_center.position.set( bounding_circle_array3[0][0], bounding_circle_array3[0][1] );
+
+        this.gfx_center_of_mass = new PIXI.Graphics()
+            .beginFill( 0x227F22, 0.15 )
+            .lineStyle({ width: 1, color: 0x66FF66, alignment: 0 })
+            .drawCircle(0, 0, 3.5)
+            .endFill();
+        this.gfx_center_of_mass.position.set( 0.0, 0.0 );
         
         this.gfx_container.addChild( this.gfx_bounding_circle );
         this.gfx_container.addChild( this.gfx_bounding_circle_center );
+        this.gfx_container.addChild( this.gfx_center_of_mass );
     }
     
     resetFillColor() {
