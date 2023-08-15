@@ -119,10 +119,11 @@ class GameObjectMgr {
         
         go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
 
-        /***
+        
         // ############################
         // ### tangential component ###
-        let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+        //let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+        let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, -Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
         // if ( isNaN( tangent_vec2.x ) ) {
         //     console.error( `tangent_vec2 isNaN` );
         // }
@@ -155,7 +156,7 @@ class GameObjectMgr {
         //     console.error( `NaN after 2!!!` );
         // }
         go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
-        ***/
+        
     }
     
     performCollisionDetection( game_objects ) {
