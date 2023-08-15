@@ -60,6 +60,8 @@ class Collisions {
         
         //const dist_A_B = Vec2.dist( circ_A_center_vec2, circ_B_center_vec2 );
         const dist_A_B = dir_center_A_to_B_vec2.len();
+        //const dist_A_B = Math.max( MathUtil.f32_Eps(), dir_center_A_to_B_vec2.len() );
+        
         const radius_sum = radius_A + radius_B;
         const collision_depth = radius_sum - dist_A_B;
 
@@ -69,11 +71,12 @@ class Collisions {
             return [ false, false, CollisionInfo.none ]; // narrow-phase collision, broad-phase collision, collision info
         }
         
-        const dist_squared = dir_center_A_to_B_vec2.lenSquared();
+        let dist_squared = dir_center_A_to_B_vec2.lenSquared();
         if ( MathUtil.isApproxEqual( dist_squared, 0.0 ) ) { // circles are centered at same pos
             let collisionInfo = new CollisionInfo();
             collisionInfo.depth = radius_sum; //Math.max( radius_A, radius_B );
             collisionInfo.normal = new Vec2( 0.0, -1.0 ); // upward
+            //collisionInfo.normal = new Vec2( 0.0, 1.0 ); // upward (?)
             collisionInfo.start = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collisionInfo.normal, -Math.max( radius_A, radius_B ) ) );
             collisionInfo.end   = Vec2.add( collisionInfo.start, Vec2.mulScalar( collisionInfo.normal, collisionInfo.depth ) );
             
@@ -81,15 +84,21 @@ class Collisions {
         }
         
         //const collision_normal = Vec2.normalize( dir_center_A_to_B_vec2 );
-        const collision_normal = dir_center_A_to_B_vec2.scale( 1.0 / Math.sqrt(dist_squared) );
+        // if ( dist_squared < MathUtil.f32_Eps() ) {
+        //     dist_squared = MathUtil.f32_Eps();
+        // }
+        //const collision_normal = dir_center_A_to_B_vec2.scale( 1.0 / Math.sqrt(dist_squared) );
+        const collision_normal = dir_center_A_to_B_vec2.scale( -1.0 / Math.sqrt(dist_squared) );
         
         
         let collisionInfo = new CollisionInfo();
         collisionInfo.depth = collision_depth;
         
         collisionInfo.normal = collision_normal;
-        collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
-        collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
+        // collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
+        // collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
+        collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, radius_B ) );
+        collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, -radius_A ) );;
         collisionInfo.outside = true;
                 
         return [ true, true, collisionInfo ];
@@ -105,7 +114,7 @@ class Collisions {
         return ( dist_A_B < radius_A + radius_B );
     }
     
-    static collideCirclePolygon( circ_A, poly_B ) {
+    static collideCirclePolygon( circ_A, poly_B, flip ) {
         //console.log( `collide circ-poly` );
         
         // determine closest edge to circle center
@@ -169,7 +178,14 @@ class Collisions {
             let collision_info = new CollisionInfo();
             collision_info.depth = circ_radius - intersection_dist;
 
-            collision_info.normal = Vec2.sub( circ_center_WS_vec2, closest_intersection_pt ).normalize();
+            let dir_vec2;
+            if ( flip != undefined || flip == true ) {
+                dir_vec2 = Vec2.sub( closest_intersection_pt, circ_center_WS_vec2 );
+            } else {
+                dir_vec2 = Vec2.sub( circ_center_WS_vec2, closest_intersection_pt );
+            }
+            collision_info.normal = dir_vec2.normalize();
+            //collision_info.normal = dir_vec2.normalizeSafe();
 
             collision_info.start = closest_intersection_pt; // ???
             collision_info.end = Vec2.add( closest_intersection_pt, Vec2.mulScalar( collision_info.normal, -collision_info.depth ) );
@@ -182,7 +198,8 @@ class Collisions {
     }
 
     static collidePolygonCircle( poly_A, circ_B ) {
-        return this.collideCirclePolygon( circ_B, poly_A );
+        const flip = true;
+        return this.collideCirclePolygon( circ_B, poly_A, flip );
     }
 
     static getSupportPoint( query_dir_vec2, query_pt_vec2, points_vec2, on_polygon_a_b ) {
