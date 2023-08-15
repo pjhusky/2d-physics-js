@@ -43,14 +43,18 @@ class GameObject {
         }
     }
 
-    static gravity() { return new Vec2( 0.0, 9.81 ); } // TODO: move to some global parameter file/class
+    static gravity() { return new Vec2( 0.0, 9.81 * 5.0 ); } // TODO: move to some global parameter file/class
+    static linear_friction() { return 0.9875; }
+    static angular_friction() { return 0.9975; }
     
     update( dt ) {
         
         this.vel_vec2 = Vec2.add( this.vel_vec2, Vec2.mulScalar( this.accel_vec2, dt ) );
+        this.vel_vec2.scale( GameObject.linear_friction() ); // friction
         this.pos_vec2 = Vec2.add( this.pos_vec2, Vec2.mulScalar( this.vel_vec2, dt ) );
         
         this.angular_vel += this.angular_accel * dt;
+        this.angular_vel *= GameObject.angular_friction();
         this.angle_rad += this.angular_vel * dt;
         
         // update pose - both for rigid body, as well as for render_primitive
@@ -79,6 +83,7 @@ class GameObject {
         this.pos_vec2.add( translation_delta_vec2 );
     }
     applyLinearVelocity( delta_linear_vel_vec2 ) {
+        //this.pos_vec2.add( Vec2.mulScalar( delta_linear_vel_vec2, 0.5 ) );
         this.vel_vec2.add( delta_linear_vel_vec2 );        
     }
     
