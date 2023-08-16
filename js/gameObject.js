@@ -33,19 +33,19 @@ class GameObject {
         if ( friction != undefined ) {
             this.friction = friction;
         } else {
-            this.friction = 0.5;
+            this.friction = 0.8;
         }
 
         if ( restitution != undefined ) {
             this.restitution = restitution;
         } else {
-            this.restitution = 0.3;
+            this.restitution = 0.2;
         }
     }
 
     static gravity() { return new Vec2( 0.0, 9.81 * 5.0 ); } // TODO: move to some global parameter file/class
     static linear_friction() { return 0.9875; }
-    static angular_friction() { return 0.998; }
+    static angular_friction() { return 0.98; }
     
     update( dt ) {
         

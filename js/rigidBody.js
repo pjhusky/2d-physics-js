@@ -203,6 +203,6 @@ class RigidBody_Polygon extends RigidBody {
     getInertia() {
         //return 20.0; // TODO!!!
         //return 5817477.0;
-        return 100.0;
+        return 280.0;
     }
 }

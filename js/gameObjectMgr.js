@@ -22,14 +22,26 @@ class GameObjectMgr {
             if ( go.recip_mass > 0.0 ) {
                 if ( go.angular_vel > 0.0 ) {
                     go.angular_vel = Math.min( go.angular_vel, 1.5 );
+                    // if ( go.angular_vel < 0.05 ) {
+                    //     go.angular_vel = 0.0;
+                    // }
                 } else if ( go.angular_vel < 0.0 ) {
                     go.angular_vel = Math.max( go.angular_vel, -1.5 );
+                    // if ( go.angular_vel > -0.05 ) {
+                    //     go.angular_vel = 0.0;
+                    // }                    
                 }
                 
                 if ( go.angular_accel > 0.0 ) {
                     go.angular_accel = Math.min( go.angular_accel, 1.5 );
+                    // if ( go.angular_accel < 0.05 ) {
+                    //     go.angular_accel = 0.0;
+                    // }
                 } else if ( go.angular_accel < 0.0 ) {
                     go.angular_accel = Math.max( go.angular_accel, -1.5 );
+                    // if ( go.angular_accel > -0.05 ) {
+                    //     go.angular_accel = 0.0;
+                    // }
                 }
             }
 
