@@ -1,3 +1,5 @@
+"use strict";
+
 class Mat2x3 {
     constructor() {
         //this.m = undefined;

@@ -1,3 +1,5 @@
+"use strict";
+
 class MathUtil {
 
     // adapted from https://stackoverflow.com/questions/23615299/how-to-specify-float32-limits-in-javascript

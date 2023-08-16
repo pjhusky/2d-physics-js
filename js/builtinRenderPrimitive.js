@@ -1,3 +1,5 @@
+"use strict";
+
 // Abstract Base Class
 class BuiltinRenderPrimitive_Base {
     constructor() {

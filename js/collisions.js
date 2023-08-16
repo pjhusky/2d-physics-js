@@ -1,3 +1,5 @@
+"use strict";
+
 class CollisionInfo {
     
     static none = new CollisionInfo();
@@ -111,7 +113,6 @@ class Collisions {
         
         const radius_A = shape_A.getBoundRadius();
         const radius_B = shape_B.getBoundRadius();
-        //const dist_A_B = Vec2.dist( shape_A.getCenterOfMass(), shape_B.getCenterOfMass() );
         const dist_A_B = Vec2.dist( Vec2.fromArray( shape_A.getBoundingCircleWS()[0] ), Vec2.fromArray( shape_B.getBoundingCircleWS()[0] ) );
         return ( dist_A_B < radius_A + radius_B );
     }
