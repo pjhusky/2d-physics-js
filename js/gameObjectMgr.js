@@ -36,14 +36,28 @@ class GameObjectMgr {
                             collision_info.normal = Vec2.mulScalar( collision_info.normal, -1.0 );
                         }
 
-                        //this.collisionResponse( game_objects[i], game_objects[j], collision_info );
+                        // proper collision response
+                        this.collisionResponse_linearMomentumOnly( game_objects[i], game_objects[j], collision_info );
                         
                         // only resolve penetrations, but allow for some slack - super fun bouncy mode :-)
-                        this.penetrationRelaxationSlack( game_objects[i], game_objects[j], collision_info );
+                        // this.penetrationRelaxationSlack( game_objects[i], game_objects[j], collision_info );
                     }
                 }
             }
         }
+    }
+    
+    penetrationRelaxationSlack( go1, go2, penetration_info ) {
+        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
+        
+        const relaxation_factor = 2.0 / (GameObjectMgr.max_relaxations() * 0.9);
+        const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
+        const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
+
+        // funny, looks like spring-mass system on bounce... allows for some "penetration/overlay slack"
+        // instead of applying penetration correction directly to the object position, apply a velocity in the desired direction 
+        go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
+        go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
     }
     
     penetrationRelaxation( go1, go2, penetration_info ) {
@@ -57,22 +71,9 @@ class GameObjectMgr {
         if ( go2.recip_mass > 2.0 * MathUtil.f32_Eps() && go2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
             go2.translateBy( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
         } 
-    }
-
-    penetrationRelaxationSlack( go1, go2, penetration_info ) {
-        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
-        
-        const relaxation_factor = 2.0 / (GameObjectMgr.max_relaxations() * 0.9);
-        const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
-        const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
-
-        // funny, looks like spring-mass system on bounce... allows for some "penetration/overlay slack"
-        go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
-        go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
-    }
+    }    
     
-    
-    collisionResponse( go1, go2, collision_info ) {
+    collisionResponse_linearMomentumOnly( go1, go2, collision_info ) {
         
         if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
         
