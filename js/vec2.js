@@ -78,7 +78,6 @@ class Vec2 {
     static cross2( v1, v2 ) {
         return Vec2.det( v1, v2 );
     }
-    
     cross2( v ) {
         return Vec2.det( this, v );
     }
