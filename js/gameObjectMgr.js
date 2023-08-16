@@ -32,15 +32,20 @@ class GameObjectMgr {
                     
                     if ( did_narrow_phase_collide ) 
                     {
+                        // collision normal must always point from first object to second - flip now if that's not the case
+                        // otherwise the following collision responses result in weird mixed unstable attracting/repelling behavior!
                         if ( Vec2.dot( collision_info.normal, Vec2.sub( game_objects[j].pos_vec2, game_objects[i].pos_vec2 ) ) < 0.0 ) {
                             collision_info.normal = Vec2.mulScalar( collision_info.normal, -1.0 );
                         }
 
-                        // proper collision response
-                        this.collisionResponse_linearMomentumOnly( game_objects[i], game_objects[j], collision_info );
-                        
-                        // only resolve penetrations, but allow for some slack - super fun bouncy mode :-)
+                        // > only resolve penetrations, but allow for some slack - super fun bouncy mode :-)
                         // this.penetrationRelaxationSlack( game_objects[i], game_objects[j], collision_info );
+
+                        // > proper collision response, apply linear momentum only
+                        // this.collisionResponse_linearMomentumOnly( game_objects[i], game_objects[j], collision_info );
+                        
+                        // > full collision response with linear- and angular momentum
+                        this.collisionResponse_full( game_objects[i], game_objects[j], collision_info );
                     }
                 }
             }
@@ -58,6 +63,9 @@ class GameObjectMgr {
         // instead of applying penetration correction directly to the object position, apply a velocity in the desired direction 
         go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
         go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
+        
+        // no further momentum calculations to retain the bouncy behavior!
+        // NOTE: objects may "slip" through each other due to the slack...
     }
     
     penetrationRelaxation( go1, go2, penetration_info ) {
@@ -82,16 +90,8 @@ class GameObjectMgr {
         // #####################################################
         // #### "dynamics" part: ####
         const N_vec2 = collision_info.normal;
-        //const N_vec2 = Vec2.mulScalar( penetration_info.normal, -1.0 );
-        // if ( isNaN( N_vec2.x ) ) {
-        //     console.error( `N_vec2 was NaN!!!` );
-        // }
         
         const v1 = go1.vel_vec2;
-        // if ( isNaN( go1.vel_vec2.x ) ) {
-        //     console.error( `isNan 9!!!` );
-        // }
-
         const v2 = go2.vel_vec2;
         const relative_vel_vec2 = Vec2.sub( v2, v1 );
 
@@ -101,46 +101,30 @@ class GameObjectMgr {
         // ignore objects that are moving in opposite dirs
         if (rel_vel_magnitude_N > 0.0) { return; }
 
-        // apply response impulses
+        // *** apply response impulses ***
+        
+        // ############################
+        // ### normal component ###
         const new_restitution = Math.min( go1.restitution, go2.restitution );
-        const new_friction    = Math.min( go1.friction,    go2.friction );
 
         // Calc impulse scalar - http://www.myphysicslab.com/collision.html
         let j_N = -(1.0 + new_restitution) * rel_vel_magnitude_N;
         j_N = j_N / ( go1.recip_mass + go2.recip_mass);
         //j_N = j_N / Math.max( MathUtil.f32_Eps(), go1.recip_mass + go2.recip_mass);
 
-        //impulse is in direction of normal ( from s1 to s2)
+        // impulse is in direction of normal ( from s1 to s2)
         let impulse_vec2 = Vec2.mulScalar( N_vec2, j_N );
-        // impulse = F dt = m * delta_v
-        // delta_v = impulse / m
-        // if ( isNaN( go1.vel_vec2.x ) ) {
-        //     console.error( `NaN before 1!!!` );
-        // }
         go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
-        // if ( isNaN( go1.vel_vec2.x ) ) {
-        //     console.error( `NaN after 1!!!` );
-        // }
-        
         go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
 
         
         // ############################
         // ### tangential component ###
-        //let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+        const new_friction    = Math.min( go1.friction,    go2.friction );
         let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, -Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
-        // if ( isNaN( tangent_vec2.x ) ) {
-        //     console.error( `tangent_vec2 isNaN` );
-        // }
-        // if ( tangent_vec2.len() <= MathUtil.f32_Eps() ) {
-        //     console.error( `tangent_vec2 has almost zero length` );
-        // }
         
         // relativeVelocity.dot(tangent) should less than 0
         tangent_vec2 = Vec2.mulScalar( Vec2.normalize( tangent_vec2 ), -1.0);
-        // if ( isNaN( tangent_vec2.x ) ) {
-        //     console.error( `tangent_vec2 isNaN 2` );
-        // }
 
         let j_T = -(1.0 + new_restitution) * Vec2.dot( relative_vel_vec2, tangent_vec2 ) * new_friction;
         j_T = j_T / (go1.recip_mass + go2.recip_mass);
@@ -153,15 +137,11 @@ class GameObjectMgr {
         //impulse is from go1 to go2 (in opposite dir of velocity)
         impulse_vec2 = Vec2.mulScalar( tangent_vec2, j_T );
 
-        // if ( isNaN( go1.vel_vec2.x ) ) {
-        //     console.error( `NaN before 2!!!` );
-        // }
         go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
-        // if ( isNaN( go1.vel_vec2.x ) ) {
-        //     console.error( `NaN after 2!!!` );
-        // }
-        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
-        
+        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );        
+    }
+    
+    collisionResponse_linearMomentumOnly( go1, go2, collision_info ) {
     }
     
     performCollisionDetection( game_objects ) {
