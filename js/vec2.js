@@ -1,3 +1,5 @@
+"use strict";
+
 class Vec2 {
     
     constructor(x, y) {
@@ -53,11 +55,6 @@ class Vec2 {
         return this;
     }
     
-
-    static det( v1, v2 ) {
-        return v1.x * v2.y - v1.y * v2.x;
-    }
-    
     static normalize( v ) {
         return v.normalize();
     }
@@ -71,6 +68,9 @@ class Vec2 {
         return this.scale( len_recip );
     }
     
+    static det( v1, v2 ) {
+        return v1.x * v2.y - v1.y * v2.x;
+    }    
     det( v ) {
         return Vec2.det( this, v );
     }
