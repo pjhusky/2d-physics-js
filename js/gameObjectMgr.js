@@ -17,6 +17,23 @@ class GameObjectMgr {
         
         this.collisionDetectionWithResolve( this.game_objects );
         
+        this.game_objects.forEach( (go) => { 
+            
+            if ( go.recip_mass > 0.0 ) {
+                if ( go.angular_vel > 0.0 ) {
+                    go.angular_vel = Math.min( go.angular_vel, 1.5 );
+                } else if ( go.angular_vel < 0.0 ) {
+                    go.angular_vel = Math.max( go.angular_vel, -1.5 );
+                }
+                
+                if ( go.angular_accel > 0.0 ) {
+                    go.angular_accel = Math.min( go.angular_accel, 1.5 );
+                } else if ( go.angular_accel < 0.0 ) {
+                    go.angular_accel = Math.max( go.angular_accel, -1.5 );
+                }
+            }
+
+        } );
         //console.log( `vel go 0: ${this.game_objects[0].vel_vec2}` );
     }
     
@@ -123,7 +140,7 @@ class GameObjectMgr {
         const new_friction    = Math.min( go1.friction,    go2.friction );
         let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, -Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
         
-        // relativeVelocity.dot(tangent) should less than 0
+        // relative_vel_vec2.dot(tangent) should less than 0
         tangent_vec2 = Vec2.mulScalar( Vec2.normalize( tangent_vec2 ), -1.0);
 
         let j_T = -(1.0 + new_restitution) * Vec2.dot( relative_vel_vec2, tangent_vec2 ) * new_friction;
@@ -141,7 +158,104 @@ class GameObjectMgr {
         go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );        
     }
     
-    collisionResponse_linearMomentumOnly( go1, go2, collision_info ) {
+    collisionResponse_full( go1, go2, collision_info ) {
+        
+        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
+        
+        this.penetrationRelaxation( go1, go2, collision_info );
+        
+        // #####################################################
+        // #### "dynamics" part: ####
+        const N_vec2 = collision_info.normal;
+
+        const recip_mass_sum = go1.recip_mass + go2.recip_mass;
+        //the direction of collisionInfo is always from s1 to s2
+        //but the Mass is inversed, so start scale with s2 and end scale with s1
+        const start_vec2 = Vec2.mulScalar( collision_info.start_collision_pt, go2.recip_mass / ( recip_mass_sum ) );
+        const end_vec2   = Vec2.mulScalar( collision_info.end_collision_pt,   go1.recip_mass / ( recip_mass_sum ) );
+        const p_vec2 = Vec2.add( start_vec2, end_vec2 );
+        //r is vector from center of object to collision point
+        const r1_vec2 = Vec2.sub( p_vec2, go1.pos_vec2 );
+        const r2_vec2 = Vec2.sub( p_vec2, go2.pos_vec2 );
+
+        //newV = V + mAngularVelocity cross R
+        const v1_vec2 = Vec2.add( go1.vel_vec2, new Vec2( -go1.angular_vel * r1_vec2.y, go1.angular_vel * r1_vec2.x ) );
+        const v2_vec2 = Vec2.add( go2.vel_vec2, new Vec2( -go2.angular_vel * r2_vec2.y, go2.angular_vel * r2_vec2.x ) );
+        const relative_vel_vec2 = Vec2.sub( v2_vec2, v1_vec2 );
+
+        // Relative velocity in normal direction
+        const rel_vel_magnitude_N = Vec2.dot( relative_vel_vec2, N_vec2 );
+
+        //if objects moving apart ignore
+        if (rel_vel_magnitude_N > 0) {
+        //if (rel_vel_magnitude_N >= 0) {
+            return;
+        }
+
+        // compute and apply response impulses for each object    
+        const new_restitution = Math.min( go1.restitution, go2.restitution );
+
+        //R cross N
+        const r1_cross_N = Vec2.cross2( r1_vec2, N_vec2 );
+        const r2_cross_N = Vec2.cross2( r2_vec2, N_vec2 );
+
+        // Calc impulse scalar
+        // the formula of jN can be found in http://www.myphysicslab.com/collision.html
+        let j_N = -(1.0 + new_restitution) * rel_vel_magnitude_N;
+        j_N = j_N / ( recip_mass_sum +
+                      r1_cross_N * r1_cross_N * go1.inertia +
+                      r2_cross_N * r2_cross_N * go2.inertia );
+
+        //impulse is in direction of normal ( from s1 to s2)
+        let impulse_vec2 = Vec2.mulScalar( N_vec2, j_N );
+        // impulse = F dt = m * delta_v
+        // delta_v = impulse / m
+        go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
+        //go2.vel_vec2 = Vec2.sub( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
+        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
+
+        go1.angular_vel -= r1_cross_N * j_N * go1.inertia;
+        go2.angular_vel += r2_cross_N * j_N * go2.inertia;
+
+        
+        // ############################
+        // ### tangential component ###
+        const new_friction = Math.min(go1.friction, go2.friction);
+        let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, -Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+        //let tangent_vec2 = Vec2.add( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+
+        if ( isNaN( tangent_vec2.x ) ) {
+            console.error( `tangent_vec2 is NaN` );
+        }
+        if ( MathUtil.isApproxEqual( tangent_vec2.len(), 0.0 ) ) {
+            console.error( `tangent_vec2 has (almost) zero length` );
+        }
+        
+        //relative_vel_vec2.dot(tangent) should less than 0
+        tangent_vec2 = Vec2.mulScalar( Vec2.normalize( tangent_vec2 ), -1.0 );
+        //tangent_vec2.normalize();
+
+        const r1_cross_T = Vec2.cross2( r1_vec2, tangent_vec2 );
+        const r2_cross_T = Vec2.cross2( r2_vec2, tangent_vec2 );
+
+        let j_T = -(1 + new_restitution) * Vec2.dot( relative_vel_vec2, tangent_vec2 ) * new_friction;
+        j_T = j_T / ( recip_mass_sum + 
+                      r1_cross_T * r1_cross_T * go1.inertia + 
+                      r2_cross_T * r2_cross_T * go2.inertia );
+
+        //friction should less than force in normal direction
+        if (j_T > j_N) {
+            j_T = j_N;
+        }
+
+        //impulse is from s1 to s2 (in opposite direction of velocity)
+        impulse_vec2 = Vec2.mulScalar( tangent_vec2, j_T );
+
+        go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
+        go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
+        go1.angular_vel -= r1_cross_T * j_T * go1.inertia;
+        go2.angular_vel += r2_cross_T * j_T * go2.inertia;
+        
     }
     
     performCollisionDetection( game_objects ) {
