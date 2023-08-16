@@ -44,7 +44,7 @@ class ConvexHull {
 		// as per the mathematical convention, instead of "down" as per the computer
 		// graphics convention. This doesn't affect the correctness of the result.
 		
-		let upperHull = new Array();
+		let upperHull = [];
 		for (let i = 0; i < points.length; i++) {
 			const p = points[i];
 			while (upperHull.length >= 2) {
@@ -59,7 +59,7 @@ class ConvexHull {
 		}
 		upperHull.pop();
 		
-		let lowerHull = new Array();
+		let lowerHull = [];
 		for (let i = points.length - 1; i >= 0; i--) {
 			const p = points[i];
 			while (lowerHull.length >= 2) {

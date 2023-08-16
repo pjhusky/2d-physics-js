@@ -152,7 +152,7 @@ var ParticleFluidSolver = (function (exports) {
                      fixedDt, numSubSteps, 
                      constraints ) {
             
-            this.fluidParticles = new Array();
+            this.fluidParticles = [];
             this.maxNumFluidParticles = maxNumFluidParticles;
             this.activeFluidParticles = 0;
             this.fluidParticleRadius = fluidParticleRadius;
@@ -230,7 +230,7 @@ var ParticleFluidSolver = (function (exports) {
                 this.spatialArray[y] = new Array( this.numBinsX );
                 //console.log( '\tspatialArray[y].length %d, this.numBinsX = %d', this.spatialArray[y].length, this.numBinsX );
                 for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = new Array();
+                    this.spatialArray[y][x] = [];
                     //console.log( '\tspatialArray[%d][%d].length = %d', y, x, spatialArray[y][x].length );
                 }
             }
@@ -243,7 +243,7 @@ var ParticleFluidSolver = (function (exports) {
             // let numBinsY = ( spatialArray.length    + ( binDim - 1 ) ) / binDim;
             for (let y = 0; y < this.numBinsY; y++) {
                 for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = new Array();
+                    this.spatialArray[y][x] = [];
                 }
             }
         }
@@ -463,7 +463,7 @@ var ParticleFluidSolver = (function (exports) {
         app.stop();
 
         //const url = await app.renderer.extract.base64(app.stage);
-        let tintArray = new Array();
+        let tintArray = [];
         for (let i = 0; i < fluidParticles.length; i++) {
             
             let fluidParticle = fluidParticles[i];

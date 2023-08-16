@@ -31,7 +31,7 @@ class Delaunay {
     // }
     
     static removeTri( in_tris, tri_to_remove ) {
-        let out_tris = new Array();
+        let out_tris = [];
         
         in_tris.forEach( (tri) => {
             // if ( tri )    
@@ -59,7 +59,7 @@ class Delaunay {
     }
 
     static uniqueTris( in_tris ) {
-        let out_tris = new Array(); //[];
+        let out_tris = []; //[];
         for ( let tri_idx = 0; tri_idx < in_tris.length; tri_idx++ ) {
             const in_tri_pt0 = in_tris[ tri_idx ][0];
             const in_tri_pt1 = in_tris[ tri_idx ][1];
@@ -81,7 +81,7 @@ class Delaunay {
     }
 
     static uniqueVerts( in_verts ) {
-        let out_verts = new Array(); //[];
+        let out_verts = []; //[];
         for ( let vert_idx = 0; vert_idx < in_verts.length; vert_idx++ ) {
             const in_vert_x = in_verts[ vert_idx ][0];
             const in_vert_y = in_verts[ vert_idx ][1];
@@ -172,7 +172,7 @@ class Delaunay {
     static delaunayTrisWithoutBoundTris( delaunay_tris, boundary_tris_to_remove ) {
         //console.log( `boundary_tris_to_remove = ${boundary_tris_to_remove}, count = ${boundary_tris_to_remove.length}` );
         
-        let delaunay_tris_ret = new Array();
+        let delaunay_tris_ret = [];
         delaunay_tris.forEach( (tri) => {
             delaunay_tris_ret.push( tri );
         } );
@@ -238,7 +238,7 @@ class Delaunay {
             }
             
             
-            let invalid_tri_vertices = new Array();
+            let invalid_tri_vertices = [];
             for ( let invalid_tri_idx = 0; invalid_tri_idx < invalid_tris.length; invalid_tri_idx++ ) {
 
                 const len_before_remove = delaunay_tris.length;
@@ -302,8 +302,8 @@ class Delaunay {
         }
  
         
-        let boundary_tris_to_remove = new Array();
-        // let boundary_edges = new Array();
+        let boundary_tris_to_remove = [];
+        // let boundary_edges = [];
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             let tri = delaunay_tris[i];
             for ( let k = 0; k < 3; k++ ) {
@@ -313,7 +313,7 @@ class Delaunay {
                     
                     //! console.log( `tri to remove = ${Triangle.fromArray( tri )}` );
                     
-                    // let boundary_edge = new Array();
+                    // let boundary_edge = [];
                     // for ( let j = 0; j < tri.length; j++ ) {
                     //     //if ( k == j ) continue;
                     //     //const vertex = init_tri[j];
@@ -341,7 +341,7 @@ class Delaunay {
             }
         }
         
-        let boundary_edges_not_sorted = new Array();
+        let boundary_edges_not_sorted = [];
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             let current_tri = delaunay_tris[i];
             
@@ -355,7 +355,7 @@ class Delaunay {
 
             if ( contained_tri_vert_indices.length == 1 ) {
                 const shared_init_tri_vertex = outer_tri[ contained_tri_vert_indices[0] ];
-                let boundary_edge = new Array();
+                let boundary_edge = [];
                 for ( let v = 0; v < 3; v++ ) {
                     const current_vertex = current_tri[v];
                     
@@ -374,7 +374,7 @@ class Delaunay {
         }
         
         // sort boundary edges such that they form a continuous sequence of edges
-        let boundary_edges = new Array();
+        let boundary_edges = [];
         if ( boundary_edges_not_sorted.length > 0 ) {
             boundary_edges.push( boundary_edges_not_sorted[0] );
             boundary_edges_not_sorted.shift(); // pop front

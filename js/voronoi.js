@@ -2,7 +2,7 @@
 class Voronoi {
 
     static calcCircumCenters( delaunay_tris ) {
-        let circum_centers = new Array();
+        let circum_centers = [];
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
             const triangle_T = Triangle.fromArray(delaunay_tris[i]);
             const circum_center_T = triangle_T.circumCenter();
@@ -114,8 +114,8 @@ class Voronoi {
         
         // for the outermost polys, use boundary_delaunay_tris to CSG cut voronoi pattern agains input tris
         
-        let voronoi_cell_polygons = new Array();
-        let visited_verts = new Array();
+        let voronoi_cell_polygons = [];
+        let visited_verts = [];
         
         //delaunay_tris.array.forEach( (delaunay_tri) => {
         for ( let i = 0; i < delaunay_tris.length; i++ ) {            
@@ -132,7 +132,7 @@ class Voronoi {
                 // tri_vertex is the "center" of the current voronoi cell
                 
                 // the current triangle's circum center is thus in the voronoi-cell boundary polyline
-                let voronoi_cell_poly = new Array();
+                let voronoi_cell_poly = [];
                 voronoi_cell_poly.push( pt_as_list );
                 
                 // find all triangles that contain this vertex and get their circum-center center points
@@ -149,7 +149,7 @@ class Voronoi {
                 
                 // sort voronoi-cell vertices CCW
                 const tri_vertex_T = Vec2.fromArray(tri_vertex);
-                let path_angle_and_pt_array = new Array();
+                let path_angle_and_pt_array = [];
                 for ( let s = 0; s < voronoi_cell_poly.length; s++ ) {
                     const pos = voronoi_cell_poly[s];
                     const dvec = Vec2.sub( Vec2.fromArray( pos ), tri_vertex_T );
@@ -164,7 +164,7 @@ class Voronoi {
                 
                 // now path_angle_and_pt_array contains the current convex voronoi polygon / cell with CCW-sorted vertices
                 
-                voronoi_cell_poly = new Array();
+                voronoi_cell_poly = [];
                 for ( let s = 0; s < path_angle_and_pt_array.length; s++ ) {
                     voronoi_cell_poly.push( path_angle_and_pt_array[s][1] );
                 }
@@ -176,13 +176,13 @@ class Voronoi {
     }
     
     static calculate( delaunay_tris ) {
-        let paths = new Array();
+        let paths = [];
         
         let circum_centers = this.calcCircumCenters( delaunay_tris );
         
         for ( let i = 0; i < delaunay_tris.length; i++ ) {
 
-            let sub_paths = new Array();
+            let sub_paths = [];
             
             for ( let j = 0; j < delaunay_tris.length; j++ ) {
                 if ( i == j ) { continue; }

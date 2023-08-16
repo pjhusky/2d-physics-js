@@ -259,15 +259,15 @@ var SoftBodySolver = (function (exports) {
                      fixedDt, numSubSteps, 
                      constraints ) {
             
-            this.particles = new Array();
+            this.particles = [];
             this.maxNumParticles = maxNumParticles;
             this.numActiveParticles = 0;
             this.particleRadius = particleRadius;
             this.binDim = 2.0 * particleRadius;
             
             // this.massPositions = massPositions;
-            this.springLinks = new Array();
-            // this.shapeSpringLinks = new Array();
+            this.springLinks = [];
+            // this.shapeSpringLinks = [];
             //this.springRestLens = new Map();
             
             this.particleGravityX = particleGravityX;
@@ -359,7 +359,7 @@ var SoftBodySolver = (function (exports) {
                 this.spatialArray[y] = new Array( this.numBinsX );
                 //console.log( '\tspatialArray[y].length %d, this.numBinsX = %d', this.spatialArray[y].length, this.numBinsX );
                 for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = new Array();
+                    this.spatialArray[y][x] = [];
                     //console.log( '\tspatialArray[%d][%d].length = %d', y, x, spatialArray[y][x].length );
                 }
             }
@@ -370,7 +370,7 @@ var SoftBodySolver = (function (exports) {
             //console.log( 'cleared spatial bins' );
             for (let y = 0; y < this.numBinsY; y++) {
                 for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = new Array();
+                    this.spatialArray[y][x] = [];
                 }
             }
         }

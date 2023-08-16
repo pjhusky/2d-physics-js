@@ -3,7 +3,7 @@
 class Mat2x3 {
     constructor() {
         //this.m = undefined;
-        this.m = new Array();
+        this.m = [];
         this.setIdentity();
     }
 
