@@ -35,8 +35,11 @@ class GameObjectMgr {
                         if ( Vec2.dot( collision_info.normal, Vec2.sub( game_objects[j].pos_vec2, game_objects[i].pos_vec2 ) ) < 0.0 ) {
                             collision_info.normal = Vec2.mulScalar( collision_info.normal, -1.0 );
                         }
-                        this.penetrationRelaxation( game_objects[i], game_objects[j], collision_info );
-                        //this.penetrationRelaxation( game_objects[j], game_objects[i], collision_info );
+
+                        //this.collisionResponse( game_objects[i], game_objects[j], collision_info );
+                        
+                        // only resolve penetrations, but allow for some slack - super fun bouncy mode :-)
+                        this.penetrationRelaxationSlack( game_objects[i], game_objects[j], collision_info );
                     }
                 }
             }
@@ -44,39 +47,40 @@ class GameObjectMgr {
     }
     
     penetrationRelaxation( go1, go2, penetration_info ) {
-        
-        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
-        
-        //const relaxation_factor = 0.75;
-        //const relaxation_factor = 1.0 / 15.0;
-        //const relaxation_factor = 1.0 / 18.0;
         const relaxation_factor = 1.0 / (GameObjectMgr.max_relaxations() * 0.9);
-
-        // const rb1 = go1.rigid_body;
-        // const rb2 = go2.rigid_body;
-        
         const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
         
         if ( go1.recip_mass > 2.0 * MathUtil.f32_Eps() && go1.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
-            //go1.translateBy( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
             go1.translateBy( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
-        } 
-        
+        }         
         if ( go2.recip_mass > 2.0 * MathUtil.f32_Eps() && go2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
-            //go2.translateBy( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
             go2.translateBy( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
-            
         } 
-        // funny, looks like spring-mass system on bounce...
-        //go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go1.recip_mass ) );
-        //go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go2.recip_mass ) );
+    }
+
+    penetrationRelaxationSlack( go1, go2, penetration_info ) {
+        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
         
-        // return;
+        const relaxation_factor = 2.0 / (GameObjectMgr.max_relaxations() * 0.9);
+        const correction_amount = penetration_info.depth / ( go1.recip_mass + go2.recip_mass ) * relaxation_factor;
+        const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
+
+        // funny, looks like spring-mass system on bounce... allows for some "penetration/overlay slack"
+        go1.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2, -go1.recip_mass ) );
+        go2.applyLinearVelocity( Vec2.mulScalar( correction_dir_vec2,  go2.recip_mass ) );
+    }
+    
+    
+    collisionResponse( go1, go2, collision_info ) {
+        
+        if ( MathUtil.isApproxEqual( go1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( go2.recip_mass, 0.0 ) ) { return; }
+        
+        this.penetrationRelaxation( go1, go2, collision_info );
         
         // #####################################################
         // #### "dynamics" part: ####
-        const N_vec2 = penetration_info.normal;
+        const N_vec2 = collision_info.normal;
         //const N_vec2 = Vec2.mulScalar( penetration_info.normal, -1.0 );
         // if ( isNaN( N_vec2.x ) ) {
         //     console.error( `N_vec2 was NaN!!!` );
