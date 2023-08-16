@@ -141,7 +141,7 @@ class GameObjectMgr {
         j_N = j_N / ( go1.recip_mass + go2.recip_mass);
         //j_N = j_N / Math.max( MathUtil.f32_Eps(), go1.recip_mass + go2.recip_mass);
 
-        // impulse is in direction of normal ( from s1 to s2)
+        // impulse is in direction of normal ( from go1 to go2)
         let impulse_vec2 = Vec2.mulScalar( N_vec2, j_N );
         go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
         go2.vel_vec2 = Vec2.add( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
@@ -181,8 +181,8 @@ class GameObjectMgr {
         const N_vec2 = collision_info.normal;
 
         const recip_mass_sum = go1.recip_mass + go2.recip_mass;
-        //the direction of collisionInfo is always from s1 to s2
-        //but the Mass is inversed, so start scale with s2 and end scale with s1
+        //the direction of collisionInfo is always from go1 to go2
+        //but the Mass is inversed, so start scale with go2 and end scale with go1
         const start_vec2 = Vec2.mulScalar( collision_info.start_collision_pt, go2.recip_mass / ( recip_mass_sum ) );
         const end_vec2   = Vec2.mulScalar( collision_info.end_collision_pt,   go1.recip_mass / ( recip_mass_sum ) );
         const p_vec2 = Vec2.add( start_vec2, end_vec2 );
@@ -218,7 +218,7 @@ class GameObjectMgr {
                       r1_cross_N * r1_cross_N * go1.inertia +
                       r2_cross_N * r2_cross_N * go2.inertia );
 
-        //impulse is in direction of normal ( from s1 to s2)
+        //impulse is in direction of normal ( from go1 to go2)
         let impulse_vec2 = Vec2.mulScalar( N_vec2, j_N );
         // impulse = F dt = m * delta_v
         // delta_v = impulse / m
@@ -260,7 +260,7 @@ class GameObjectMgr {
             j_T = j_N;
         }
 
-        //impulse is from s1 to s2 (in opposite direction of velocity)
+        //impulse is from go1 to go2 (in opposite direction of velocity)
         impulse_vec2 = Vec2.mulScalar( tangent_vec2, j_T );
 
         go1.vel_vec2 = Vec2.sub( go1.vel_vec2, Vec2.mulScalar( impulse_vec2, go1.recip_mass ) );
