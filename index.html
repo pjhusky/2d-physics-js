@@ -530,6 +530,7 @@
             // #############################################################################################################################
 
             const many_game_objects = true;
+            const allow_polygon_game_objects = false;
             
             if ( many_game_objects ) {
                 const mass = 10.0;
@@ -539,6 +540,7 @@
             }
 
             //if ( many_game_objects ) 
+            if ( allow_polygon_game_objects )
             {
                 //let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
                 let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
@@ -557,7 +559,7 @@
                 test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
             }
             
-            if ( many_game_objects ) {
+            if ( many_game_objects && allow_polygon_game_objects ) {
                 //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
                 let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ] );
                 //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
@@ -656,7 +658,7 @@
                 if ( many_game_objects ) {
                     let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
                     //test_circle_go.setPos( new Vec2( 190, 500 ) );
-                    test_circle_go.setPos( new Vec2( 120, 500 ) );
+                    test_circle_go.setPos( new Vec2( 120, 200 ) );
                 }
 
                 
@@ -1439,7 +1441,7 @@
             //     1.0/60.0
             // );      
             let translation_speed = 3.0;
-            let rotation_radians_speed = 0.01;
+            let rotation_radians_speed = 0.05;//0.01;
             // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
             Input.KeyboardController( document, window, //go_mgr,
                 {
@@ -1468,13 +1470,13 @@
                         selected_go.applyLinearVelocity( {x: 0.0, y: translation_speed} );
                     },
                     
-                    69: () => {  // "e"
+                    69: () => {  // 'e'
                         //console.log( `e` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.rotateBy( rotation_radians_speed );
                         selected_go.applyAngularVelocity( rotation_radians_speed );
                     },
-                    81: () => {  // "q"
+                    81: () => {  // 'q'
                         //console.log( `q` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.rotateBy( -rotation_radians_speed );
