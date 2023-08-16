@@ -17,35 +17,35 @@ class GameObject {
         if ( mass != undefined ) {
             this.recip_mass = mass; 
         } else {
-            //this.recip_mass = 1.0;
-            this.recip_mass = 5.0;
+            this.recip_mass = 1.0;
         }
-        if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
+        //if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
+        if ( mass == 0.0 ) {
             this.accel_vec2 = new Vec2( 0.0, 0.0 ); // convention: static object has mass 0, thus no acceleration!
         } else {
             this.recip_mass = 1.0 / this.recip_mass;
         }
-        if ( this.recip_mass != 0.0 ) {
-            this.rigid_body.getInertia();
+        if ( this.recip_mass > 0.0 ) {
+        //if ( mass != undefined && mass > 0.0 ) {
+            this.inertia = (1.0 / this.recip_mass) * this.rigid_body.getInertia();
         }
     
-        
         if ( friction != undefined ) {
             this.friction = friction;
         } else {
-            this.friction = 0.1;
+            this.friction = 0.5;
         }
 
         if ( restitution != undefined ) {
             this.restitution = restitution;
         } else {
-            this.restitution = 0.6;
+            this.restitution = 0.3;
         }
     }
 
     static gravity() { return new Vec2( 0.0, 9.81 * 5.0 ); } // TODO: move to some global parameter file/class
     static linear_friction() { return 0.9875; }
-    static angular_friction() { return 0.9975; }
+    static angular_friction() { return 0.998; }
     
     update( dt ) {
         
