@@ -53,14 +53,20 @@ class RigidBody_Circle extends RigidBody {
     }
     
     getInertia() {
-        // https://kamroncelcarter.blogspot.com/2022/08/moment-of-inertia-of-circle.html
-        const diameter = this.radius * 2.0;
+        // // https://kamroncelcarter.blogspot.com/2022/08/moment-of-inertia-of-circle.html
+        // const diameter = this.radius * 2.0;
         
-        const diameter_pow2 = diameter * diameter;
-        const diameter_pow4 = diameter_pow2 * diameter_pow2;
-        const I_xx = Math.PI * diameter_pow4 * ( 1.0 / 64.0 );
-        const I_yy = I_xx;
-        const I_zz = I_xx + I_yy;
+        // const diameter_pow2 = diameter * diameter;
+        // const diameter_pow4 = diameter_pow2 * diameter_pow2;
+        // const I_xx = Math.PI * diameter_pow4 * ( 1.0 / 64.0 );
+        // const I_yy = I_xx;
+        // const I_zz = I_xx + I_yy;
+
+        //const I_zz = 200.0;
+
+        //this.mInertia = (1 / this.mInvMass) * (this.mRadius * this.mRadius) / 12;
+        const I_zz = (this.radius * this.radius) / 12.0;
+        console.log( `circle inertia for radius ${this.radius} is ${I_zz}` );
         return I_zz;
     }
 }
@@ -195,6 +201,8 @@ class RigidBody_Polygon extends RigidBody {
     }
     
     getInertia() {
-        return 1.0; // TODO!!!
+        //return 20.0; // TODO!!!
+        //return 5817477.0;
+        return 100.0;
     }
 }
