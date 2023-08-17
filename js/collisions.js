@@ -99,8 +99,8 @@ class Collisions {
         collisionInfo.depth = collision_depth;
         
         collisionInfo.normal = collision_normal;
-        // collisionInfo.start = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
-        // collisionInfo.end   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
+        // collisionInfo.start_collision_pt = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal, -radius_B ) );
+        // collisionInfo.end_collision_pt   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, radius_A ) );;
         collisionInfo.start_collision_pt = Vec2.add( circ_B_center_vec2, Vec2.mulScalar( collision_normal,  radius_B ) );
         collisionInfo.end_collision_pt   = Vec2.add( circ_A_center_vec2, Vec2.mulScalar( collision_normal, -radius_A ) );
         collisionInfo.outside = true;
