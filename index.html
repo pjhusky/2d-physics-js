@@ -1386,37 +1386,43 @@
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.translateBy( {x: -translation_speed, y: 0.0} );
                         selected_go.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
+                        //selected_go.rigid_body.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
                     },
                     38: () => { 
                         //console.log( `arrow up` ); },
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.translateBy( {x: 0.0, y: -translation_speed} );
                         selected_go.applyLinearVelocity( {x: 0.0, y: -translation_speed} );
+                        //selected_go.rigid_body.applyLinearVelocity( {x: 0.0, y: -translation_speed} );
                     },
                     39: () => { 
                         //console.log( `arrow right` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.translateBy( {x: translation_speed, y: 0.0} );
                         selected_go.applyLinearVelocity( {x: translation_speed, y: 0.0} );
+                        //selected_go.rigid_body.applyLinearVelocity( {x: translation_speed, y: 0.0} );
                     },
                     40: () => { 
                         //console.log( `arrow down` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.translateBy( {x: 0.0, y: translation_speed} );
                         selected_go.applyLinearVelocity( {x: 0.0, y: translation_speed} );
+                        //selected_go.rigid_body.applyLinearVelocity( {x: 0.0, y: translation_speed} );
                     },
                     
                     69: () => {  // 'e'
                         //console.log( `e` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.rotateBy( rotation_radians_speed );
-                        selected_go.applyAngularVelocity( rotation_radians_speed );
+                        //selected_go.applyAngularVelocity( rotation_radians_speed );
+                        selected_go.rigid_body.applyAngularVelocity( rotation_radians_speed );
                     },
                     81: () => {  // 'q'
                         //console.log( `q` ); 
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.rotateBy( -rotation_radians_speed );
-                        selected_go.applyAngularVelocity( -rotation_radians_speed );
+                        //selected_go.applyAngularVelocity( -rotation_radians_speed );
+                        selected_go.rigid_body.applyAngularVelocity( -rotation_radians_speed );
                     },
                 }, 
                 1.0/60.0

@@ -1,27 +1,135 @@
+"use strict";
+
 // Abstract
 class RigidBody {
-    constructor( center_of_mass) {
+    constructor( mass, restitution, friction ) {
         if (this.constructor == RigidBody) {
             throw new Error( `Abstract class '${this.constructor.name}' can't be instantiated.`);
         }
-        // this.shape_type = ShapeType.abstract;
-        this.center_of_mass = center_of_mass;
-        this.center_of_mass_WS = center_of_mass;
-        this.angle_rad = 0.0;
+
+        this.center_of_mass_vec2 = new Vec2( 0.0, 0.0 ); // center of mass Object Space
+        this.center_of_mass_vec2_WS = new Vec2( 0.0, 0.0 ); // center of mass World Space
+        //this.angle_rad = 0.0;
         this.model_matrix = Mat2x3.createIdentity();
+        
+        this.pos_vec2 = new Vec2( 0.0, 0.0 );
+        this.vel_vec2 = new Vec2( 0.0, 0.0 );
+        this.accel_vec2 = SimulationParameters.globalGravity();
+        this.angle_rad = 0.0;
+        this.angular_vel = 0.0;
+        this.angular_accel = 0.0;
+        
+        
+        // safe assign
+        if ( mass != undefined ) {
+            this.recip_mass = mass; 
+        } else {
+            this.recip_mass = 1.0;
+        }
+        //if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
+        if ( mass == 0.0 ) {
+            this.accel_vec2 = new Vec2( 0.0, 0.0 ); // convention: static object has mass 0, thus no acceleration!
+        } else {
+            this.recip_mass = 1.0 / this.recip_mass;
+        }
+
+        this.inertia = 0.0;
+
+        console.error( `this.recip_mass = ${this.recip_mass}` );
+        
+        if ( friction != undefined ) {
+            this.friction = friction;
+        } else {
+            this.friction = 0.8;
+        }
+
+        if ( restitution != undefined ) {
+            this.restitution = restitution;
+        } else {
+            this.restitution = 0.2;
+        }        
     }
     
-    setPosition( pos_array2 ) { this.center_of_mass = pos_array2; }
+    update( dt ) {
+
+        this.vel_vec2 = Vec2.add( this.vel_vec2, Vec2.mulScalar( this.accel_vec2, dt ) );
+        this.vel_vec2.scale( 1.0 - SimulationParameters.globalLinearFriction() ); // friction
+        this.pos_vec2 = Vec2.add( this.pos_vec2, Vec2.mulScalar( this.vel_vec2, dt ) );
+        
+        this.angular_vel += this.angular_accel * dt;
+        this.angular_vel *= ( 1.0 - SimulationParameters.globalAngularFriction() );
+        
+        // limit values        
+        if ( this.recip_mass > 0.0 ) {
+            if ( this.angular_vel > 0.0 ) {
+                this.angular_vel = Math.min( this.angular_vel, 1.5 );
+                // if ( this.angular_vel < 0.05 ) {
+                //     this.angular_vel = 0.0;
+                // }
+            } else if ( this.angular_vel < 0.0 ) {
+                this.angular_vel = Math.max( this.angular_vel, -1.5 );
+                // if ( this.angular_vel > -0.05 ) {
+                //     this.angular_vel = 0.0;
+                // }                    
+            }
+            
+            if ( this.angular_accel > 0.0 ) {
+                this.angular_accel = Math.min( this.angular_accel, 1.5 );
+                // if ( this.angular_accel < 0.05 ) {
+                //     this.angular_accel = 0.0;
+                // }
+            } else if ( this.angular_accel < 0.0 ) {
+                this.angular_accel = Math.max( this.angular_accel, -1.5 );
+                // if ( this.angular_accel > -0.05 ) {
+                //     this.angular_accel = 0.0;
+                // }
+            }
+        }
+        this.angle_rad += this.angular_vel * dt;
+    
+    }
+
+    postUpdate() {
+        // for polygons we need to create matrix 
+        const rot_mat               = Mat2x3.createRotation( this.angle_rad );
+        const translation_mat       = Mat2x3.createTranslation(  this.pos_vec2.x,  this.pos_vec2.y );
+        
+        // console.log( `rot_mat = ${rot_mat}` );
+        // console.log( `translation_mat = ${translation_mat}` );
+        
+        const model_matrix = Mat2x3.mulMat( translation_mat, rot_mat );
+        this.setModelMatrix( model_matrix );
+    }
+    
     setRotation( angle_rad ) { this.angle_rad = angle_rad; }
     setModelMatrix( model_matrix ) { this.model_matrix = model_matrix; }
-    getCenterOfMass() { return this.center_of_mass; }
+    getCenterOfMass() { return this.center_of_mass_vec2.toArray(); }
+
+    setPos( pos_vec2 ) {
+        this.pos_vec2 = pos_vec2;
+    }
+    translateBy( translation_delta_vec2 ) {
+        this.pos_vec2.add( translation_delta_vec2 );
+    }
+    applyLinearVelocity( delta_linear_vel_vec2 ) {
+        this.vel_vec2.add( delta_linear_vel_vec2 );        
+    }
+    
+    setAngle( angle_rad ) {
+        this.angle_rad = angle_rad;
+    }
+    rotateBy( delta_angle_rad ) {
+        this.angle_rad += delta_angle_rad;        
+    }
+    applyAngularVelocity( delta_angle_vel_rad ) {
+        this.angular_vel += delta_angle_vel_rad;
+    }
     
     getBoundRadius() {}
-    getBoundingCircle() { /*return [ this.center_of_mass, 0.0 ];*/ }
-    getBoundingCircleWS() { /*return [ this.center_of_mass_WS.toArray(), 0.0 ];*/ }
+    getBoundingCircle() {}
+    getBoundingCircleWS() {}
     
     transformToWorldSpace() {}
-    
     getInertia() {}
     
     toString() { return `'${this.constructor.name}'`; }
@@ -29,27 +137,33 @@ class RigidBody {
 
 class RigidBody_Circle extends RigidBody {
     
-    constructor( radius ) {
-        let center_of_mass = new Array( 0.0, 0.0 );
-        super( center_of_mass );
+    constructor( radius, mass, restitution, friction ) {
+
+        super(mass, restitution, friction);
         this.shape_type = ShapeType.circle;
         
         console.log( `'${this.constructor.name}' ctor` );
-        
-        this.constructorHelper( center_of_mass, radius );
-    }
-    constructorHelper( center_of_mass, radius ) {
+
         this.radius = radius;
+
+        if ( this.recip_mass > 0.0 ) {
+            this.inertia = this.getInertia();
+        }        
     }
     
     getBoundRadius() { return this.radius; }
-    getBoundingCircle() { return [ this.center_of_mass, this.radius ]; }
-    getBoundingCircleWS() { return [ this.center_of_mass_WS.toArray(), this.radius ]; }
+    getBoundingCircle() { return [ this.center_of_mass_vec2.toArray(), this.radius ]; }
+    getBoundingCircleWS() { return [ this.center_of_mass_vec2_WS.toArray(), this.radius ]; }
+    
+    postUpdate() {
+        super.postUpdate();        
+        this.transformToWorldSpace();
+    }
     
     transformToWorldSpace() {
         // for now, nothing to do, until we add friction which will cause circles to spin 
         // currently we wouldn't even see the spinning on a solid-colored circle without position marker(s)
-        this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+        this.center_of_mass_vec2_WS = Mat2x3.mulPosition( this.model_matrix, this.center_of_mass_vec2 );
     }
     
     getInertia() {
@@ -65,30 +179,32 @@ class RigidBody_Circle extends RigidBody {
         //const I_zz = 200.0;
 
         //this.mInertia = (1 / this.mInvMass) * (this.mRadius * this.mRadius) / 12;
-        const I_zz = (this.radius * this.radius) / 12.0;
+        const I_zz = (1.0 / this.recip_mass) * (this.radius * this.radius) / 12.0;
         console.log( `circle inertia for radius ${this.radius} is ${I_zz}` );
         return I_zz;
     }
 }
 
 class RigidBody_Polygon extends RigidBody {
-    constructor( relative_path_points_ccw ) {
-        let center_of_mass = new Array( 0.0, 0.0 );
-        super( center_of_mass );
+    constructor( relative_path_points_ccw, mass, restitution, friction ) {
+
+        super(mass, restitution, friction);
         this.shape_type = ShapeType.polygon;
         
         console.log( `'${this.constructor.name}' ctor` );
-        
+                
         this.relative_path_points_ccw = relative_path_points_ccw;
-        this.world_space_points_ccw_vec2 = new Array();
-        this.world_space_edge_normals_ccw_vec2 = new Array();
-        this.constructorHelper();
-    }
-    constructorHelper() {
+        this.world_space_points_ccw_vec2 = [];
+        this.world_space_edge_normals_ccw_vec2 = [];
+
         this.bound_radius = -1;
-        this.bounding_circle = new Array();
+        this.bounding_circle = [];
         this.getBoundRadius();
         this.getBoundingCircle();    
+        
+        if ( this.recip_mass > 0.0 ) {
+            this.inertia = this.getInertia();
+        }        
     }
     
     getBoundingCircle() {
@@ -154,28 +270,22 @@ class RigidBody_Polygon extends RigidBody {
         const bounding_circle = this.getBoundingCircle();
         //console.log( `bounding circle center OS = ${Vec2.fromArray( bounding_circle[0] )} ` )
         this.bounding_circle_center_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( bounding_circle[0] ) );
-        // console.log( `bounding circle center WS = ${this.bounding_circle_center_WS}` );
-        // console.log( `this.center_of_mass_WS    = ${this.center_of_mass_WS}` );
-        //console.log( `this.center_of_mass_WS - this.bounding_circle_center_WS = ${Vec2.sub( this.center_of_mass_WS, this.bounding_circle_center_WS )}` );
-        //console.log( `len this.center_of_mass_WS - this.bounding_circle_center_WS = ${Vec2.sub( this.center_of_mass_WS, this.bounding_circle_center_WS ).len()}` );
-        
-        //return [ [ this.bounding_circle_center_WS.x, this.bounding_circle_center_WS.y ], bounding_circle[1] ]; 
         
         return [ this.bounding_circle_center_WS.toArray(), bounding_circle[1] ]; 
-        //return [ this.center_of_mass_WS, this.radius ];
-        //return [ this.center_of_mass_WS, bounding_circle[1] ];
     }
     
     getBoundRadius() {
-        //if ( this.bound_radius < 0.0 ) {      
-            this.getBoundingCircle();
-            // console.log( `this.bound_radius = ${this.bound_radius}` );
-        //}
+        this.getBoundingCircle();
         return this.bound_radius;
     }
  
+    postUpdate() {
+        super.postUpdate();        
+        this.transformToWorldSpace();
+    }
+    
     transformToWorldSpace() {
-        this.world_space_points_ccw_vec2 = new Array();
+        this.world_space_points_ccw_vec2 = [];
         for ( let i = 0; i < this.relative_path_points_ccw.length; i++ ) {
             const rel_pt_array = this.relative_path_points_ccw[i];
             //console.log( rel_pt_array );
@@ -185,7 +295,7 @@ class RigidBody_Polygon extends RigidBody {
         }
         
         // calculate the edge normals
-        this.world_space_edge_normals_ccw_vec2 = new Array();
+        this.world_space_edge_normals_ccw_vec2 = [];
         for ( let i = 0; i < this.world_space_points_ccw_vec2.length; i++ ) {
             const j = ( ( i + 1 ) % this.world_space_points_ccw_vec2.length);
             const line_segment_start_vec2 = this.world_space_points_ccw_vec2[i];
@@ -197,12 +307,12 @@ class RigidBody_Polygon extends RigidBody {
             this.world_space_edge_normals_ccw_vec2.push( edge_normal );
         }        
         
-        this.center_of_mass_WS = Mat2x3.mulPosition( this.model_matrix, Vec2.fromArray( this.center_of_mass ) );
+        this.center_of_mass_vec2_WS = Mat2x3.mulPosition( this.model_matrix, this.center_of_mass_vec2 );
     }
     
     getInertia() {
         //return 20.0; // TODO!!!
         //return 5817477.0;
-        return 280.0;
+        return 380.0;
     }
 }
