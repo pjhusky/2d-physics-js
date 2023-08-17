@@ -24,7 +24,7 @@ class RigidBody {
         if ( mass != undefined ) {
             this.recip_mass = mass; 
         } else {
-            this.recip_mass = 1.0;
+            this.recip_mass = 10.0;
         }
         //if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
         if ( mass == 0.0 ) {
@@ -46,7 +46,8 @@ class RigidBody {
         if ( restitution != undefined ) {
             this.restitution = restitution;
         } else {
-            this.restitution = 0.2;
+            //this.restitution = 0.2;
+            this.restitution = 0.175;
         }        
     }
     
@@ -313,6 +314,81 @@ class RigidBody_Polygon extends RigidBody {
     getInertia() {
         //return 20.0; // TODO!!!
         //return 5817477.0;
-        return 380.0;
+        // return 680.0;
+        
+        let points_vec2 = [];
+        this.relative_path_points_ccw.forEach( (point_array2) => {
+            points_vec2.push( Vec2.fromArray( point_array2 ) );
+        });
+        
+        
+        const area = RigidBody_Polygon.calculateArea( points_vec2 );
+        
+        const density = ( 1.0 / this.recip_mass ) / area;
+        
+        const inertia = RigidBody_Polygon.calculateInertia( points_vec2, density );
+        
+        console.log( `area = ${area}, density = ${density}, mass = ${1.0 / this.recip_mass}, inertia = ${inertia}` );
+        
+        return inertia;
+    }
+    
+    static calculateArea(points_vec2) {
+        let area = 0;
+        for (let i = 1; i < points_vec2.length - 1; i++) {
+            const v1 = Vec2.sub(points_vec2[i + 1], points_vec2[0]);
+            const v2 = Vec2.sub(points_vec2[i], points_vec2[0]);
+            area += Vec2.cross2(v1, v2) / 2;
+        }
+        return Math.abs(area);
+    }
+    
+    static calculateInertia(points_vec2, density) {
+
+        // https://fotino.me/moment-of-inertia-algorithm/
+        let momentOfInertia = 0;
+        for (let i = 1; i < points_vec2.length - 1; i++) {
+            const p1 = points_vec2[0], p2 = points_vec2[i], p3 = points_vec2[i + 1];
+
+            const w = Vec2.dist(p1, p2);
+            const w1 = Math.abs(Vec2.dot(Vec2.sub(p1, p2), Vec2.sub(p3, p2)) / w);
+            const w2 = Math.abs(w - w1);
+
+            const signedTriArea = Vec2.cross2(Vec2.sub(p3, p1), Vec2.sub(p2, p1)) / 2;
+            const h = 2 * Math.abs(signedTriArea) / w;
+
+            const p4 = Vec2.add(p2, Vec2.mulScalar(Vec2.sub(p1, p2), w1 / w));
+
+            const cm1 = new Vec2(
+                (p2.x + p3.x + p4.x) / 3,
+                (p2.y + p3.y + p4.y) / 3
+            );
+            const cm2 = new Vec2(
+                (p1.x + p3.x + p4.x) / 3,
+                (p1.y + p3.y + p4.y) / 3
+            );
+
+            const I1 = density * w1 * h * ((h * h / 4) + (w1 * w1 / 12));
+            const I2 = density * w2 * h * ((h * h / 4) + (w2 * w2 / 12));
+            const m1 = 0.5 * w1 * h * density;
+            const m2 = 0.5 * w2 * h * density;
+
+            const I1cm = I1 - (m1 * Math.pow(Vec2.dist(cm1, p3), 2));
+            const I2cm = I2 - (m2 * Math.pow(Vec2.dist(cm2, p3), 2));
+
+            const momentOfInertiaPart1 = I1cm + (m1 * Math.pow(Vec2.len(cm1), 2));
+            const momentOfInertiaPart2 = I2cm + (m2 * Math.pow(Vec2.len(cm2), 2));
+            if (Vec2.cross2(Vec2.sub(p1, p3), Vec2.sub(p4, p3)) > 0) {
+                momentOfInertia += momentOfInertiaPart1;
+            } else {
+                momentOfInertia -= momentOfInertiaPart1;
+            }
+            if (Vec2.cross2(Vec2.sub(p4, p3), Vec2.sub(p2, p3)) > 0) {
+                momentOfInertia += momentOfInertiaPart2;
+            } else {
+                momentOfInertia -= momentOfInertiaPart2;
+            }
+        }
+        return Math.abs(momentOfInertia);
     }
 }
