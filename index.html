@@ -536,7 +536,7 @@
             const allow_polygon_game_objects = true;
             
             if ( many_game_objects ) {
-                const mass = 10.0;
+                const mass = 20.0;
                 //const mass = 1.0;
                 let test_circle_go = go_mgr.addCircleGameObject( 50.0, mass );
                 test_circle_go.setPos( new Vec2( 340, 400 ) );
@@ -545,8 +545,9 @@
             //if ( many_game_objects ) 
             if ( allow_polygon_game_objects )
             {
+                const mass = 30.0;
                 //let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
-                let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ] );
+                let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ], mass );
                 //let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 0.0, 38.0 ], [ 50.0, -50.0 ] ] );
                                 // let go_mgr = new GameObjectMgr();
                 // let test_shape_go = go_mgr.addCircleGameObject( 35.0 );
@@ -558,12 +559,13 @@
             }
             
             if ( false ) {
-                let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
+                const mass = 20.0;
+                let test_shape_go  = go_mgr.addCircleGameObject( 50.0, mass );
                 test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
             }
             
             if ( many_game_objects && allow_polygon_game_objects ) {
-                const mass = 5;
+                const mass = 30;
                 //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
                 let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ], mass );
                 //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
@@ -655,12 +657,14 @@
                               
                 
                 {
-                    let test_circle_go = go_mgr.addCircleGameObject( 35.0 );
+                    const mass = 20.0;
+                    let test_circle_go = go_mgr.addCircleGameObject( 35.0, mass );
                     test_circle_go.setPos( new Vec2( 580, 100 ) );
                 }
 
                 if ( many_game_objects ) {
-                    let test_circle_go = go_mgr.addCircleGameObject( 65.0 );
+                    const mass = 20.0;
+                    let test_circle_go = go_mgr.addCircleGameObject( 65.0, mass );
                     //test_circle_go.setPos( new Vec2( 190, 500 ) );
                     test_circle_go.setPos( new Vec2( 120, 200 ) );
                 }
