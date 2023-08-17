@@ -32,50 +32,131 @@
         <link rel="icon" type="image/png" href="assets/magnetic-field-2.png">
         <link rel="shortcut icon" type="image/png" href="assets/magnetic-field-2.png">
         
-        <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
-        <!-- '?v=1' forces refresh -->
- 
-        <script type="text/javascript" src="js/input.js?v=1"></script>
-        <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
-        <script type="text/javascript" src="js/vec2.js?v=1"></script>
-        <script type="text/javascript" src="js/mat2x3.js?v=1"></script>
-        <script type="text/javascript" src="js/convexHull.js?v=1"></script>
-        <script type="text/javascript" src="js/boundingCircle.js?v=1"></script>
-        <script type="text/javascript" src="js/shapeType.js?v=1"></script>
+        <!-- https://www.honeybadger.io/blog/import-maps/ -->
+        <!-- <script type="importmap" src="importmap.json"></script> -->
+        <!-- <script type="importmap">
+            {
+                "imports": {
+                  "PIXI": "./js/pixijs/pixi.js"
+                }
+            }
+        </script> -->
+            
+    </head>
+    
+    
+    
+    <body ontouchstart="">
+        
 
-        <script type="text/javascript" src="js/simulationParameters.js?v=1"></script>        
-        <script type="text/javascript" src="js/rigidBody.js?v=1"></script>
-        <script type="text/javascript" src="js/collisions.js?v=1"></script>
-        <script type="text/javascript" src="js/gameObject.js?v=1"></script>
+        <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
+        <!-- '?v=1' forces refresh -->        
+                
+        <!-- <script type="text/javascript" src="js/input.js?v=1"></script> -->
+        <script type="module" src="./js/input.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/mathUtil.js?v=1"></script> -->
+        <script type="module" src="./js/mathUtil.js"></script>
+        
+        
+        <!-- <script type="text/javascript" src="js/vec2.js?v=1"></script> -->
+        <script type="module" src="./js/vec2.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/mat2x3.js?v=1"></script> -->
+        <script type="module" src="js/mat2x3.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/convexHull.js?v=1"></script> -->
+        <script type="module" src="js/convexHull.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/boundingCircle.js?v=1"></script> -->
+        <script type="module" src="js/boundingCircle.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/shapeType.js?v=1"></script> -->
+        <script type="module" src="js/shapeType.js?v=1"></script>
+
+        <!-- <script type="text/javascript" src="js/simulationParameters.js?v=1"></script> -->
+        <script type="module" src="js/simulationParameters.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/rigidBody.js?v=1"></script> -->
+        <script type="module" src="js/rigidBody.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/collisions.js?v=1"></script> -->
+        <script type="module" src="./js/collisions.js"></script>
+        
+        <!-- <script type="text/javascript" src="js/gameObject.js?v=1"></script> -->
+        <script type="module" src="js/gameObject.js?v=1"></script>
+        
         
         <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
         
         <script type="text/javascript" src="js/pixijs/pixi.js"></script>
+        <!-- <script src="js/pixijs/pixi.js"></script> -->
+        <!-- <script type="module" src="js/pixijs/pixi.js">import * as PIXI from './js/pixijs/pixi.js';</script> -->
+        <!-- <script type="module" src="js/pixijs/pixi.js"></script> -->
+        
         <script type="text/javascript" src="js/appUtils.js?v=1"></script>
+        <!-- <script type="module" src="js/appUtils.js?v=1"></script> -->
+        
         <!-- <script type="text/javascript" src="js/setupTriangle.js?v=1"></script> -->
-        <script type="text/javascript" src="js/triangle.js?v=1"></script>
-        <script type="text/javascript" src="js/sphere.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/triangle.js?v=1"></script> -->
+        <script type="module" src="js/triangle.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/sphere.js?v=1"></script> -->
+        <script type="module" src="js/sphere.js?v=1"></script>
+        
         <script type="text/javascript" src="js/gauss.js?v=1"></script>
+        <!-- <script type="module" src="js/gauss.js?v=1"></script> -->
+        
         <script type="text/javascript" src="js/filterShaders.js?v=1"></script>
+        
         <script type="text/javascript" src="js/particleFluidSolver.js?v=1"></script>
+        <!-- <script type="module" src="js/particleFluidSolver.js?v=1"></script> -->
+        
         <script type="text/javascript" src="js/softBodySolver.js?v=1"></script>
-
-        <script type="text/javascript" src="js/delaunay.js?v=1"></script>
-        <script type="text/javascript" src="js/voronoi.js?v=1"></script>
+        <!-- <script type="module" src="js/softBodySolver.js?v=1"></script> -->
+        
+        <!-- <script type="text/javascript" src="js/delaunay.js?v=1"></script> -->
+        <script type="module" src="js/delaunay.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/voronoi.js?v=1"></script> -->
+        <script type="module" src="js/voronoi.js?v=1"></script>
+        
         <script type="text/javascript" src="js/drawPrimitive.js?v=1"></script>
-        <script type="text/javascript" src="js/builtinRenderPrimitive.js?v=1"></script>
+        
+        <!-- <script type="text/javascript" src="js/builtinRenderPrimitive.js?v=1"></script> -->
+        <script type="module" src="js/builtinRenderPrimitive.js?v=1"></script>
 
-        <script type="text/javascript" src="js/gameObjectMgr.js?v=1"></script>
+        <!-- <script type="text/javascript" src="js/gameObjectMgr.js?v=1"></script> -->
+        <script type="module" src="js/gameObjectMgr.js?v=1"></script>
         
         <script type="text/javascript" src="js/particleColorsFirefox.js?v=1"></script>
         <script type="text/javascript" src="js/particleColorsChrome.js?v=1"></script>
         
-    </head>
-    <body ontouchstart="">
-    
-        <script>
+        <!-- <script> -->
+        <script type="module">
+        
             "use strict";
+
+            // import * as PIXI from './js/pixijs/pixi.js';
+            //import { AppUtils } from './js/appUtils.js'
+            import { Input } from './js/input.js'
+            import { Vec2 } from './js/vec2.js';
+            import { MathUtil } from './js/mathUtil.js';
+            import { SimulationParameters } from './js/simulationParameters.js';
+            import { ConvexHull } from './js/convexHull.js';
+            import { Collisions } from './js/collisions.js';
+            import { ShapeType } from './js/shapeType.js';
+            import { Triangle } from './js/triangle.js';
+            import { Delaunay } from './js/delaunay.js';
+            import { Voronoi } from './js/voronoi.js';
+            import { GameObjectMgr } from './js/gameObjectMgr.js';
+            import { GameObject, GameObject_Breakable } from './js/gameObject.js';
+            import { RigidBody_Circle, RigidBody_Polygon } from './js/rigidBody.js';
+            import { BuiltinRenderPrimitive_Circle, BuiltinRenderPrimitive_Polygon } from './js/builtinRenderPrimitive.js';
             
+
+
             let browserEnum = new AppUtils.BrowserEnum();
             
             let a = 7321;        
@@ -702,6 +783,13 @@
                     ground_floor_go.setPos( new Vec2( 730.0, 300.0 ) );
                     ground_floor_go.setAngle( Math.PI * 0.5 );
                 }
+
+                {
+                    const mass = 0.0;
+                    let test_shape_go = go_mgr.addPolygonGameObject_Breakable( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ], mass );
+                    test_shape_go.setPos( new Vec2( 600.0, 90.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                }
+                
                 
                 let gos = go_mgr.getGameObjects();
                 gos.forEach( (go) => {
