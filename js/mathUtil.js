@@ -26,10 +26,12 @@ class MathUtil {
     static distPointToLineSegment( p_vec2, ls_vec2, le_vec2 ) {
         var l2 = Vec2.distSquared(ls_vec2, le_vec2);
         if ( this.isApproxEqual( l2, 0.0 ) ) { return { dist: Vec2.dist(p_vec2, ls_vec2), t: 0.0 }; }
-        let t = ((p_vec2.x - ls_vec2.x) * (le_vec2.x - ls_vec2.x) + (p_vec2.y - ls_vec2.y) * (le_vec2.y - ls_vec2.y)) / l2;
-        t = Math.max(0, Math.min(1, t));
+        let raw_t = ((p_vec2.x - ls_vec2.x) * (le_vec2.x - ls_vec2.x) + (p_vec2.y - ls_vec2.y) * (le_vec2.y - ls_vec2.y)) / l2;
+        let t = Math.max(0, Math.min(1, raw_t));
         // console.log( `t = ${t}` );
         return { dist: Vec2.dist( p_vec2, new Vec2( ls_vec2.x + t * (le_vec2.x - ls_vec2.x),
-                                                    ls_vec2.y + t * (le_vec2.y - ls_vec2.y) ) ), t: t };
+                                                    ls_vec2.y + t * (le_vec2.y - ls_vec2.y) ) ), 
+                //t: raw_t };
+                t: t };
     }
 }
