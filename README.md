@@ -6,6 +6,13 @@ Just some small 2D particle physics demos, and simple softbody and spring-mass s
 
 ```git clone https://github.com/pjhusky/2d-physics-js.git```
 
+# ESLint / JSLint
+
+```<root>\2d-physics-js>npm install eslint```
+```npx eslint --init```
+
+```<root>\2d-physics-js>npm install jslint```
+
 # Running a demo (web)
 
 Live Demo: [Metaball Fluids](https://htmlpreview.github.io/?https://github.com/pjhusky/2d-physics-js/main/index.html&demoMetaballFluid&fluidAsBlobs&useStickyGooLook&drawBackgroundMetaballs)
