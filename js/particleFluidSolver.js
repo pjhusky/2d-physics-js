@@ -1,3 +1,7 @@
+"use strict";
+
+// import * as PIXI from './pixijs/pixi.js';
+
 var ParticleFluidSolver = (function (exports) {
 
     function length ( vec ) {

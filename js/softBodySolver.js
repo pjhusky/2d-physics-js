@@ -1,3 +1,7 @@
+"use strict";
+
+// import * as PIXI from './pixijs/pixi.js';
+
 var SoftBodySolver = (function (exports) {
 
     function vectorFromTo( posA, posB ) {
@@ -199,8 +203,8 @@ var SoftBodySolver = (function (exports) {
                     // particle.velX = reflX;
                     // particle.velY = reflY;
 
-
-                    if ( false ) { // don't bounce back, more viscous fluid-like
+                    let boolean_val = false;
+                    if ( boolean_val ) { // don't bounce back, more viscous fluid-like
                         //console.log( "constraint resolve!" );
                         particle.position.x = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius*1.05 );
                         particle.position.y = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius*1.05 );

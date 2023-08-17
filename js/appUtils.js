@@ -1,3 +1,5 @@
+"use strict";
+
 var AppUtils = (function (exports) {
 
     let BrowserEnum = class BrowserEnumClass {
