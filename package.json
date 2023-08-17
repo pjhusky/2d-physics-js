@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "jslint": "^0.12.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.47.0"
+  }
+}
