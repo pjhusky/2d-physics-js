@@ -1,4 +1,8 @@
+"use strict";
 
+import * as PIXI from './pixijs/pixi.js';
+
+export
 var MySphere = (function (exports) {
     
     let setupSphere = function setupSphereFn( radius, instanceCount ) {
@@ -8,7 +12,7 @@ var MySphere = (function (exports) {
         
         var lastX = radius;
         var lastY = 0.0;
-        for ( i = 1; i <= numVerts; i++ ) {
+        for ( let i = 1; i <= numVerts; i++ ) {
             let currAngle = i * 2.0 * Math.PI / numVerts;
             let currX = Math.cos( currAngle ) * radius;
             let currY = Math.sin( currAngle ) * radius;
@@ -41,8 +45,8 @@ var MySphere = (function (exports) {
             buffer.data[instanceOffset + 4] = Math.random();
         }            
             
-        myMat = new PIXI.Matrix().translate( 125.0, 0.0);
-        projMat = new PIXI.Matrix();
+        let myMat = new PIXI.Matrix().translate( 125.0, 0.0);
+        let projMat = new PIXI.Matrix();
         
         // const uniforms = {
         //     myMat: myMat,

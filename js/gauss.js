@@ -1,7 +1,28 @@
+"use strict";
+
+//import * as PIXI from './pixijs/pixi.js';
+//import PIXI from './pixijs/pixi.js';
+// import { PIXI } from './pixijs/pixi.js';
+
+//import _ from 'PIXI';
+//import {PIXI} from 'PIXI';
+//import {Resource} from 'PIXI';
+
+//import Resource from 'PIXI';
+//import PIXI from 'PIXI';
+
+//import * as PIXI from 'PIXI';
+
+//let PIXI = require('./pixijs/pixi.js')
+// import PIXI from './pixijs/pixi.js';
+//import * as PIXI from './pixijs/pixi.js';
+//import Resource from './pixijs/pixi.js';
+
 var MyGauss = (function (exports) {
 
     // https://jsfiddle.net/flek/pct2qugr/175/
-    class CustomBufferResource extends PIXI.Resource {
+    //class CustomBufferResource extends PIXI.Resource {
+      class CustomBufferResource extends PIXI.Resource {
         constructor(source, options) {
           const { width, height, internalFormat, format, type } = options || {};
       
@@ -51,17 +72,17 @@ var MyGauss = (function (exports) {
       }
           
     function fillGaussArray( gaussDim, gaussianDeviation, gaussianHeight ) {
-        gaussDensity = new Float32Array( gaussDim * gaussDim );
-        		
-        for( v = 0; v < gaussDim; ++v )
+        let gaussDensity = new Float32Array( gaussDim * gaussDim );
+
+        for( let v = 0; v < gaussDim; ++v )
 		{
 			//pBits = ( float* )( ( char* )( Rect.pBits ) + v * Rect.Pitch );
 
-			for( u = 0; u < gaussDim; ++u )
+			for( let u = 0; u < gaussDim; ++u )
 			{
-				dx = 2.0 * u / ( gaussDim - 1.0 ) - 1;
-				dy = 2.0 * v / ( gaussDim - 1.0 ) - 1;
-				I = gaussianHeight * Math.exp( -( dx * dx + dy * dy ) / gaussianDeviation );
+				let dx = 2.0 * u / ( gaussDim - 1.0 ) - 1;
+				let dy = 2.0 * v / ( gaussDim - 1.0 ) - 1;
+				let I = gaussianHeight * Math.exp( -( dx * dx + dy * dy ) / gaussianDeviation );
 				gaussDensity[u+v*gaussDim] = I;
 			}
 		}
@@ -131,7 +152,7 @@ var MyGauss = (function (exports) {
             gl_FragColor = color;
         }`;
 
-        gaussDensityArray = fillGaussArray( gaussDim, gaussianDeviation, gaussianHeight );
+        let gaussDensityArray = fillGaussArray( gaussDim, gaussianDeviation, gaussianHeight );
         //PIXI.MIPMAP_MODES:
         //options.mipmap
         //const gaussTexture = PIXI.Texture.fromBuffer ( gaussDensityArray, gaussDim, gaussDim, mipmap=PIXI.MIPMAP_MODES.OFF, format=PIXI.FORMATS.RED, type=PIXI.FLOAT );
@@ -180,4 +201,4 @@ var MyGauss = (function (exports) {
     
     return exports;
 
-} )({});    
+} )({});

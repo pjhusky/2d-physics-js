@@ -1,5 +1,8 @@
 "use strict";
 
+import { Vec2 } from './vec2.js';
+import { MathUtil } from './mathUtil.js';
+
 // Abstract Base Class
 class BuiltinRenderPrimitive_Base {
     constructor() {
@@ -38,6 +41,7 @@ class BuiltinRenderPrimitive_Base {
     }
 }
 
+export
 class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
     constructor( radius, line_color_array4, fill_color_array4 ) {
         super();
@@ -82,6 +86,7 @@ class BuiltinRenderPrimitive_Circle extends BuiltinRenderPrimitive_Base {
     
 }
 
+export
 class BuiltinRenderPrimitive_Polygon extends BuiltinRenderPrimitive_Base {
     
     constructor( path_xy_sequence, bounding_circle_array3, line_color_array4, fill_color_array4 ) {

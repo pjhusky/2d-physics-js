@@ -1,21 +1,45 @@
+/*eslint no-unused-vars: "warn"*/
 "use strict";
 
+// import * as PIXI from './pixijs/pixi.js';
+import { Vec2 } from './vec2.js';
+import { MathUtil } from './mathUtil.js';
+import { SimulationParameters } from './simulationParameters.js';
+import { Collisions } from './collisions.js';
+import { ShapeType } from './shapeType.js';
+import { GameObject, GameObject_Breakable } from './gameObject.js';
+import { RigidBody_Circle, RigidBody_Polygon } from './rigidBody.js';
+import { BuiltinRenderPrimitive_Circle, BuiltinRenderPrimitive_Polygon } from './builtinRenderPrimitive.js';
+
+export
 class GameObjectMgr {
     constructor() {
         this.game_objects = [];
         this.gfx_debug_container = new PIXI.Container();
+        this.delay_add_game_objects = [];
     }
         
     getGameObjects() { return this.game_objects; }
     
     updateAllGameObjects( dt ) {
+
+        // search for dead game objects
+        let dead_go_refs = []
+        this.game_objects.forEach( (go) => { if ( go.destroy_self == true ) { dead_go_refs.push( go ); } } );
+        dead_go_refs.forEach( (go_ref) => { this.removeGameObject( go_ref ) } );
+        this.delay_add_game_objects.forEach( (go_info) => {
+            
+            this.addPolygonGameObject( go_info.path, go_info.mass, go_info.restitution, go_info.friction );
+            
+        } );
         
         while(this.gfx_debug_container.children[0]) { 
             this.gfx_debug_container.removeChild(this.gfx_debug_container.children[0]);
         }
         
         this.game_objects.forEach( (go) => { go.update( dt ); } );
-        this.calculateAndDrawCollisionInfo( this.game_objects );
+        let collisions_detected_set = this.calculateAndDrawCollisionInfo( this.game_objects );
+        collisions_detected_set.forEach( ( go_idx ) => { this.game_objects[ go_idx ].onCollide(); } );
         
         this.collisionDetectionWithResolve( this.game_objects );
         
@@ -289,6 +313,7 @@ class GameObjectMgr {
                 }
             }
         }
+        return collision_detected;
     }
     
     visualizePenetrationInfo( collision_info ) {
@@ -322,63 +347,93 @@ class GameObjectMgr {
         return new_go;
     }
 
-    //addPolygonGameObject( path_as_array_of_array2 ) {
+    delayAddPolygonGameObject( path_as_array_of_array2_in, mass, restitution, friction ) {
+        this.delay_add_game_objects.push( {
+            path: path_as_array_of_array2_in,
+            mass: mass,
+            restitution: restitution,
+            friction: friction,
+        } );
+    }
+    
+    addPolygonGameObject_Breakable( path_as_array_of_array2_in, mass, restitution, friction ) {
+        let { rigid_body, render_primitive } = this.preparePolygonGameObject(path_as_array_of_array2_in, mass, restitution, friction);
+        
+        let new_go = new GameObject_Breakable( rigid_body, render_primitive );
+        new_go.create_game_object_callback = this.delayAddPolygonGameObject;
+        this.game_objects.push( new_go );
+        return new_go;
+    }
+
     addPolygonGameObject( path_as_array_of_array2_in, mass, restitution, friction ) {
 
-        let path_as_array_of_array2 = [];
-        { // make sure points are given CCW
-            // calc center of mass
-            let com = new Vec2( 0.0, 0.0 );
-            for ( let v = 0; v < path_as_array_of_array2_in.length; v++ ) {
-                const polygon_vertex = path_as_array_of_array2_in[v];
-                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
-                com.add( polygon_vertex_T );
-            }
-            com.scale( 1.0 / path_as_array_of_array2_in.length );
-
-            // sort CCW
-            let path_angle_and_pt_array = [];
-            for ( let v = 0; v < path_as_array_of_array2_in.length; v++ ) {
-                const polygon_vertex = path_as_array_of_array2_in[v];
-                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
-                const dvec = Vec2.sub( polygon_vertex_T, com );
-                const angle_rad = Math.atan2( dvec.y, dvec.x );
-                path_angle_and_pt_array.push( new Array( angle_rad, polygon_vertex ) );
-            }
-            path_angle_and_pt_array.sort( (a,b) => { 
-                if ( a[0] < b[0] ) { return -1; }
-                else if ( a[0] > b[0] ) { return 1; }
-                return 0;  
-            } );
-            
-            for ( let v = 0; v < path_angle_and_pt_array.length; v++ ) {
-                path_as_array_of_array2.push( path_angle_and_pt_array[v][1] );
-            }
-        }
-        
-        console.log( `in: ${path_as_array_of_array2_in}` );
-        console.log( `in CCW: ${path_as_array_of_array2}` );
-        
-        
-        let rigid_body = new RigidBody_Polygon( path_as_array_of_array2, mass, restitution, friction );
-        
-        this.bounding_circle = rigid_body.getBoundingCircle();
-        
-        let path_as_xy_sequence = [];
-        path_as_array_of_array2.forEach( (el) => {
-            path_as_xy_sequence.push( el[0] );
-            path_as_xy_sequence.push( el[1] );
-        } )
-        
-        const line_color = [ 1.0, 1.0, 1.0, 1.0 ];
-        const fill_color = [ 0.5, 0.5, 0.5, 0.7 ];
-        let render_primitive = new BuiltinRenderPrimitive_Polygon( path_as_xy_sequence, this.bounding_circle, line_color, fill_color );
+        let { rigid_body, render_primitive } = this.preparePolygonGameObject(path_as_array_of_array2_in, mass, restitution, friction);
         
         let new_go = new GameObject( rigid_body, render_primitive );
         this.game_objects.push( new_go );        
         return new_go;
     }
     
+    preparePolygonGameObject(path_as_array_of_array2_in, mass, restitution, friction) {
+        let path_as_array_of_array2 = [];
+        { // make sure points are given CCW
+            // calc center of mass
+            let com = new Vec2(0.0, 0.0);
+            for (let v = 0; v < path_as_array_of_array2_in.length; v++) {
+                const polygon_vertex = path_as_array_of_array2_in[v];
+                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
+                com.add(polygon_vertex_T);
+            }
+            com.scale(1.0 / path_as_array_of_array2_in.length);
+
+            // sort CCW
+            let path_angle_and_pt_array = [];
+            for (let v = 0; v < path_as_array_of_array2_in.length; v++) {
+                const polygon_vertex = path_as_array_of_array2_in[v];
+                const polygon_vertex_T = Vec2.fromArray(polygon_vertex);
+                const dvec = Vec2.sub(polygon_vertex_T, com);
+                const angle_rad = Math.atan2(dvec.y, dvec.x);
+                path_angle_and_pt_array.push(new Array(angle_rad, polygon_vertex));
+            }
+            path_angle_and_pt_array.sort((a, b) => {
+                if (a[0] < b[0]) { return -1; }
+                else if (a[0] > b[0]) { return 1; }
+                return 0;
+            });
+
+            for (let v = 0; v < path_angle_and_pt_array.length; v++) {
+                path_as_array_of_array2.push(path_angle_and_pt_array[v][1]);
+            }
+        }
+
+        console.log(`in: ${path_as_array_of_array2_in}`);
+        console.log(`in CCW: ${path_as_array_of_array2}`);
+
+
+        let rigid_body = new RigidBody_Polygon(path_as_array_of_array2, mass, restitution, friction);
+
+        this.bounding_circle = rigid_body.getBoundingCircle();
+
+        let path_as_xy_sequence = [];
+        path_as_array_of_array2.forEach((el) => {
+            path_as_xy_sequence.push(el[0]);
+            path_as_xy_sequence.push(el[1]);
+        });
+
+        const line_color = [1.0, 1.0, 1.0, 1.0];
+        const fill_color = [0.5, 0.5, 0.5, 0.7];
+        let render_primitive = new BuiltinRenderPrimitive_Polygon(path_as_xy_sequence, this.bounding_circle, line_color, fill_color);
+        return { rigid_body, render_primitive };
+    }
+
     removeGameObject( go_ref ) {
+        let i = 0;
+        for ( i = 0; i < this.game_objects.length; i++ ) {
+            if ( go_ref == this.game_objects[i] ) { break; }
+        }
+        if ( i >= this.game_objects.length ) { return false; }
+        this.game_objects.splice( i, 1 );
+        return true;
     }
 }
+

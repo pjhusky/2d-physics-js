@@ -1,5 +1,11 @@
 "use strict";
 
+import { Vec2 } from './vec2.js';
+import { Mat2x3 } from './mat2x3.js';
+import { SimulationParameters } from './simulationParameters.js';
+import { ShapeType } from './shapeType.js';
+import { BoundingCircle } from './boundingCircle.js';
+
 // Abstract
 class RigidBody {
     constructor( mass, restitution, friction ) {
@@ -40,7 +46,8 @@ class RigidBody {
         if ( friction != undefined ) {
             this.friction = friction;
         } else {
-            this.friction = 0.8;
+            //this.friction = 0.8;
+            this.friction = 0.4;
         }
 
         if ( restitution != undefined ) {
@@ -136,6 +143,7 @@ class RigidBody {
     toString() { return `'${this.constructor.name}'`; }
 }
 
+export
 class RigidBody_Circle extends RigidBody {
     
     constructor( radius, mass, restitution, friction ) {
@@ -186,6 +194,7 @@ class RigidBody_Circle extends RigidBody {
     }
 }
 
+export
 class RigidBody_Polygon extends RigidBody {
     constructor( relative_path_points_ccw, mass, restitution, friction ) {
 

@@ -1,5 +1,8 @@
-//import * as mathLib from "./mathLib.js";
+"use strict";
 
+import { Vec2 } from './vec2.js';
+
+export
 class Triangle {
     constructor( ccw_p0, ccw_p1, ccw_p2 ) {
         this.p0 = new /*mathLib.*/Vec2( ccw_p0.x, ccw_p0.y );

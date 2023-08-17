@@ -1,5 +1,8 @@
 "use strict";
 
+import { Vec2 } from './vec2.js';
+
+export
 class SimulationParameters {
     
     static globalGravity() { return new Vec2( 0.0, 9.81 * 5.0 ); }

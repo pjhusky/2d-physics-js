@@ -1,5 +1,6 @@
 "use strict";
 
+export
 class Input {
     // https://stackoverflow.com/questions/3691461/remove-key-press-delay-in-javascript
     // Keyboard input with customisable repeat (set to 0 for no key repeat)

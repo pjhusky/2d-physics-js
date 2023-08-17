@@ -1,5 +1,8 @@
 "use strict";
 
+import * as MathUtil from './mathUtil.js';
+
+export
 class Vec2 {
     
     constructor(x, y) {

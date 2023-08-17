@@ -1,5 +1,8 @@
 "use strict";
 
+import { Vec2 } from './vec2.js';
+
+export
 class MathUtil {
 
     // adapted from https://stackoverflow.com/questions/23615299/how-to-specify-float32-limits-in-javascript
