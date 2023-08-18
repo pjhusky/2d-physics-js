@@ -740,7 +740,7 @@
                 {
                     const mass = 20.0;
                     let test_circle_go = go_mgr.addCircleGameObject( 35.0, mass );
-                    test_circle_go.setPos( new Vec2( 580, 100 ) );
+                    test_circle_go.setPos( new Vec2( 520, 100 ) );
                 }
 
                 if ( many_game_objects ) {
@@ -784,21 +784,24 @@
                     ground_floor_go.setAngle( Math.PI * 0.5 );
                 }
 
-                {
+                { // breakable 
                     const mass = 0.0;
-                    let test_shape_go = go_mgr.addPolygonGameObject_Breakable( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ], mass );
-                    test_shape_go.setPos( new Vec2( 600.0, 90.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
+                    const x_extent_half = 38;
+                    const y_extent_half = 24;
+                    let test_shape_go = go_mgr.addPolygonGameObject_Breakable( [ [ -x_extent_half, -x_extent_half ], [ x_extent_half, -x_extent_half ], [ 0.0, y_extent_half ] ], mass );
+                    test_shape_go.setPos( new Vec2( 600.0, 10.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
                 }
                 
                 
                 let gos = go_mgr.getGameObjects();
-                gos.forEach( (go) => {
-                    app.stage.addChild( go.render_primitive.gfx_container );
-                    //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
-                } );
+                // gos.forEach( (go) => {
+                //     app.stage.addChild( go.render_primitive.gfx_container );
+                //     //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
+                // } );
                 for ( let i = 0; i < gos.length; i++ ) {
                     gos[i].render_primitive.addLabel( i );
                 }
+                app.stage.addChild( go_mgr.getGfxGameObjectContainer() );
                 app.stage.addChild( go_mgr.gfx_debug_container ); // add debug vis last, so it's always overlayed "on top of" the game objects
 
                 go_mgr.updateAllGameObjects( 1.0 / 60.0 );

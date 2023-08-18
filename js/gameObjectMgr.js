@@ -16,10 +16,12 @@ class GameObjectMgr {
     constructor() {
         this.game_objects = [];
         this.gfx_debug_container = new PIXI.Container();
+        this.gfx_game_object_container = new PIXI.Container();
         this.delay_add_game_objects = [];
     }
         
     getGameObjects() { return this.game_objects; }
+    getGfxGameObjectContainer() { return this.gfx_game_object_container; }
     
     updateAllGameObjects( dt ) {
 
@@ -221,7 +223,6 @@ class GameObjectMgr {
         // impulse = F dt = m * delta_v
         // delta_v = impulse / m
         rb1.vel_vec2 = Vec2.sub( rb1.vel_vec2, Vec2.mulScalar( impulse_vec2, rb1.recip_mass ) );
-        //go2.vel_vec2 = Vec2.sub( go2.vel_vec2, Vec2.mulScalar( impulse_vec2, go2.recip_mass ) );
         rb2.vel_vec2 = Vec2.add( rb2.vel_vec2, Vec2.mulScalar( impulse_vec2, rb2.recip_mass ) );
 
         rb1.angular_vel -= r1_cross_N * j_N * rb1.inertia;
@@ -232,6 +233,7 @@ class GameObjectMgr {
         // ### tangential component ###
         const new_friction = Math.min(rb1.friction, rb2.friction);
         let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, -Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
+        //let tangent_vec2 = Vec2.sub( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
         //let tangent_vec2 = Vec2.add( relative_vel_vec2, Vec2.mulScalar( N_vec2, Vec2.dot( relative_vel_vec2, N_vec2 ) ) );
 
         // if ( isNaN( tangent_vec2.x ) ) {
@@ -243,6 +245,7 @@ class GameObjectMgr {
         
         //relative_vel_vec2.dot(tangent) should less than 0
         tangent_vec2 = Vec2.mulScalar( Vec2.normalize( tangent_vec2 ), -1.0 );
+        //tangent_vec2 = Vec2.normalize( tangent_vec2 );
         //tangent_vec2.normalize();
 
         const r1_cross_T = Vec2.cross2( r1_vec2, tangent_vec2 );
@@ -344,6 +347,9 @@ class GameObjectMgr {
         
         let new_go = new GameObject( rigid_body, render_primitive );
         this.game_objects.push( new_go );
+        
+        this.gfx_game_object_container.addChild( render_primitive.gfx_container );
+        
         return new_go;
     }
 
@@ -360,8 +366,11 @@ class GameObjectMgr {
         let { rigid_body, render_primitive } = this.preparePolygonGameObject(path_as_array_of_array2_in, mass, restitution, friction);
         
         let new_go = new GameObject_Breakable( rigid_body, render_primitive );
-        new_go.create_game_object_callback = this.delayAddPolygonGameObject;
+        //let new_go = new GameObject( rigid_body, render_primitive );
+        
+        //new_go.create_game_object_callback = this.delayAddPolygonGameObject;
         this.game_objects.push( new_go );
+        
         return new_go;
     }
 
@@ -423,6 +432,9 @@ class GameObjectMgr {
         const line_color = [1.0, 1.0, 1.0, 1.0];
         const fill_color = [0.5, 0.5, 0.5, 0.7];
         let render_primitive = new BuiltinRenderPrimitive_Polygon(path_as_xy_sequence, this.bounding_circle, line_color, fill_color);
+        
+        this.gfx_game_object_container.addChild( render_primitive.gfx_container );
+        
         return { rigid_body, render_primitive };
     }
 
@@ -432,7 +444,11 @@ class GameObjectMgr {
             if ( go_ref == this.game_objects[i] ) { break; }
         }
         if ( i >= this.game_objects.length ) { return false; }
+        
+        this.gfx_game_object_container.removeChild( this.game_objects[i].render_primitive.gfx_container );
+        
         this.game_objects.splice( i, 1 );
+        
         return true;
     }
 }
