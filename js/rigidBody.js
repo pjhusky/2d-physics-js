@@ -41,7 +41,7 @@ class RigidBody {
 
         this.inertia = 0.0;
 
-        console.error( `this.recip_mass = ${this.recip_mass}` );
+        console.log( `this.recip_mass = ${this.recip_mass}` );
         
         if ( friction != undefined ) {
             this.friction = friction;
@@ -54,7 +54,8 @@ class RigidBody {
             this.restitution = restitution;
         } else {
             //this.restitution = 0.2;
-            this.restitution = 0.175;
+            //this.restitution = 0.175;
+            this.restitution = 0.1;
         }        
     }
     
