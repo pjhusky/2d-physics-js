@@ -681,16 +681,18 @@
                         voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
                     } );
                 } else { // clip voronoi cells to delaunay-triangulated "inner" shape
+        
+                    let subject_poly = [];
+                    subject_poly.push( boundary_edges[0][0] );
+                    for ( let i = 0; i < boundary_edges.length; i++ ) {
+                        subject_poly.push( boundary_edges[i][1] );
+                    }
+                    
+                    subject_poly = ConvexHull.makeHull( subject_poly ); // ensure that boundary is convex, so that shards are convex polygons as well!!!
+
                     voronoi_convex_polygons.forEach( (polygon) => {
                         let voronoi_convex_polygon_coords = [];
                         // convert separate edges in boundary_edges into polyline
-                        let subject_poly = [];
-                        subject_poly.push( boundary_edges[0][0] );
-                        for ( let i = 0; i < boundary_edges.length; i++ ) {
-                            subject_poly.push( boundary_edges[i][1] );
-                        }
-                        
-                        subject_poly = ConvexHull.makeHull( subject_poly ); // ensure that boundary is convex, so that shards are convex polygons as well!!!
                         
                         let clipped_polygon = Voronoi.clip( subject_poly, polygon );
                         if ( clipped_polygon.length >= 3 ) {
@@ -1586,9 +1588,9 @@
                 
                 for ( let i = 0; i < fracture_cells.length; i++ ) {
                     let cell = fracture_cells[i];
-                    cell.rotation += 0.066 * debug_dirs_fracture_cells[i][0] * debug_dirs_fracture_cells[i][1];
-                    cell.position.x += debug_dirs_fracture_cells[i][0] * 10.0;
-                    cell.position.y += debug_dirs_fracture_cells[i][1] * 10.0;
+                    cell.rotation += 0.01 * debug_dirs_fracture_cells[i][0] * debug_dirs_fracture_cells[i][1];
+                    cell.position.x += debug_dirs_fracture_cells[i][0] * 10.25;
+                    cell.position.y += debug_dirs_fracture_cells[i][1] * 10.25;
                 }
                 
                 let it = 0;
