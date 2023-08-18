@@ -25,15 +25,27 @@ class GameObjectMgr {
     
     updateAllGameObjects( dt ) {
 
+        
+        
         // search for dead game objects
         let dead_go_refs = []
         this.game_objects.forEach( (go) => { if ( go.destroy_self == true ) { dead_go_refs.push( go ); } } );
         dead_go_refs.forEach( (go_ref) => { this.removeGameObject( go_ref ) } );
-        this.delay_add_game_objects.forEach( (go_info) => {
-            
-            this.addPolygonGameObject( go_info.path, go_info.mass, go_info.restitution, go_info.friction );
-            
-        } );
+        
+        if ( this.delay_add_game_objects.length > 0 ) {
+            let delay_add_go_idx = 0;
+            console.log( `there are ${this.delay_add_game_objects} delay-gos to add` );
+            this.delay_add_game_objects.forEach( (go_info) => {
+                
+                console.log( `delay add game object '${delay_add_go_idx}' ` ); delay_add_go_idx++;
+                
+                let new_go = this.addPolygonGameObject( go_info.path, go_info.mass, go_info.restitution, go_info.friction );
+                new_go.setPos( go_info.pos_vec2 );
+                
+            } );
+            this.delay_add_game_objects = [];
+        }
+        
         
         while(this.gfx_debug_container.children[0]) { 
             this.gfx_debug_container.removeChild(this.gfx_debug_container.children[0]);
@@ -103,10 +115,12 @@ class GameObjectMgr {
         const correction_amount = penetration_info.depth / ( rb1.recip_mass + rb2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
         
-        if ( rb1.recip_mass > 2.0 * MathUtil.f32_Eps() && rb1.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
+        if ( rb1.recip_mass > 2.0 * MathUtil.f32_Eps() && rb1.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) 
+        {
             rb1.translateBy( Vec2.mulScalar( correction_dir_vec2, -rb1.recip_mass ) );
         }         
-        if ( rb2.recip_mass > 2.0 * MathUtil.f32_Eps() && rb2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) {
+        if ( rb2.recip_mass > 2.0 * MathUtil.f32_Eps() && rb2.vel_vec2.len() > 100000.0 * MathUtil.f32_Eps() ) 
+        {
             rb2.translateBy( Vec2.mulScalar( correction_dir_vec2,  rb2.recip_mass ) );
         } 
     }    
@@ -353,9 +367,13 @@ class GameObjectMgr {
         return new_go;
     }
 
-    delayAddPolygonGameObject( path_as_array_of_array2_in, mass, restitution, friction ) {
+    delayAddPolygonGameObject( path_as_array_of_array2_in, pos_vec2, mass, restitution, friction ) {
+        //console.error( `in ${this.delayAddPolygonGameObject.name}` );
+        //console.error( `in delayAddPolygonGameObject` );
+        
         this.delay_add_game_objects.push( {
             path: path_as_array_of_array2_in,
+            pos_vec2: pos_vec2,
             mass: mass,
             restitution: restitution,
             friction: friction,
@@ -368,9 +386,9 @@ class GameObjectMgr {
         let new_go = new GameObject_Breakable( rigid_body, render_primitive );
         //let new_go = new GameObject( rigid_body, render_primitive );
         
-        //new_go.create_game_object_callback = this.delayAddPolygonGameObject;
+        new_go.create_game_object_callback = { caller: this, func: this.delayAddPolygonGameObject };
         this.game_objects.push( new_go );
-        
+                
         return new_go;
     }
 
