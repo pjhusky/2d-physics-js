@@ -1233,8 +1233,8 @@
             }
             
             if ( !fluidAsBlobs ) { // TODO: remove this check and perform always?
-                readImg = PIXI.Sprite.from(sceneMapTex);
-                image = app.renderer.extract.pixels(readImg);
+                let readImg = PIXI.Sprite.from(sceneMapTex);
+                let image = app.renderer.extract.pixels(readImg);
                 
                 let wfm = async (image) => {
                     await image;
