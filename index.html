@@ -1483,7 +1483,22 @@
                 };
             }
             
+            
+            
+            // col1 and col2 form the rotational part, col3 the translational part
+            // let col1 = new Vec2( 1.0, 0.0);
+            // let col2 = new Vec2( 0.0, 1.0);
+            // let col3 = new Vec2( 0.0, 0.0 );
+            // let cam_mat = new PIXI.Matrix(col1.x, col1.y, col2.x, col2.y, col3.x, col3.y);
                   
+            // app.stage.position.x = app.renderer.screen.width/2;
+            // app.stage.position.y = app.renderer.screen.height/2;
+            app.stage.pivot.x = app.renderer.screen.width/2;
+            app.stage.pivot.y = app.renderer.screen.height/2;
+            app.stage.position.x = app.renderer.screen.width/2;
+            app.stage.position.y = app.renderer.screen.height/2;
+
+            
             let translation_speed = 3.0;
             let rotation_radians_speed = 0.05;//0.01;
             // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
@@ -1496,7 +1511,7 @@
                         selected_go.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
                         //selected_go.rigid_body.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
                     },
-                    38: () => { 
+                    38: () => {                         
                         //console.log( `arrow up` ); },
                         let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
                         //selected_go.translateBy( {x: 0.0, y: -translation_speed} );
@@ -1532,6 +1547,117 @@
                         //selected_go.applyAngularVelocity( -rotation_radians_speed );
                         selected_go.rigid_body.applyAngularVelocity( -rotation_radians_speed );
                     },
+                    
+                    // "camera" movement
+                    65: () => { // 'a'
+                        let cam_mat = PIXI.Matrix.IDENTITY;
+                        cam_mat.translate( translation_speed, 0.0 );
+                        // cam_mat.tx -= translation_speed;
+                        // cam_mat.apply( go_mgr.getGfxGameObjectContainer().position, go_mgr.getGfxGameObjectContainer().position );
+                        // cam_mat.apply( go_mgr.gfx_debug_container.position, go_mgr.gfx_debug_container.position ); 
+                        //cam_mat.apply( app.stage.position, app.stage.position );
+                        
+                        // app.stage.position.x = app.renderer.screen.width/2;
+                        // app.stage.position.y = app.renderer.screen.height/2;
+                        
+                        // const c = Math.cos(app.stage.rotation);
+                        // const s = Math.sin(app.stage.rotation);
+                        
+                        //app.stage.pivot.x += translation_speed;
+                        let rot_mat = PIXI.Matrix.IDENTITY;
+                        rot_mat.rotate( -app.stage.rotation );
+                        const dir = rot_mat.apply( {x: -translation_speed, y: 0.0} );
+                        app.stage.pivot.x += dir.x;
+                        app.stage.pivot.y += dir.y;
+                    },
+                    87: () => { // 'w'
+                        let cam_mat = PIXI.Matrix.IDENTITY;
+                        cam_mat.translate( 0.0, translation_speed );
+                        // cam_mat.ty -= translation_speed;
+                        // cam_mat.apply( go_mgr.getGfxGameObjectContainer().position, go_mgr.getGfxGameObjectContainer().position );
+                        // cam_mat.apply( go_mgr.gfx_debug_container.position, go_mgr.gfx_debug_container.position );                         
+                        // cam_mat.apply( app.stage.position, app.stage.position );
+
+                        // app.stage.position.x = app.renderer.screen.width/2;
+                        // app.stage.position.y = app.renderer.screen.height/2;
+
+                        // app.stage.pivot.y += translation_speed;
+                        let rot_mat = PIXI.Matrix.IDENTITY;
+                        rot_mat.rotate( -app.stage.rotation );
+                        const dir = rot_mat.apply( {x: 0.0, y: -translation_speed} );
+                        app.stage.pivot.x += dir.x;
+                        app.stage.pivot.y += dir.y;
+                        
+                    },
+                    83: () => { // 's'
+                        let cam_mat = PIXI.Matrix.IDENTITY;
+                        cam_mat.translate( 0.0, -translation_speed );
+                        // cam_mat.ty += translation_speed;
+                        // cam_mat.apply( go_mgr.getGfxGameObjectContainer().position, go_mgr.getGfxGameObjectContainer().position );
+                        // cam_mat.apply( go_mgr.gfx_debug_container.position, go_mgr.gfx_debug_container.position ); 
+                        // cam_mat.apply( app.stage.position, app.stage.position );
+
+                        // app.stage.position.x = app.renderer.screen.width/2;
+                        // app.stage.position.y = app.renderer.screen.height/2;
+                        
+                        //app.stage.pivot.y -= translation_speed;
+                        let rot_mat = PIXI.Matrix.IDENTITY;
+                        rot_mat.rotate( -app.stage.rotation );
+                        const dir = rot_mat.apply( {x: 0.0, y: +translation_speed} );
+                        app.stage.pivot.x += dir.x;
+                        app.stage.pivot.y += dir.y;                                                
+                        
+                    },
+                    68: () => { // 'd'
+                        let cam_mat = PIXI.Matrix.IDENTITY;
+                        cam_mat.translate( -translation_speed, 0.0 );
+                        // cam_mat.tx += translation_speed;
+                        // cam_mat.apply( go_mgr.getGfxGameObjectContainer().position, go_mgr.getGfxGameObjectContainer().position );
+                        // cam_mat.apply( go_mgr.gfx_debug_container.position, go_mgr.gfx_debug_container.position ); 
+                        // cam_mat.apply( app.stage.position, app.stage.position );
+
+                        // app.stage.position.x = app.renderer.screen.width/2;
+                        // app.stage.position.y = app.renderer.screen.height/2;
+                        //app.stage.pivot.x -= translation_speed;
+                        
+                        let rot_mat = PIXI.Matrix.IDENTITY;
+                        rot_mat.rotate( -app.stage.rotation );
+                        const dir = rot_mat.apply( {x: +translation_speed, y: 0.0} );
+                        app.stage.pivot.x += dir.x;
+                        app.stage.pivot.y += dir.y;
+
+                    },
+                    69: () => {  // 'e'
+                        // app.stage.position.x -= app.screen.width * 0.5;
+                        // app.stage.position.y -= app.screen.height * 0.5;
+                        //app.stage.pivot.x = app.screen.width * 0.5;
+                        //app.stage.pivot.y = app.screen.width * 0.5;
+                        // app.stage.pivot.x = -app.stage.position.x;// - app.renderer.screen.width/2;
+                        // app.stage.pivot.y = -app.stage.position.y;// - app.renderer.screen.height/2;
+                        // app.stage.pivot.x = app.renderer.screen.width/2;
+                        // app.stage.pivot.y = app.renderer.screen.height/2;
+
+                        // app.stage.pivot.x = -app.stage.position.x + app.renderer.screen.width/2;
+                        // app.stage.pivot.y = -app.stage.position.y + app.renderer.screen.height/2;
+                        
+                        app.stage.rotation -= 0.1 * rotation_radians_speed;
+                        
+                        
+                    },
+                    81: () => {  // 'q'
+                        // app.stage.pivot.x = app.screen.width * 0.5;
+                        // app.stage.pivot.y = app.screen.width * 0.5;
+                        // app.stage.pivot.x = -app.stage.position.x;// - app.renderer.screen.width/2;
+                        // app.stage.pivot.y = -app.stage.position.y;// - app.renderer.screen.height/2;
+                        // app.stage.pivot.x = app.renderer.screen.width/2;
+                        // app.stage.pivot.y = app.renderer.screen.height/2;
+                        
+                        // app.stage.pivot.x = -app.stage.position.x + app.renderer.screen.width/2;
+                        // app.stage.pivot.y = -app.stage.position.y + app.renderer.screen.height/2;
+                                                
+                        app.stage.rotation += 0.1 * rotation_radians_speed;
+                    },
+                    
                 }, 
                 1.0/60.0
             );      
@@ -1573,6 +1699,10 @@
                 //elapsed += dt;
                 elapsed += 1/60;
 
+                // cam_mat.apply( go_mgr.getGfxGameObjectContainer().position, go_mgr.getGfxGameObjectContainer().position );
+                // cam_mat.apply( go_mgr.gfx_debug_container.position, go_mgr.gfx_debug_container.position ); 
+
+                
                 // tried clearing that nasty single particle that sticks around after "reset", but doesn't work
                 // if ( fluidAsBlobs ) {
                 //     let containerLen = metaballContainer.length-1;
@@ -1815,6 +1945,9 @@
                 windowScale = AppUtils.scaleToWindow( app.renderer.view );
                 console.log( windowScale );
                 
+                app.stage.position.x = app.renderer.screen.width/2;
+                app.stage.position.y = app.renderer.screen.height/2;
+
                 particleFluidSolver.onResolutionChanged( app.screen.width, app.screen.height );
             }
        
