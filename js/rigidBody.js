@@ -30,7 +30,7 @@ class RigidBody {
         if ( mass != undefined ) {
             this.recip_mass = mass; 
         } else {
-            this.recip_mass = 10.0;
+            this.recip_mass = SimulationParameters.rigidBodyDefaultMass();
         }
         //if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
         if ( mass == 0.0 ) {
@@ -47,7 +47,8 @@ class RigidBody {
             this.friction = friction;
         } else {
             //this.friction = 0.8;
-            this.friction = 0.4;
+            //this.friction = 0.4;
+            this.friction = SimulationParameters.rigidBodyDefaultFriction();
         }
 
         if ( restitution != undefined ) {
@@ -55,7 +56,8 @@ class RigidBody {
         } else {
             //this.restitution = 0.2;
             //this.restitution = 0.175;
-            this.restitution = 0.1;
+            //this.restitution = 0.1;
+            this.restitution = SimulationParameters.rigidBodyDefaultRestitution();
         }        
     }
     

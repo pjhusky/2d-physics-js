@@ -95,7 +95,9 @@ class GameObjectMgr {
         
         if ( MathUtil.isApproxEqual( rb1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( rb2.recip_mass, 0.0 ) ) { return; }
         
-        const relaxation_factor = 2.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 0.9);
+        //const relaxation_factor = 2.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 0.9);
+        const relaxation_factor = 2.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 1.1);
+        
         const correction_amount = penetration_info.depth / ( rb1.recip_mass + rb2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
 
@@ -111,7 +113,9 @@ class GameObjectMgr {
     penetrationRelaxation( rb1, rb2, penetration_info ) {
         if ( !SimulationParameters.globalPerformPenetrationRelaxation() ) { return; }
         
-        const relaxation_factor = 1.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 0.9);
+        //const relaxation_factor = 1.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 0.9);
+        const relaxation_factor = 1.0 / (SimulationParameters.globalMaxPenetrationRelaxationIterations() * 1.1);
+        
         const correction_amount = penetration_info.depth / ( rb1.recip_mass + rb2.recip_mass ) * relaxation_factor;
         const correction_dir_vec2 = Vec2.mulScalar( penetration_info.normal, correction_amount );
         
@@ -190,6 +194,7 @@ class GameObjectMgr {
         if ( MathUtil.isApproxEqual( rb1.recip_mass, 0.0 ) && MathUtil.isApproxEqual( rb2.recip_mass, 0.0 ) ) { return; }
         
         this.penetrationRelaxation( rb1, rb2, collision_info );
+        //this.penetrationRelaxationSlack( rb1, rb2, collision_info ); // more bounce :-)
         
         // #####################################################
         // #### "dynamics" part: ####
