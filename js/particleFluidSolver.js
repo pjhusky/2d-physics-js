@@ -31,6 +31,7 @@ var ParticleFluidSolver = (function (exports) {
             this.lastPosY = 0.0;
             this.accelX = 0.0;
             this.accelY = 0.0;
+            this.anchor.set( 0.5, 0.5 );
         }        
         updatePosition( dt ) {
             let velX = this.position.x - this.lastPosX;
@@ -213,7 +214,7 @@ var ParticleFluidSolver = (function (exports) {
             this.numBinsX = Math.floor( ( gridW + ( this.binDim - 1 ) ) / this.binDim ); // round up
             this.numBinsY = Math.floor( ( gridH + ( this.binDim - 1 ) ) / this.binDim ); // round up
             
-            this.spatialArray = this.createSpatialBins();
+            this.createSpatialBins();
         }
         
         onResolutionChanged( newGridW, newGridH ) {
