@@ -1,3 +1,10 @@
+"use strict";
+
+// import { Vec2 } from './vec2.js';
+// import { MathUtil } from './mathUtil.js';
+// import { Triangle } from './triangle.js';
+
+//export
 class Delaunay {
     
     static get_AABB( points ) {
@@ -291,12 +298,12 @@ class Delaunay {
             //console.log( `added several new Delaunay tris: ${delaunay_tris}` );
 
             
-            for ( let dt_idx = 0; dt_idx < delaunay_tris.length; dt_idx++ ) {
+            // for ( let dt_idx = 0; dt_idx < delaunay_tris.length; dt_idx++ ) {
                 
-                const curr_delaunay_tri = delaunay_tris[ dt_idx ];
+            //     const curr_delaunay_tri = delaunay_tris[ dt_idx ];
 
-                //console.log( `pt add finish delaunay tri ${dt_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )})` );
-            }
+            //     //console.log( `pt add finish delaunay tri ${dt_idx+1} of ${delaunay_tris.length} (${Triangle.fromArray( curr_delaunay_tri )})` );
+            // }
             
             curr_pt_idx++;
         }

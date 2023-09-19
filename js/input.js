@@ -1,12 +1,13 @@
 "use strict";
 
+//export
 class Input {
     // https://stackoverflow.com/questions/3691461/remove-key-press-delay-in-javascript
     // Keyboard input with customisable repeat (set to 0 for no key repeat)
     //
     //function KeyboardController(keys, repeat) {
     //constructor(document, window, keys, repeat) {
-    static KeyboardController(document, window, /*go_mgr,*/ keys, repeat) {
+    static KeyboardController(document, window, call_site,custom_on_key_down,custom_on_key_up, keys, repeat) {
         // Lookup of key codes to timer ID, or null for no repeat
         //
         var timers = {};
@@ -24,6 +25,7 @@ class Input {
                 if (repeat !== 0)
                     timers[key] = setInterval(keys[key], repeat);
             }
+            custom_on_key_down.call(call_site, key);
             return false;
         };
 
@@ -36,6 +38,7 @@ class Input {
                     clearInterval(timers[key]);
                 delete timers[key];
             }
+            custom_on_key_up.call(call_site, key);
         };
 
         // When window is unfocused we may not get key events. To prevent this

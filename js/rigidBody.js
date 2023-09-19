@@ -1,5 +1,11 @@
 "use strict";
 
+// import { Vec2 } from './vec2.js';
+// import { Mat2x3 } from './mat2x3.js';
+// import { SimulationParameters } from './simulationParameters.js';
+// import { ShapeType } from './shapeType.js';
+// import { BoundingCircle } from './boundingCircle.js';
+
 // Abstract
 class RigidBody {
     constructor( mass, restitution, friction ) {
@@ -24,7 +30,7 @@ class RigidBody {
         if ( mass != undefined ) {
             this.recip_mass = mass; 
         } else {
-            this.recip_mass = 10.0;
+            this.recip_mass = SimulationParameters.rigidBodyDefaultMass();
         }
         //if ( MathUtil.isApproxEqual( mass, 0.0 ) ) {
         if ( mass == 0.0 ) {
@@ -33,21 +39,25 @@ class RigidBody {
             this.recip_mass = 1.0 / this.recip_mass;
         }
 
-        this.inertia = 0.0;
+        this.recip_inertia = 0.0;
 
-        console.error( `this.recip_mass = ${this.recip_mass}` );
+        // console.log( `this.recip_mass = ${this.recip_mass}` );
         
         if ( friction != undefined ) {
             this.friction = friction;
         } else {
-            this.friction = 0.8;
+            //this.friction = 0.8;
+            //this.friction = 0.4;
+            this.friction = SimulationParameters.rigidBodyDefaultFriction();
         }
 
         if ( restitution != undefined ) {
             this.restitution = restitution;
         } else {
             //this.restitution = 0.2;
-            this.restitution = 0.175;
+            //this.restitution = 0.175;
+            //this.restitution = 0.1;
+            this.restitution = SimulationParameters.rigidBodyDefaultRestitution();
         }        
     }
     
@@ -131,11 +141,12 @@ class RigidBody {
     getBoundingCircleWS() {}
     
     transformToWorldSpace() {}
-    getInertia() {}
+    calculateInertia() {}
     
     toString() { return `'${this.constructor.name}'`; }
 }
 
+//export
 class RigidBody_Circle extends RigidBody {
     
     constructor( radius, mass, restitution, friction ) {
@@ -143,12 +154,12 @@ class RigidBody_Circle extends RigidBody {
         super(mass, restitution, friction);
         this.shape_type = ShapeType.circle;
         
-        console.log( `'${this.constructor.name}' ctor` );
+        //console.log( `'${this.constructor.name}' ctor` );
 
         this.radius = radius;
 
         if ( this.recip_mass > 0.0 ) {
-            this.inertia = this.getInertia();
+            this.recip_inertia = 1.0 / this.calculateInertia();
         }        
     }
     
@@ -167,7 +178,7 @@ class RigidBody_Circle extends RigidBody {
         this.center_of_mass_vec2_WS = Mat2x3.mulPosition( this.model_matrix, this.center_of_mass_vec2 );
     }
     
-    getInertia() {
+    calculateInertia() {
         // // https://kamroncelcarter.blogspot.com/2022/08/moment-of-inertia-of-circle.html
         // const diameter = this.radius * 2.0;
         
@@ -181,18 +192,19 @@ class RigidBody_Circle extends RigidBody {
 
         //this.mInertia = (1 / this.mInvMass) * (this.mRadius * this.mRadius) / 12;
         const I_zz = (1.0 / this.recip_mass) * (this.radius * this.radius) / 12.0;
-        console.log( `circle inertia for radius ${this.radius} is ${I_zz}` );
+        //console.log( `circle inertia with mass ${1.0/this.recip_mass} for radius ${this.radius} is ${I_zz}` );
         return I_zz;
     }
 }
 
+//export
 class RigidBody_Polygon extends RigidBody {
     constructor( relative_path_points_ccw, mass, restitution, friction ) {
 
         super(mass, restitution, friction);
         this.shape_type = ShapeType.polygon;
         
-        console.log( `'${this.constructor.name}' ctor` );
+        //console.log( `'${this.constructor.name}' ctor` );
                 
         this.relative_path_points_ccw = relative_path_points_ccw;
         this.world_space_points_ccw_vec2 = [];
@@ -204,7 +216,7 @@ class RigidBody_Polygon extends RigidBody {
         this.getBoundingCircle();    
         
         if ( this.recip_mass > 0.0 ) {
-            this.inertia = this.getInertia();
+            this.recip_inertia = 1.0 / this.calculateInertia();
         }        
     }
     
@@ -311,16 +323,12 @@ class RigidBody_Polygon extends RigidBody {
         this.center_of_mass_vec2_WS = Mat2x3.mulPosition( this.model_matrix, this.center_of_mass_vec2 );
     }
     
-    getInertia() {
-        //return 20.0; // TODO!!!
-        //return 5817477.0;
-        // return 680.0;
-        
+    calculateInertia() {
+
         let points_vec2 = [];
         this.relative_path_points_ccw.forEach( (point_array2) => {
             points_vec2.push( Vec2.fromArray( point_array2 ) );
-        });
-        
+        });        
         
         const area = RigidBody_Polygon.calculateArea( points_vec2 );
         
@@ -328,7 +336,7 @@ class RigidBody_Polygon extends RigidBody {
         
         const inertia = RigidBody_Polygon.calculateInertia( points_vec2, density );
         
-        console.log( `area = ${area}, density = ${density}, mass = ${1.0 / this.recip_mass}, inertia = ${inertia}` );
+        //console.log( `area = ${area}, density = ${density}, mass = ${1.0 / this.recip_mass}, inertia = ${inertia}` );
         
         return inertia;
     }

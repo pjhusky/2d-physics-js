@@ -1,196 +1,112 @@
 <!DOCTYPE html>
-<html>
-
-    <!-- python3 -m http.server 8000 -->
-
-    <!-- TODO [peter]:  -->
-    <!-- * springs => attached to level geometry like tentacles => either Pixi ~"trail-sprite" or filled with metaballs -->
-    <!-- * springs => softbody ball that moves around like tumble weed ... 
-                      maybe make level freely turnable (like puzzle-maze games), then those will always bounce around) -->
-    <!-- * find out how to measure frame time / performance in browser... -->
-    <!-- * try web workers  -->
-
-    <!-- * spring solver should have grouping by shape, so we can also calculate collisions between soft bodies
-            - collision only with closest point -->
-    <!-- * spring solver should expose spring stiffnes and damping per object -->
-    
-    <!-- * rigid bodies just soft bodies with large stiffness and damping coefficients... and manybe draw then such that oscillations aren't as visible
-            - friction? -->
-
-    <!-- * Voronoi lines to actual voronoi-cell polygons!!! -->
-    <!-- * polygon clipping (mask voronoi fracture pattern by object-to-be-factured ==> at boundaries we'll need to clip polygons) -->
-    <!-- * make rigid body sim work with convex polys -->
-                        
+<html>                          
     <head>
+
+        <!-- TODOs:
+        * ship could change shape when grabbing power up
+            - e.g.  slower but easier to carry things (puzzles that require transporting some fractured fragment to a switch for example!)
+                    when in slick/fast shape, some passages/corridors may have falling stones/closing doors that you can't make with the slow/transporter ship shape
+        * make boundary-constraints that contain quicksilver particles or soft bodies movable by the player (like an invisible circular rigid body...)
+            - we could even keep plane constraints inside the circle-boundary constraints and transform them into the rotated simulation domain
+            - a bit like a hamster wheel
+        * fix background parallax; somehow it was too small all of a sudden ...
+        * make breaking of objects take point of impact into account -->
         
         <!-- during development - make sure browser really refreshes source & assets!!! -->
         <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
         <meta http-equiv="Pragma" content="no-cache">
                 
         <!-- WORK IN PROGESS!!! -->
-        <title>PixiJs Experiments</title>
-        <link rel="icon" type="image/png" href="assets/magnetic-field-2.png">
-        <link rel="shortcut icon" type="image/png" href="assets/magnetic-field-2.png">
-        
-        <!-- https://stackoverflow.com/questions/3951187/javascript-file-not-updating-no-matter-what-i-do -->
-        <!-- '?v=1' forces refresh -->
- 
-        <script type="text/javascript" src="js/input.js?v=1"></script>
-        <script type="text/javascript" src="js/mathUtil.js?v=1"></script>
-        <script type="text/javascript" src="js/vec2.js?v=1"></script>
-        <script type="text/javascript" src="js/mat2x3.js?v=1"></script>
-        <script type="text/javascript" src="js/convexHull.js?v=1"></script>
-        <script type="text/javascript" src="js/boundingCircle.js?v=1"></script>
-        <script type="text/javascript" src="js/shapeType.js?v=1"></script>
+        <title>Magnetic Scrapyard 1000</title>
+        <link rel="icon" type="image/png" href="./assets/magnetic-field-2.png">
+        <link rel="shortcut icon" type="image/png" href="./assets/magnetic-field-2.png">
 
-        <script type="text/javascript" src="js/simulationParameters.js?v=1"></script>        
-        <script type="text/javascript" src="js/rigidBody.js?v=1"></script>
-        <script type="text/javascript" src="js/collisions.js?v=1"></script>
-        <script type="text/javascript" src="js/gameObject.js?v=1"></script>
-        
-        <!-- <script type="module" src="js/mathLib.js?v=1"></script> -->
-        
-        <script type="text/javascript" src="js/pixijs/pixi.js"></script>
-        <script type="text/javascript" src="js/appUtils.js?v=1"></script>
-        <!-- <script type="text/javascript" src="js/setupTriangle.js?v=1"></script> -->
-        <script type="text/javascript" src="js/triangle.js?v=1"></script>
-        <script type="text/javascript" src="js/sphere.js?v=1"></script>
-        <script type="text/javascript" src="js/gauss.js?v=1"></script>
-        <script type="text/javascript" src="js/filterShaders.js?v=1"></script>
-        <script type="text/javascript" src="js/particleFluidSolver.js?v=1"></script>
-        <script type="text/javascript" src="js/softBodySolver.js?v=1"></script>
+        <!-- ################ Framework(s) ################ -->
+        <script type="text/javascript" src="./js/PixiJS/pixi.js"></script>
+        <script type="text/javascript" src="./js/PixiJS/pixi-sound.js"></script>
 
-        <script type="text/javascript" src="js/delaunay.js?v=1"></script>
-        <script type="text/javascript" src="js/voronoi.js?v=1"></script>
-        <script type="text/javascript" src="js/drawPrimitive.js?v=1"></script>
-        <script type="text/javascript" src="js/builtinRenderPrimitive.js?v=1"></script>
+        <!-- ################ Gfx & Effects ################ -->
+        <script type="text/javascript" src="./js/filterShaders.js?v=1"></script>
+        <script type="text/javascript" src="./js/gauss.js?v=1"></script>
+        <script type="text/javascript" src="./js/builtinRenderPrimitive.js?v=1"></script>
+        
+        <!-- ################ Utils & Settings ################ -->
+        <script type="text/javascript" src="./js/appUtils.js?v=1"></script>
+        <script type="text/javascript" src="./js/mathUtil.js?v=1"></script>
+        <script type="text/javascript" src="./js/gfxUtils.js?v=1"></script>
+        <script type="text/javascript" src="./js/vec2.js?v=1"></script>
+        <script type="text/javascript" src="./js/mat2x3.js?v=1"></script>
+        <script type="text/javascript" src="./js/triangle.js?v=1"></script>
+        <script type="text/javascript" src="./js/utils.js?v=1"></script>
+        <script type="text/javascript" src="./js/simulationParameters.js?v=1"></script>
+        <script type="text/javascript" src="./js/input.js?v=1"></script> <!-- maybe not needed -->
+        
+        <!-- ################ Techs & Solvers ################ -->
+        <script type="text/javascript" src="./js/particleSystemMgr.js?v=1"></script>
+        <script type="text/javascript" src="./js/particleFluidSolver.js?v=1"></script>
+        <script type="text/javascript" src="./js/particleBoundaryConstraint.js?v=1"></script>
+        <!-- <script type="text/javascript" src="./js/springMassSolver.js?v=1"></script> -->
+        <script type="text/javascript" src="./js/softBodySolver.js?v=1"></script>
+        <script type="text/javascript" src="./js/softBodyObjectMgr.js?v=1"></script>
 
-        <script type="text/javascript" src="js/gameObjectMgr.js?v=1"></script>
+        <script type="text/javascript" src="./js/shapeType.js?v=1"></script>
+        <script type="text/javascript" src="./js/boundingCircle.js?v=1"></script>
+        <script type="text/javascript" src="./js/convexHull.js?v=1"></script>
+        <script type="text/javascript" src="./js/delaunay.js?v=1"></script>
+        <script type="text/javascript" src="./js/voronoi.js?v=1"></script>
         
-        <script type="text/javascript" src="js/particleColorsFirefox.js?v=1"></script>
-        <script type="text/javascript" src="js/particleColorsChrome.js?v=1"></script>
+        <script type="text/javascript" src="./js/gameObject.js?v=1"></script>
+        <script type="text/javascript" src="./js/gameObjectMgr.js?v=1"></script>
+        <script type="text/javascript" src="./js/collisions.js?v=1"></script>
+        <script type="text/javascript" src="./js/rigidBody.js?v=1"></script>
         
+                
+        <!-- ################ Game, Menu & Levels ################ -->
+        <script type="text/javascript" src="./js/MagneticScrapyard1000.js"></script>
+        <script type="text/javascript" src="./js/Menu.js"></script>
+        <script type="text/javascript" src="./js/ResultScreen.js"></script>
+
+        <script type="text/javascript" src="./js/GameplayCommon.js"></script>
+        
+        <script type="text/javascript" src="./js/GameplayLevel4.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel4.js?v=1"></script>
+        
+        <script type="text/javascript" src="./js/GameplayLevel5.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel5.js?v=1"></script>
+        
+        <script type="text/javascript" src="./js/GameplayLevel6.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel6.js?v=1"></script>
+
+        <script type="text/javascript" src="./js/GameplayLevel7.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel7.js?v=1"></script>
+
+        <script type="text/javascript" src="./js/GameplayLevel8.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel8.js?v=1"></script>
+
+        <script type="text/javascript" src="./js/GameplayLevel9.js?v=1"></script>
+        <script type="text/javascript" src="./js/WorkerLevel9.js?v=1"></script>
+        
+        <!-- ################ Particle-Spray Colors ################ -->
+        <script type="text/javascript" src="./js/particleColors_pcbLogoHQ.js?v=1"></script>
+        <script type="text/javascript" src="./js/particleColors_atomicLogoHQ.js?v=1"></script>
+                
     </head>
-    <body ontouchstart="">
     
+            
+    <body>
+        
         <script>
-            "use strict";
+            window.addEventListener('resize', resize);
             
-            let browserEnum = new AppUtils.BrowserEnum();
-            
-            let a = 7321;        
-            function mulberry32(a) {
-                return function() {
-                let t = a += 0x6D2B79F5;
-                t = Math.imul(t ^ t >>> 15, t | 1);
-                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-                return ((t ^ t >>> 14) >>> 0) / 4294967296;
-                }
-            }
-            
-            const startRandomSeed = 75921;
-            let seed = startRandomSeed;
-            function random() {
-                let x = Math.sin(seed++) * 10000;
-                return x - Math.floor(x);
-            }            
-            
-            console.log( document.title );
-            
-            let fluidParticleTints = null;
-            if ( browserEnum.isFirefox ) {
-                fluidParticleTints = MyParticleColorsFirefox.tints;
-                console.log( "use Firefox browser color tints" );
-            } else {
-                fluidParticleTints = MyParticleColorsChrome.tints;
-                console.log( "use Chrome browser color tints" );
-            }
-                  
-            const queryString = window.location.search;
-            console.log(queryString);
-            const urlParams = new URLSearchParams(queryString);
-            if ( urlParams.has('demoSelector') ) {
-                console.log( urlParams.get('demoSelector') );
-            }
-                        
-            let isMetaballFluidDemoMode = urlParams.has('demoMetaballFluid');
-            
-            const isPictureParticleFluidDemoMode = urlParams.has('demoPictureParticle');
-            const useCircleOutline = urlParams.has('useCircleOutline')
-            
-            let useCrtFilter = urlParams.has('useCrtFilter');
-            
-            const recordingEnabled = urlParams.has('recordingEnabled');
-            
-            let drawBackgroundMetaballs = urlParams.has('drawBackgroundMetaballs'); // background metaballs        
-            
-            const drawSoftbodies = urlParams.has('drawSoftbodies');
-            
-            const drawSpringTestSprites = urlParams.has('drawSpringTestSprites');
-            
-            let drawMetaballs = isMetaballFluidDemoMode || isPictureParticleFluidDemoMode;
-            let fluidAsBlobs = isMetaballFluidDemoMode && urlParams.has('fluidAsBlobs');
-            let useStickyGooLook = isMetaballFluidDemoMode && urlParams.has('useStickyGooLook');
-            
-            
-            console.log( `window.location.search = ${window.location.search}` );
-            
-            let paramString = window.location.search.replace( "?https://github.com/pjhusky/2d-physics-js/main/index.html", "" );
-            console.log( `paramString = ${paramString}` );
-            
-            // if no params passed - either when launched 'directly' when there is no "?<str>" appended, or if the entire "?<str>" is equal to the 
-            // git url (in which case we know that index.html was called without params in live preview mode)
-            if( paramString.length == 0 ) {
-            // if ( urlParams.keys().length == 0 ) {
-                console.log( "no parameters given - enabling default parameters" );
-                
-                // default params, when no params given
-                isMetaballFluidDemoMode = false;
-                drawMetaballs = false;
-                fluidAsBlobs = true;
-                useStickyGooLook = true;
-                
-                //drawBackgroundMetaballs = true;
-                drawBackgroundMetaballs = false;
-                
-                //useCrtFilter = true;
-                useCrtFilter = false;
-                
-            } else {
-                const keys = urlParams.keys();
-                console.log("---");
-                let numKeys = 0;
-                for (const key of keys) {
-                    console.log(key);
-                    numKeys += 1;
-                }
-                console.log( `numKeys = ${numKeys}` );
-                console.log("---");
-            }
-            
-            let sceneMapTex = PIXI.Texture.from('assets/mark-komorowski-90-scaled.jpg');
-            if ( isMetaballFluidDemoMode ) {
-                // https://www.artstation.com/artwork/o2bPyk
-                sceneMapTex = PIXI.Texture.from('assets/mark-komorowski-90-scaled.jpg');
-            } else if ( isPictureParticleFluidDemoMode ) {
-                sceneMapTex = PIXI.Texture.from('assets/screenRatio_whiteOnly.png'); // playback
-                //sceneMapTex = PIXI.Texture.from('assets/ivilpc-logo-2.png'); // when recording
-            }
-            
-            //console.log(useCircleOutline);
-            
-            const app = new PIXI.Application({
-                //resizeTo: window, // Auto fill the screen
-                autoDensity: true, // Handles high DPI screens                
-                autoResize: true,
-                resolution: devicePixelRatio,
+            // The PixiJS application instance
+            let app = new PIXI.Application({
+                resizeTo: window, // Auto fill the screen
+                autoDensity: true, // Handles high DPI screens
+                backgroundColor: 0x282e38
             });
+            
+            // Add application canvas to body
             document.body.appendChild(app.view);
-
-            app.stage.position.set(0, 0);
-            app.stage.width  = app.screen.width;
-            app.stage.height = app.screen.height;
-            app.stage.filterArea = app.renderer.screen;
 
             // https://github.com/kittykatattack/scaleToWindow
             var newStyle = document.createElement("style");
@@ -200,1567 +116,112 @@
             var style = "* {padding: 0; margin: 0}";
             newStyle.appendChild(document.createTextNode(style));
             document.head.appendChild(newStyle);
-
-            let windowScale = AppUtils.scaleToWindow( app.renderer.view );
             
-            // https://developer.playcanvas.com/en/user-manual/assets/models/building/
-            const envMapTex = PIXI.Texture.from('assets/spheremap-mountains.jpg');
-                        
+            let windowScale = AppUtils.scaleToWindow( app.renderer.view );		
 
-            
-            //downloadToFile( `Hey there!`, 'assets/tmp.txt', 'text/plain' );
-
-            // let file = document.getElementById("readfile");
-            // file.addEventListener("change", function () {
-            //     var reader = new FileReader();
-            //     reader.onload = function (progressEvent) {
-            //     console.log(this.result);
-            //     };
-            //     reader.readAsText(this.files[0]);
-            // });
-            
-            let gaussDim = 256;
-            let gaussSpriteScale = 96.0 / gaussDim;
-            let gaussianDeviation = 0.2;
-            let gaussianHeight = 0.275;
-
-            let [gaussContainer, gaussQuad, gaussTexture] = MyGauss.setupGauss( gaussDim, gaussianDeviation, gaussianHeight );
-
-            let metaballContainer = new PIXI.Container();
-            metaballContainer.position.set(0, 0);
-            metaballContainer.width  = app.screen.width;
-            metaballContainer.height = app.screen.height;
-            metaballContainer.filterArea = app.renderer.screen;
-
-            let numGaussSprites = 50;
-
-            if ( drawMetaballs ) {
-                app.stage.addChild(metaballContainer);
-            }
-            
-            let primitiveTriangle = MyDrawPrimitive.setupTriangle( [200.0, 150.0], [400.0, 150.0], [100.0, 250.0] )
-            MyDrawPrimitive.setColorForPrimitive( primitiveTriangle, [ 0.5, 0.9, 0.9, 0.6 ] );
-            //app.stage.addChild(primitiveTriangle);
-
-            // primitivePoly = MyDrawPrimitive.setupPolygon( [-100.0,-50.0 , 100.0,-75.0, 0.0,100.0 , 200.0,100.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,2,1,3] )
-            // primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLES;
-            let primitivePoly = MyDrawPrimitive.setupPolygon( [100.0,450.0 , 300.0,475.0, 200.0,300.0 , 400.0,230.0 ], [0.0,0.0 , 1.0,0.0 , 0.5,1.0, 1.0,1.0], [0,1,2,3] )
-            MyDrawPrimitive.setColorForPrimitive( primitivePoly, [ 0.8, 0.9, 0.4, 0.6 ] );
-            //primitivePoly.drawMode = PIXI.DRAW_MODES.TRIANGLE_STRIP;
-            MyDrawPrimitive.setDrawMode( primitivePoly, PIXI.DRAW_MODES.TRIANGLE_STRIP ); // triangle fan by default, but won't work for this polygon - override this attrib
-            // app.stage.addChild(primitivePoly);
-            
-            //https://pixijs.io/examples/#/graphics/simple.js
-            const path = [800, 370, 900, 460, 980, 420, 930, 570, 790, 520];
-            const gfxPolygon = new PIXI.Graphics();
-            //gfxPolygon.lineStyle(0);
-            gfxPolygon.lineStyle(2, 0x444477, 1);
-            //gfxPolygon.lineStyle(2, 0x7776FF, 1);
-            
-            //gfxPolygon.beginFill(0x3500FA, 0.4);
-            gfxPolygon.beginFill(0x1000FA, 0.2);
-            gfxPolygon.drawPolygon(path);
-            gfxPolygon.endFill();
-            // app.stage.addChild(gfxPolygon);
-
-            let testVec2_A = new Vec2( 0.0, 0.0 );
-            let testVec2_B = new Vec2( 3.0, 4.0 );
-            let dist_AB = Vec2.dist(testVec2_A, testVec2_B);
-            let len_B = Vec2.len( testVec2_B );
-            let thisLen_B = testVec2_B.len();
-            //console.log(`###here! \n dist_AB=${dist_AB} \n len_B=${len_B} \n thisLen_B=${thisLen_B}`);
-            
-            let testTriangle = new Triangle( testVec2_A, testVec2_B, new Vec2( -3.0, -4.0 ) );
-            // console.log( `testTriangle.points() p0 = ${testTriangle.points[0].x} ${testTriangle.points[0].y}` );
-            // console.log( `testTriangle.points() p1 = ${testTriangle.points[1].x} ${testTriangle.points[1].y}` );
-            // console.log( `testTriangle.points() p2 = ${testTriangle.points[2].x} ${testTriangle.points[2].y}` );
-            
-            let testTriangle2 = new Triangle( new Vec2( 6.0, 0.0 ), new Vec2( 0.0, 0.0 ), new Vec2( 0.0, 8.0 ) );
-            const circum_center = testTriangle2.circumCenter();
-            // console.log( `testTriangle2.circum_center = ${circum_center.x} ${circum_center.y}` );
-            const circum_center_static = Triangle.circumCenter(testTriangle2);
-            // console.log( `testTriangle2.circum_center_static = ${circum_center_static.x} ${circum_center_static.y}` );
-
-            let testTriangleLine = new Triangle( new Vec2( 1.0, 1.0 ), new Vec2( 0.0, 0.0 ), new Vec2( 2.0, 2.0 ) );
-            const circum_center_line = testTriangleLine.circumCenter();
-            // console.log( `circum_center_line = ${circum_center_line.x} ${circum_center_line.y}` );
+            app.stage.position.set(0, 0);
+            app.stage.width  = app.screen.width;
+            app.stage.height = app.screen.height;
+            app.stage.filterArea = app.renderer.screen;
             
 
-            testTriangle2 = new Triangle( new Vec2( 0.1, 0.1 ), new Vec2( 0.3, 0.6 ), new Vec2( 0.5, 0.2 ) );
-            const circum_center_line2 = testTriangle2.circumCenter();
-            // console.log( `circum_center_line 2 = ${circum_center_line2.x} ${circum_center_line2.y}` );
-
-            let testTriangle3 = new Triangle( new Vec2( 0.8, 0.1 ), new Vec2( 0.7, 0.5 ), new Vec2( 0.8, 0.9 ) );
-            const circum_center_line3 = testTriangle3.circumCenter();
-            // console.log( `circum_center_line 3 = ${circum_center_line3.x} ${circum_center_line3.y}` );
-            // console.log( `testTriangle3.toString() = ${testTriangle3.toString()}` );
-            // console.log( `testTriangle3.p0.toString() = ${testTriangle3.p0.toString()}` );
-            // console.log( `testTriangle3.p1.toString() = ${testTriangle3.p1.toString()}` );
-            // console.log( `testTriangle3.p2.toString() = ${testTriangle3.p2.toString()}` );
-            
-            
-            //const delaunay_input_pts = [ new Vec2(200.0, -70.0), new Vec2(400.0, -70.0), new Vec2(300.0, 120.0) ];
-            // const delaunay_input_pts = [ 
-            //     new Vec2(160.0, 320.0),  // p1
-            //     new Vec2(400.0, 200.0),  // p2
-            //     new Vec2(380.0, 340.0),  // p3
-            //     new Vec2(180.0, 200.0),  // p4
-            //     new Vec2(420.0, 190.0),  // p5
-            //     new Vec2(370.0, 110.0),  // p6
-            //     new Vec2(390.0, 130.0),  // p7
-            //     new Vec2(290.0, 190.0),  // p8
-            //     new Vec2(130.0, 180.0),  // p9
-            //     ];
-            // const delaunay_input_pts = [ 
-            //     [ 160.0, 320.0 ],  // p1
-            //     [ 400.0, 200.0 ],  // p2
-            //     [ 380.0, 340.0 ],  // p3
-            //     [ 180.0, 200.0 ],  // p4
-            //     [ 420.0, 190.0 ],  // p5
-            //     [ 370.0, 110.0 ],  // p6
-            //     [ 390.0, 130.0 ],  // p7
-            //     [ 290.0, 190.0 ],  // p8
-            //     [ 130.0, 180.0 ],  // p9
-            //     ];
-
-            const delaunay_input_pts_in = [ 
-            //const delaunay_input_pts = [ 
-                // [ 210.0, 410.0 ],  // p1
-                [ 300.0, 300.0 ],  // p1
-                [ 450.0, 300.0 ],  // p2
-                [ 430.0, 450.0 ],  // p3
-                [ 230.0, 300.0 ],  // p4
-                //[ 230.0, 340.0 ],  // p4
-                [ 470.0, 290.0 ],  // p5
-                //[ 420.0, 210.0 ],  // p6
-                [ 320.0, 170.0 ],  // p6
-                [ 440.0, 230.0 ],  // p7
-                [ 340.0, 290.0 ],  // p8
-                [ 180.0, 280.0 ],  // p9
-            ];
-
-            // regular grid - problems with voronoi-cell polygon clipping!!!
-            // const delaunay_input_pts = [];
-            // for ( let y = 100; y <= 600-50; y += 100 ) {
-            //     for ( let x = 100+50; x <= 600-50; x += 100 ) {
-            //         delaunay_input_pts.push( [x,y] );
-            //     }
-            // }
-
-            // jiggled grid
-            // const delaunay_input_pts = [];
-            // for ( let y = 100; y <= 600-50; y += 100 ) {
-            //     for ( let x = 100+50; x <= 600-50; x += 100 ) {
-            //         const r1 = ( Math.random() - 0.5 ) * 75.0;
-            //         const r2 = ( Math.random() - 0.5 ) * 75.0;
-            //         delaunay_input_pts.push( [x+r1,y+r2] );
-            //     }
-            // }
-
-
-            // regular circular - problems with voronoi-cell polygon clipping!!!
-            // const delaunay_input_pts = [];
-            // const radiuses = [ 20.0, 40.0, 80.0, 220.0 ];
-            // //const angleInc = [ 60.0, 60.0, 30.0, 20.0 ];
-            // for ( let rad_idx = 0; rad_idx < radiuses.length; rad_idx++ ) {
-            //     const radius = radiuses[rad_idx];
-            //     //for ( let angle = 0; angle < 360.0; angle += angleInc[ rad_idx ] ) {
-            //         for ( let angle = 0; angle < 360.0; angle += 30.0 ) {
-            //         const curr_angle = ( Math.PI / 180.0 ) * ( angle );
-            //         const curr_radius = radius;
-            //         const mx = 350.0;
-            //         const my = 350.0;                    
-            //         const cx = Math.cos( curr_angle ) * curr_radius;
-            //         const cy = Math.sin( curr_angle ) * curr_radius;
-            //         delaunay_input_pts.push( [mx + cx, my + cy] );
-            //     }
-            // }
-            
-            // jiggled circular
-            // let delaunay_input_pts_in = [];
-            // const radiuses = [ 20.0, 40.0, 80.0, 220.0 ];
-            // //const angleInc = [ 60.0, 60.0, 30.0, 20.0 ];
-            // for ( let rad_idx = 0; rad_idx < radiuses.length; rad_idx++ ) {
-            //     const radius = radiuses[rad_idx];
-            //     //for ( let angle = 0; angle < 360.0; angle += angleInc[ rad_idx ] ) {
-            //         for ( let angle = 0; angle < 360.0; angle += 30.0 ) {
-            //         const rand1 = ( Math.random() - 0.5 ) * 15.0;
-            //         const curr_angle = ( Math.PI / 180.0 ) * ( angle + rand1 );
-            //         const rand2 = ( Math.random() - 0.5 ) * 0.33 * radius;
-            //         const curr_radius = radius + rand2;
-            //         const mx = 350.0;
-            //         const my = 350.0;                    
-            //         const cx = Math.cos( curr_angle ) * curr_radius;
-            //         const cy = Math.sin( curr_angle ) * curr_radius;
-            //         delaunay_input_pts_in.push( [mx + cx, my + cy] );
-            //     }
-            // }
-
-            // random
-            // const delaunay_input_pts = [];
-            // for ( let i = 0; i <= 20; i++ ) {
-            //     const r1 = 438 + ( Math.random() - 0.5 ) * 2.0 * 300.0;
-            //     const r2 = 320 + ( Math.random() - 0.5 ) * 2.0 * 250.0;
-            //     delaunay_input_pts.push( [r1,r2] );
-            // }
-
-            // random line
-            // const delaunay_input_pts = [];
-            // for ( let i = 0; i <= 40; i++ ) {
-                
-            //     const rx = ( Math.random() - 0.5 ) * 2.0 * 20.0;
-            //     const x = 600.0 * i / 40.0 + rx;
-                
-            //     const ry = 350 + ( Math.random() - 0.5 ) * 2.0 * 300.0;
-                
-            //     delaunay_input_pts.push( [x,ry] );
-            // }
-            
-            // const delaunay_input_pts = ConvexHull.makeHull( delaunay_input_pts_in );
-            const delaunay_input_pts = delaunay_input_pts_in;
-
-            
-            //console.log( `delaunay_input_pts.length = ${delaunay_input_pts.length}` );
-            
-            const show_delaunay_tris = false;
-            let show_voronoi_cells = true;
-            const remove_boundary_tris = true; //show_delaunay_tris || !show_voronoi_cells;
-            const show_boundary_tris_extra = false;
-            const show_boundary_edges = false;
-            
-            let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_input_pts );
-            //console.log( `delaunay_tris.length = ${delaunay_tris.length}` );
-            //console.log( `boundary_delaunay_tris.length = ${boundary_delaunay_tris.length}` );
-
-            //boundary_edges = ConvexHull.makeHull( boundary_edges );
-            
-            //voronoi_convex_polygons = Voronoi.calculate( delaunay_tris );
-            //voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris, outer_tri, delaunay_inner_tris, boundary_delaunay_tris );
-            let voronoi_convex_polygons = Voronoi.calculateVoronoiCellsAsPolygons( delaunay_tris );
-            //console.log( `voronoi_convex_polygons.length = ${voronoi_convex_polygons.length}` );
-            
-            // delaunay_tris.forEach( (delaunay_tri) => {
-            //     primitiveTri = MyDrawPrimitive.setupTriangle( 
-            //         // [delaunay_tri.p0.x, delaunay_tri.p0.y], 
-            //         // [delaunay_tri.p1.x, delaunay_tri.p1.y], 
-            //         // [delaunay_tri.p2.x, delaunay_tri.p2.y] )
-            //         delaunay_tri[0], 
-            //         delaunay_tri[1],
-            //         delaunay_tri[2] );
-            //     app.stage.addChild(primitiveTri);
-            // } );
-
-            
-            if ( show_delaunay_tris ) {
-                
-                let delaunay_tri_vis = delaunay_tris;
-                if ( remove_boundary_tris ) {
-                    const delaunay_inner_tris = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, outer_tri, boundary_edges );
-                    delaunay_tri_vis = delaunay_inner_tris;
-                }
-                
-                //let fill_color = 0x1000FA;
-                let fill_color = 0x770000;
-                const alpha = 0.7;
-                delaunay_tri_vis.forEach( (vis_tri) => {
-                    const path = [ 
-                        vis_tri[0][0], vis_tri[0][1], 
-                        vis_tri[1][0], vis_tri[1][1],
-                        vis_tri[2][0], vis_tri[2][1] ];
-                    const gfxPolygon = new PIXI.Graphics();
-                    const line_width = 1.0;
-                    gfxPolygon.lineStyle(line_width, 0x444477, 1);
-                    //gfxPolygon.beginFill(0x1000FA, 0.2);
-                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, alpha);
-                    //fill_color += 0x512710;
-                    gfxPolygon.drawPolygon(path);
-                    gfxPolygon.endFill();
-                    app.stage.addChild(gfxPolygon);
-                } );
-            }
-            
-            if ( show_boundary_tris_extra ) {
-                
-                let delaunay_tri_vis = delaunay_tris;
-                if ( remove_boundary_tris ) {
-                    delaunay_tri_vis = Delaunay.delaunayTrisWithoutBoundTris( delaunay_tris, boundary_delaunay_tris );
-                }
-                
-                let fill_color = 0x007700;
-                const alpha = 0.4;
-                boundary_delaunay_tris.forEach( (vis_bound_tri) => {
-                    const path = [ 
-                        vis_bound_tri[0][0], vis_bound_tri[0][1], 
-                        vis_bound_tri[1][0], vis_bound_tri[1][1],
-                        vis_bound_tri[2][0], vis_bound_tri[2][1] ];
-                    const gfxPolygon = new PIXI.Graphics();
-                    const line_width = 1.0;
-                    gfxPolygon.lineStyle(line_width, 0x444477, 1);
-                    
-                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, alpha);
-                    gfxPolygon.drawPolygon(path);
-                    gfxPolygon.endFill();
-                    app.stage.addChild(gfxPolygon);
-                } );
-            }
-            
-            if ( show_boundary_edges ) {
-                let fill_color = 0x997700;
-                boundary_edges.forEach( (edge) => {
-                    const gfxPolygon = new PIXI.Graphics();
-                    const line_width = 1.0;
-                    gfxPolygon.lineStyle(line_width, fill_color & 0xFFFFFF, 1.0);
-                    gfxPolygon.beginFill(fill_color & 0xFFFFFF, 0.0);
-                    gfxPolygon.drawPolygon([ edge[0][0], edge[0][1], edge[1][0], edge[1][1] ]);
-                    gfxPolygon.endFill();
-                    app.stage.addChild(gfxPolygon);
-                } );
-            }
-            
-            let go_mgr = new GameObjectMgr();
-            let game_objects = [];
-                // let go_render_primitive = MyDrawPrimitive.setupCircle( test_rb_circle.getCenterOfMass(), test_rb_circle.getBoundRadius() );
-                // game_objects.push( new GameObject( test_rb_circle, go_render_primitive ) );
-                // app.stage.addChild(go_render_primitive);
-            
-            
-            // const fix_circle  = true;
-            const fix_circle  = false;
-            const fix_polygon = fix_circle;
-
-            // #############################################################################################################################
-            // ### *** ### ATTENTION!!! Due to y being flipped, I inadvertently flipped the order from the desired CCW to CW !!! ### *** ###
-            // #############################################################################################################################
-
-            const many_game_objects = true;
-            const allow_polygon_game_objects = true;
-            
-            if ( many_game_objects ) {
-                const mass = 20.0;
-                //const mass = 1.0;
-                let test_circle_go = go_mgr.addCircleGameObject( 50.0, mass );
-                test_circle_go.setPos( new Vec2( 340, 400 ) );
-            }
-
-            //if ( many_game_objects ) 
-            if ( allow_polygon_game_objects )
-            {
-                const mass = 30.0;
-                //let test_shape_go  = go_mgr.addCircleGameObject( 50.0 );
-                let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 38.0 ] ], mass );
-                //let test_shape_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 0.0, 38.0 ], [ 50.0, -50.0 ] ] );
-                                // let go_mgr = new GameObjectMgr();
-                // let test_shape_go = go_mgr.addCircleGameObject( 35.0 );
-                test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
-                //test_shape_go.setPos( new Vec2( 300.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
-                //test_shape_go.setPos( new Vec2( 410.0, 290.0 ) ); // good setting for checking circle-inside-polygon
-                
-                //test_shape_go.setPos( new Vec2( 305.0, 360.0 ) ); // wrong collsion reported SAT
-            }
-            
-            if ( false ) {
-                const mass = 20.0;
-                let test_shape_go  = go_mgr.addCircleGameObject( 50.0, mass );
-                test_shape_go.setPos( new Vec2( 270.0, 290.0 ) ); // good setting for checking circle broad-phase vs. narrow phase collision with polygon
-            }
-            
-            if ( many_game_objects && allow_polygon_game_objects ) {
-                const mass = 30;
-                //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
-                let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 120.0 ], [ -30.0, 50.0 ] ], mass );
-                //let test_polygon_go = go_mgr.addPolygonGameObject( [ [ -80.0, -80.0 ], [ 80.0, -80.0 ], [ 0.0, 60.0 ] ] );
-                //let test_polygon_go = go_mgr.addCircleGameObject( 75.0 );
-                                
-                test_polygon_go.setPos( new Vec2( 430.0, 370.0 ) );
-                //test_polygon_go.setPos( new Vec2( 390.0, 438.0 ) ); test_polygon_go.rotateBy( -23.58 ); // wrong collsion reported SAT
-                
-            }
-                
-            let fracture_cells = [];
-            let debug_dirs_fracture_cells = [];
-            if ( show_voronoi_cells ) {
-                //let fill_color = 0x4000FA;
-                let fill_color = 0x000077;
-                //let fill_color = 0x373737;
-                const alpha = 0.7;
-                //let loops = 0;
-
-                let show_debug_voronoi_cells_non_clipped = false;
-                
-                let voronoi_convex_polygons_plot = [];           
-                
-                if ( show_debug_voronoi_cells_non_clipped ) { // display voronoi cells in the 2D domain with no constraints
-                    // final data "conversion" / preparation to match the format expected by outside plot function
-                    voronoi_convex_polygons.forEach( (polygon) => {
-                        let voronoi_convex_polygon_coords = [];
-                        polygon.forEach( (vertex) => {
-                            voronoi_convex_polygon_coords.push( vertex[ 0 ] );
-                            voronoi_convex_polygon_coords.push( vertex[ 1 ] );
-                        } );
-                        voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
-                    } );
-                } else { // clip voronoi cells to delaunay-triangulated "inner" shape
-                    voronoi_convex_polygons.forEach( (polygon) => {
-                        let voronoi_convex_polygon_coords = [];
-                        // convert separate edges in boundary_edges into polyline
-                        let subject_poly = [];
-                        subject_poly.push( boundary_edges[0][0] );
-                        for ( let i = 0; i < boundary_edges.length; i++ ) {
-                            subject_poly.push( boundary_edges[i][1] );
-                        }
-                        
-                        subject_poly = ConvexHull.makeHull( subject_poly ); // ensure that boundary is convex, so that shards are convex polygons as well!!!
-                        
-                        let clipped_polygon = Voronoi.clip( subject_poly, polygon );
-                        if ( clipped_polygon.length >= 3 ) {
-                            clipped_polygon.forEach( (vertex) => {
-                                voronoi_convex_polygon_coords.push( vertex[ 0 ] );
-                                voronoi_convex_polygon_coords.push( vertex[ 1 ] );
-                            } );
-                            voronoi_convex_polygons_plot.push( voronoi_convex_polygon_coords );
-                        }
-                    } );            
-                }
-                voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
-                    
-                    debug_dirs_fracture_cells.push( new Array( Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0 ) );
-                    
-                } );
-                
-                // let rigid_bodies = [];
-                // try {
-                //     const test_rb = new RigidBody();
-                // } catch ( error ) {
-                //     //console.error( `Caught exception: '${error}'` );
-                //     console.log( `Caught exception:` );
-                //     console.error( error );
-                //     // console.log( `Caught exception:` + error );
-                //     //console.log(error);
-                // }
-                // try {
-                //     const test_rb = new RigidBody( [0.1, -0.2 ] );
-                // } catch ( error ) {
-                //     //console.error( `Caught exception: '${error}'` );
-                //     console.log( `Caught exception:` );
-                //     console.error( error );
-                //     // console.log( `Caught exception:` + error );
-                //     //console.log(error);
-                // }
-                //const test_rb_circle = new RigidBody_Circle( Vec2.fromArray( [ 1.0, 2.0 ] ), 3.0 );
-                //const test_rb_circle = new RigidBody_Circle( [ 230.0, 250.0 ], 30.0 );
-                // const test_rb_circle = new RigidBody_Circle( 30.0 ); test_rb_circle.setPosition([ 230.0, 250.0 ]);
-                // //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ] ] );
-                // //const test_rb_polygon = new RigidBody_Polygon( [ 300.0, 150.0 ], [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] );
-                // const test_rb_polygon = new RigidBody_Polygon( [ [ -50.0, -50.0 ], [ 50.0, -50.0 ], [ 0.0, 50.0 ], [ -20.0, 50.0 ] ] ); test_rb_polygon.setPosition( [ 300.0, 150.0 ] );
-                // //const test_rb_circle2 = new RigidBody_Circle( Vec2.fromArray( [ -5.0, -6.0 ] ), 4.0 );
-                // const test_rb_circle2 = new RigidBody_Circle( 40.0 ); test_rb_circle2.setPosition( [ 350.0, 370.0 ] );
-                              
-                
-                {
-                    const mass = 20.0;
-                    let test_circle_go = go_mgr.addCircleGameObject( 35.0, mass );
-                    test_circle_go.setPos( new Vec2( 580, 100 ) );
-                }
-
-                if ( many_game_objects ) {
-                    const mass = 20.0;
-                    let test_circle_go = go_mgr.addCircleGameObject( 65.0, mass );
-                    //test_circle_go.setPos( new Vec2( 190, 500 ) );
-                    test_circle_go.setPos( new Vec2( 120, 200 ) );
-                }
-
-                
-                {
-                    const radius = 50.0;
-                    const mass = 0.0;
-                    let test_circle_go = go_mgr.addCircleGameObject( radius, mass );
-                    test_circle_go.setPos( new Vec2( 190, 400 ) );
-                }
-
-                if ( many_game_objects ) {
-                    const path_pts = [ [ -80.0, -50.0 ], [ 30.0, -50.0 ], [ 0.0, 70.0 ], [ -30.0, 60.0 ] ];
-                    const mass = 0.0;
-                    let test_polygon_go = go_mgr.addPolygonGameObject( path_pts, mass );
-                    test_polygon_go.setPos( new Vec2( 420, 180 ) );
-                    test_polygon_go.rotateBy( Math.PI * 0.33 );
-                }
-
-                { // floor
-                    const x_extent_half = 350.0;
-                    const y_extent_half = 10.0;
-                    const path_pts = [ [ -x_extent_half, y_extent_half ], [ x_extent_half, y_extent_half ], [ x_extent_half, -y_extent_half ], [ -x_extent_half, -y_extent_half ] ];
-                    const mass = 0.0;
-                    let ground_floor_go = go_mgr.addPolygonGameObject( path_pts, mass );
-                    ground_floor_go.setPos( new Vec2( 400.0, 550.0 ) );
-                }
-                { // right wall
-                    const x_extent_half = 270.0;
-                    const y_extent_half = 10.0;
-                    const path_pts = [ [ -x_extent_half, y_extent_half ], [ x_extent_half, y_extent_half ], [ x_extent_half, -y_extent_half ], [ -x_extent_half, -y_extent_half ] ];
-                    const mass = 0.0;
-                    let ground_floor_go = go_mgr.addPolygonGameObject( path_pts, mass );
-                    ground_floor_go.setPos( new Vec2( 730.0, 300.0 ) );
-                    ground_floor_go.setAngle( Math.PI * 0.5 );
-                }
-                
-                let gos = go_mgr.getGameObjects();
-                gos.forEach( (go) => {
-                    app.stage.addChild( go.render_primitive.gfx_container );
-                    //go.render_primitive.gfx_container.position.set( 400.0, 320.0 );
-                } );
-                for ( let i = 0; i < gos.length; i++ ) {
-                    gos[i].render_primitive.addLabel( i );
-                }
-                app.stage.addChild( go_mgr.gfx_debug_container ); // add debug vis last, so it's always overlayed "on top of" the game objects
-
-                go_mgr.updateAllGameObjects( 1.0 / 60.0 );
-                
-                
-                // let rigid_bodies_list = [];
-                // rigid_bodies_list.push(test_rb_circle);
-                // rigid_bodies_list.push(test_rb_polygon);
-                // rigid_bodies_list.push(test_rb_circle2);
-                // console.log( ` --- rigid body loop log START --- ` );
-                // rigid_bodies_list.forEach( (rigid_body) => {
-                //     console.log( rigid_body );
-                //     console.log( ` rigid_body.getCenterOfMass() = ${Vec2.fromArray(rigid_body.getCenterOfMass())} rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()} ` );
-                // } );
-                // console.log( ` --- rigid body loop log END --- ` );
-                // console.log( ` --- rigid body collisions log START --- ` );
-
-                // rigid_bodies_list.forEach( (rigid_body) => {
-                //     let go_render_primitive = undefined;
-                //     if ( rigid_body.shape_type == ShapeType.circle ) {
-                //         go_render_primitive = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() );
-                //         //game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
-                //     } else if ( rigid_body.shape_type == ShapeType.polygon ) {
-                //         let plot_pts = [];
-                //         const center_of_mass = rigid_body.getCenterOfMass();
-                //         rigid_body.relative_path_points_ccw.forEach( (pt_vec2) => {
-                //             plot_pts.push( pt_vec2[0] + center_of_mass[0] );
-                //             plot_pts.push( pt_vec2[1] + center_of_mass[1] );
-                //         } );
-                //         console.log( `* plot_pts = ${plot_pts}` );
-                //         let sum_x = 0.0;
-                //         let sum_y = 0.0;
-                //         for ( let i = 0; i < plot_pts.length; i += 2 ) {
-                //             sum_x += plot_pts[ i ];
-                //             sum_y += plot_pts[ i + 1 ];
-                //         }
-                //         const recip_num_pts = 1.0 / ( plot_pts.length / 2 );
-                //         sum_x *= recip_num_pts;
-                //         sum_y *= recip_num_pts;
-                //         console.log( `* calculated com again = ${new Vec2(sum_x, sum_y)}` );
-                        
-                //         go_render_primitive = new PIXI.Container();
-                //         go_render_primitive_shape = MyDrawPrimitive.setupPolygon( plot_pts );
-                //         go_render_primitive.addChild(go_render_primitive_shape);
-                        
-                //         // DEBUG: also show transparent Bounding Circle
-                //         //let bounding_circle = MyDrawPrimitive.setupCircle( rigid_body.getCenterOfMass(), rigid_body.getBoundRadius() )
-                //         let bounding_circle = rigid_body.getBoundingCircle();
-                //         const com = rigid_body.getCenterOfMass();
-                        
-                //         go_render_primitive.pivot.set( com[0], com[1] );
-                //         go_render_primitive.position.set( com[0], com[1] );
-                        
-                //         bounding_circle[0][0] += com[0];
-                //         bounding_circle[0][1] += com[1];
-                //         let bounding_circle_gfx = MyDrawPrimitive.setupCircle( bounding_circle[0], rigid_body.getBoundRadius() )
-                        
-                //         //console.log( `* rigid_body.getCenterOfMass() = ${rigid_body.getCenterOfMass()}` );
-                //         //console.log( `* rigid_body.getBoundRadius() = ${rigid_body.getBoundRadius()}` );
-                        
-                //         MyDrawPrimitive.setColorForPrimitive( bounding_circle_gfx, [ 0.7, 0.7, 0.7, 0.25 ] );
-                //         //app.stage.addChild( bounding_circle_gfx );
-                //         go_render_primitive.addChild(bounding_circle_gfx);
-                        
-                //         //game_objects.push( new GameObject( rigid_body, go_render_primitive_shape ) );
-                //     }
-                //     game_objects.push( new GameObject( rigid_body, go_render_primitive ) );
-                //     app.stage.addChild(go_render_primitive);
-
-                // } );
-                
-                // //performCollisionDetection( game_objects );
-                // console.log( ` --- rigid body collisions log END --- ` );
-                
-                
-                // const game_objects = [];
-                // rigid_bodies_list.forEach( (rigid_body) => {
-                //     game_objects.push( new GameObject( rigid_body, render_primitive ) );
-                // } );
-                
-                const draw_builtin_polygon = true;
-                if ( draw_builtin_polygon ) { // also has debug vis like edge normals
-                    voronoi_convex_polygons_plot.forEach( (voronoi_convex_polygon) => {
-
-                        let voronoi_cell_container = new PIXI.Container();
-                        const gfx_voronoi_polygon = new PIXI.Graphics();
-                        voronoi_cell_container.addChild( gfx_voronoi_polygon );
-                        
-                        const gfxPolygon = voronoi_cell_container;
-                        
-                        { // calc pivot
-                            const [ pivot_x, pivot_y ] = MyDrawPrimitive.calcCenterOfMassForPrimitive(voronoi_convex_polygon);                            
-                            gfxPolygon.pivot.set( pivot_x, pivot_y );
-                            gfxPolygon.position.set( pivot_x, pivot_y );
-                        }
-                        
-                        const line_width = 1.0;
-                        //gfx_voronoi_polygon.lineStyle(line_width, 0xDD4433, 1);
-                        gfx_voronoi_polygon.lineStyle(line_width, 0xFFFFFF, 1.0);
-                        gfx_voronoi_polygon.beginFill(fill_color & 0xFFFFFF, alpha);
-                        //fill_color += 0x512710;
-                        //fill_color += 0x070707;
-                        fill_color = Math.random() * 255.0 * 255.0 * 255.0;
-                        gfx_voronoi_polygon.drawPolygon(voronoi_convex_polygon);
-                        gfx_voronoi_polygon.endFill();
-                        
-                        // push normals as well
-                        for ( let i = 0; i < voronoi_convex_polygon.length; i+=2 ) {
-                            const curr_pt = new Vec2( voronoi_convex_polygon[i], voronoi_convex_polygon[i+1] );
-                            const j = ( i+2 ) % voronoi_convex_polygon.length;
-                            const next_pt = new Vec2( voronoi_convex_polygon[j], voronoi_convex_polygon[j+1] );
-                            const edge_vec = Vec2.sub( next_pt, curr_pt );
-                            const mid_pt = Vec2.add( curr_pt, Vec2.mulScalar( edge_vec, 0.5 ) );
-                            //let edge_normal_vec = new Vec2( edge_vec.y, -edge_vec.x );
-                            let edge_normal_vec = new Vec2( -edge_vec.y, edge_vec.x );
-                            edge_normal_vec.normalize();
-                            //edge_normal_vec.scale(10.0);
-                            const edge_normal_line_gfx = new PIXI.Graphics();
-                            edge_normal_line_gfx.lineStyle(line_width, 0xFFFFFF, 1.0);
-                            //edge_normal_line_gfx.drawLine();
-                            edge_normal_line_gfx.moveTo(mid_pt.x, mid_pt.y);
-                            const display_scale = 10.0;
-                            edge_normal_line_gfx.lineTo(mid_pt.x + edge_normal_vec.x * display_scale, mid_pt.y + edge_normal_vec.y * display_scale);
-                            voronoi_cell_container.addChild( edge_normal_line_gfx );
-                        }
-                        app.stage.addChild(voronoi_cell_container);
-
-                        fracture_cells.push( voronoi_cell_container );
-                        
-                    } );
-                } else {
-                    let r = 0.5;
-                    let g = 0.1;
-                    let b = 0.3;
-                    for ( let i = 0; i < voronoi_convex_polygons_plot.length; i++ ) {
-                        const plot_coords = voronoi_convex_polygons_plot[i];
-                        const tex_coords = plot_coords;
-                        let triangulated_voronoi_cell = MyDrawPrimitive.setupPolygon( plot_coords, tex_coords/*, indices*/ );
-                        MyDrawPrimitive.setColorForPrimitive( triangulated_voronoi_cell, [ r, g, b, alpha ] );
-                        r += 0.1; g += 0.3; b += 0.73;
-                        r %= 1;   g %= 1;   b %= 1;
-                        
-                        app.stage.addChild( triangulated_voronoi_cell );
-                        
-                        fracture_cells.push( triangulated_voronoi_cell );
-                    }
-                }
-            }
-            
-            var gaussSpriteArray = [];
-            
-            for (let i = 0; i < numGaussSprites; i++) {
-                const gaussSprite = new PIXI.Sprite(gaussTexture);
-                gaussSprite.blendMode = PIXI.BLEND_MODES.ADD;
-                gaussSprite.anchor.set(0.5);
-                // set a random scale
-                gaussSprite.scale.set(0.8 * gaussSpriteScale + random() * 0.3);
-                // finally let's set a random position...
-                gaussSprite.x = Math.floor(random() * app.screen.width);
-                gaussSprite.y = Math.floor(random() * app.screen.height);
-                // create some extra properties that will control movement
-                gaussSprite.direction = random() * Math.PI * 2;
-                // this number will be used to modify the direction of the dude over time
-                gaussSprite.turningSpeed = random() - 0.8;
-                // create a random speed between 0 - 2
-                gaussSprite.speed = 2 + random() * 2;
-                // finally we push the dude into the dudeArray so it it can be easily accessed later
-                gaussSpriteArray.push(gaussSprite);
-                gaussSprite.cullable = false;
-                
-                if ( drawBackgroundMetaballs ) {
-                    metaballContainer.addChild(gaussSprite);
-                }
-            }   
-            
-            //var maxGaussAccum = gaussianHeight * numGaussSprites;
-            const maxGaussAccum = gaussianHeight * 50;
-            
-            const gaussSpriteBoundsPadding = 40.0;
-            const gaussSpriteBounds = new PIXI.Rectangle(
-                -gaussSpriteBoundsPadding,
-                -gaussSpriteBoundsPadding,
-                app.screen.width + gaussSpriteBoundsPadding + 100.0,
-                app.screen.height + gaussSpriteBoundsPadding + 100.0,
-            );                    
-            
-            // using filters
-            
-            // pass-through
-            const metaballPassThroughFilter = new PIXI.Filter( PIXI.Filter.defaultVertexSrc,  PIXI.Filter.defaultFragmentSrc, { myUniform: 0.5 } );
-
-            const metaballFilter = new PIXI.Filter( 
-                PIXI.Filter.defaultVertexSrc,  
-                MyFilterShaders.metaballFilterFragmentSrc, 
-                { myUniform: 0.5 } 
-            );
-                
-            const outlineFilter = new PIXI.Filter( 
-                PIXI.Filter.defaultVertexSrc,  
-                MyFilterShaders.outlineFilterFragmentSrc, 
-                { u_rDim: {x: 1.0/app.screen.width, y: 1.0/app.screen.height} } 
-            );
-
-            const metaballNormalsFilter = new PIXI.Filter( 
-                MyFilterShaders.myVertexSrc,
-                MyFilterShaders.metaballNormalsFilterFragmentSrc, 
-                {   u_envMapTex: envMapTex, 
-                    u_sceneMapTex: sceneMapTex, 
-                    u_recipMaxGaussAccum: 1.0/maxGaussAccum, 
-                    u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
-            );
-
-            const metaballAlphaBasedFilter = new PIXI.Filter( 
-                PIXI.Filter.defaultVertexSrc,  
-                MyFilterShaders.metaballAlphaBasedFilterFragmentSrc, 
-                { u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
-            );
-                
-            const metaballDiffFilter = new PIXI.Filter( 
-                PIXI.Filter.defaultVertexSrc,  
-                MyFilterShaders.metaballDiffFilterFragmentSrc, 
-                { u_envMapTex: envMapTex, u_sceneMapTex: sceneMapTex, u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height} } 
-            );
-            
-            // based on https://www.shadertoy.com/view/Ms23DR#
-            const crtFilter = new PIXI.Filter(
-                MyFilterShaders.myVertexSrc,
-                MyFilterShaders.crtFilterFragmentSrc,
-                { u_time: 0.0, u_rDim: {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height}, u_dim: {x: app.renderer.screen.width, y: app.renderer.screen.height} }
-            );
-
-            const blurFilter = new PIXI.BlurFilter();
-            blurFilter.blur = 1.5;
-
-
-            
-            metaballContainer.filters = [metaballNormalsFilter];
-
-            if ( useCrtFilter ) {
-                app.stage.filters = [crtFilter];
-            }
-            
-            const eggHeadSprite = PIXI.Sprite.from('assets/eggHead.png');
-            eggHeadSprite.anchor.set(0.5);
-            // move the sprite to the left-center of the screen
-            eggHeadSprite.x = app.screen.width / 3 + app.screen.width / 10;
-            eggHeadSprite.y = app.screen.height / 2;
-            eggHeadSprite.scale.set( 0.66 );
-            if ( drawSpringTestSprites ) {
-                app.stage.addChild( eggHeadSprite );
-            }
-            // make the sprite interactive
-            //eggHeadSprite.interactive = true;
-            eggHeadSprite.eventMode = "dynamic";
-            eggHeadSprite.cursor = 'pointer';
-
-            let eggHeadSpriteSpringConst = 6000.0;
-            let eggHeadSpriteVelX = 0.0;
-            let eggHeadSpriteVelY = 0.0;
-            let eggHeadSpriteAccelX = 0.0;
-            let eggHeadSpriteAccelY = 0.0;
-            let velDamping = 0.98;
-
-            
-            // https://codewithstein.com/how-to-drag-and-drop-pixijs/
-            let eggHeadSpriteClickOffsetX = 0;
-            let eggHeadSpriteClickOffsetY = 0;
-            eggHeadSprite.on('mousedown', function (e) {
-                console.log('Picked up');
-                eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
-                eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
-                eggHeadSprite.dragging = true;
-            });
-            eggHeadSprite.on('mousemove', function (e) {
-                console.log('Dragging');
-                if (eggHeadSprite.dragging) {
-                    eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
-                    eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
+            let background_music = PIXI.sound.Sound.from({
+                url: '../assets/music/Deep Space Beta.mp3',
+                autoPlay: true,
+                loop: true,
+                volume: 0.3,
+                complete: function() {
+                    console.log('Sound finished');
                 }
             });
-            eggHeadSprite.on('mouseup', function (e) {
-                console.log('Moving');
-                eggHeadSprite.x = e.data.global.x - eggHeadSpriteClickOffsetX;
-                eggHeadSprite.y = e.data.global.y - eggHeadSpriteClickOffsetY;
-                eggHeadSpriteClickOffsetX = 0;
-                eggHeadSpriteClickOffsetY = 0;
-                eggHeadSpriteVelX = 0.0;
-                eggHeadSpriteVelY = 0.0;            
-                eggHeadSprite.dragging = false;
-            });            
-                        
-            let flowerTopSprite = PIXI.Sprite.from('assets/flowerTop.png');
-            flowerTopSprite.anchor.set(0.5);
-            flowerTopSprite.x = 2 * app.screen.width / 3 - app.screen.width / 10;
-            flowerTopSprite.y = app.screen.height / 2;
-            flowerTopSprite.scale.set( 0.66 );
-            if ( drawSpringTestSprites ) {
-                app.stage.addChild( flowerTopSprite );
+            { // 1st playback volume hack
+                background_music.volume = 0.0001; 
+                //background_music.play();
+                //background_music.stop();
             }
-            // make the sprite interactive
-            //flowerTopSprite.interactive = true;
-            flowerTopSprite.eventMode = "dynamic";
-            flowerTopSprite.cursor = 'pointer';
+            background_music.volume = 0.3;
 
-            let flowerTopSpriteVelX = 0.0;
-            let flowerTopSpriteVelY = 0.0;
-            let flowerTopSpriteAccelX = 0.0;
-            let flowerTopSpriteAccelY = 0.0;
-            flowerTopSprite.on('mousedown', function (e) {
-                console.log('Picked up');
-                flowerTopSprite.x = e.data.global.x;
-                flowerTopSprite.y = e.data.global.y;
-                flowerTopSprite.dragging = true;
-            });
-            flowerTopSprite.on('mousemove', function (e) {
-                console.log('Dragging');
-                if (flowerTopSprite.dragging) {
-                    flowerTopSprite.x = e.data.global.x;
-                    flowerTopSprite.y = e.data.global.y;
-                }
-            });
-            flowerTopSprite.on('mouseup', function (e) {
-                console.log('Moving');
-                flowerTopSprite.x = e.data.global.x;
-                flowerTopSprite.y = e.data.global.y;
-                flowerTopSpriteVelX = 0.0;
-                flowerTopSpriteVelY = 0.0;            
-                flowerTopSprite.dragging = false;
-            });            
 
-            let initDiffVecX = (flowerTopSprite.x - eggHeadSprite.x);
-            let initDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
-            let restLen = Math.sqrt( initDiffVecX * initDiffVecX + initDiffVecY * initDiffVecY );
-            
-            //triangle = MyTriangle.setupTriangle();
-            //! app.stage.addChild(triangle);
 
-            if ( false ) { // instanced triangle fluidParticles
-                let sphereRadius = 3.5;
-                let instanceCount = 10; 
-                sphere = MySphere.setupSphere( sphereRadius, instanceCount );
-                app.stage.addChild(sphere);
-            }
-
-            // https://medium.com/@bigtimebuddy/rendering-fast-graphics-with-pixijs-6f547895c08c
-            // https://codesandbox.io/s/pixi-graphics-post-attempt-4-hlgs33?from-embed=&file=/src/index.ts:725-928
-
-            // also for recordings!!!
-            // let maxNumFluidParticles = 6500.0;
-            // let fluidParticleRadius = 3.25;
-            let maxNumFluidParticles = 8000.0;
-            let fluidParticleRadius = 2.9;
- 
-            if ( useStickyGooLook ) {
-                maxNumFluidParticles = 1900.0;
-                fluidParticleRadius = 6.0;
-            }
-                        
-            let fixedDt = 0.016;
-            
-            let PFS = ParticleFluidSolver;
-            
-            let fluidSolverCircleAreaConstraint = new PFS.FluidSolverConstraintCircle( app.screen.width, app.screen.height, fluidParticleRadius );
-            let fluidSolverConstraints = [];
-            fluidSolverConstraints.push( fluidSolverCircleAreaConstraint );
-            
-            let fluidParticleGravityX = 0.0;
-            
-            let fluidParticleGravityY = 1200.0;
-            let subSteps = 4;
-            let particleFluidSolver = new PFS.FluidSolver(  app.screen.width, app.screen.height, 
-                                                            maxNumFluidParticles, fluidParticleRadius, fluidParticleGravityX, fluidParticleGravityY,
-                                                            fixedDt, subSteps,
-                                                            //[ fluidSolverCircleAreaConstraint ] 
-                                                            fluidSolverConstraints
-                                                        );
-                        
-            
-            let outlinedCircleRT = null;
-            if ( !fluidAsBlobs ) 
-            {
-                let templateShape = null;
-                if ( useCircleOutline ) {
-                    templateShape = new PIXI.Graphics()
-                        .beginFill(0xffffff)
-                        .lineStyle({ width: 1, color: 0x333333, alignment: 0 })
-                        .drawCircle(0, 0, fluidParticleRadius);
-                } else {
-                    templateShape = new PIXI.Graphics()
-                        .beginFill(0xffffff)
-                        .drawCircle(0, 0, fluidParticleRadius);
-                }    
-                
-                    
-                let { width, height } = templateShape;
-                
-                // Draw the circle to the RenderTexture
-                outlinedCircleRT = PIXI.RenderTexture.create({
-                    width,
-                    height,
-                    //multisample: MSAA_QUALITY.HIGH,
-                    resolution: window.devicePixelRatio
-                });
-                // With the existing renderer, render texture
-                // make sure to apply a transform Matrix
-                app.renderer.render(templateShape, {
-                    renderTexture: outlinedCircleRT,
-                    transform: new PIXI.Matrix(1, 0, 0, 1, width / 2, height / 2)
-                });
-                
-                // Required for MSAA, WebGL 2 only
-                //app.renderer.framebuffer.blit();
-
-                // Discard the original Graphics
-                templateShape.destroy(true);
-            }
-            
-            if ( !fluidAsBlobs ) { // TODO: remove this check and perform always?
-                readImg = PIXI.Sprite.from(sceneMapTex);
-                image = app.renderer.extract.pixels(readImg);
-                
-                let wfm = async (image) => {
-                    await image;
-                }
-                wfm(image);
-            }
-            
-
-            let activeFluidParticles = 0;
-            for (let i = 0; i < maxNumFluidParticles; i++) {
-                let fluidParticle = null;
-                // DEBUG: comment this back in!!!
-                if ( fluidAsBlobs ) {
-                    fluidParticle = new PFS.FluidParticle(gaussTexture);
-                    fluidParticle.scale.set( 0.2 );
-                    fluidParticle.blendMode = PIXI.BLEND_MODES.ADD;
-                    
-                    if ( useStickyGooLook ) {
-                        fluidParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16); // that STICKY gooey look :-)
-                    } else {
-                        fluidParticle.tint = AppUtils.rgbToHex( 255, 255, 255 ); // CLEAN LOOK!!!
-                    }
-                    
-                } else {
-                    fluidParticle = new PFS.FluidParticle(outlinedCircleRT);
-                    fluidParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
-                    
-                    let addr = i;
-                    if ( addr < fluidParticleTints.length ) {
-                        fluidParticle.tint = fluidParticleTints[addr];
-                        //console.log("here!");
-                    } else {
-                        fluidParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
-                        console.log(`here! i=${i}, len=${fluidParticleTints.length}`);
-                    }
-                }
-
-                fluidParticle.anchor.set(0.5);
-                
-                fluidParticle.position.x = app.screen.width  * ( 0.33 + random()*0.33 );
-                fluidParticle.position.y = app.screen.height * ( 0.33 + random()*0.33 );
-
-                fluidParticle.speed = 1 + random() * 1.2;
-                fluidParticle.lastPosX = fluidParticle.position.x;
-                fluidParticle.lastPosY = fluidParticle.position.y; 
-
-                fluidParticle.accelX = 0.0;
-                fluidParticle.accelY = fluidParticleGravityY;
-                
-                particleFluidSolver.addParticle( fluidParticle );
-            }
-
-            particleFluidSolver.setActiveParticleCount( 0 );
-
-            let sphereShapesContainer = null;
-            // DEBUG: comment this back in!!!
-            if ( fluidAsBlobs ) {
-                //metaballContainer.addChild(...fluidParticles); // emit particles later on
-                numGaussSprites += maxNumFluidParticles;
-            } else {
-                sphereShapesContainer = new PIXI.Container();
-                //sphereShapesContainer.addChild(...fluidParticles); // emit particles later on
-                
-                // ################# //
-                //!!!!  ADD FLUID PARTICLES TO STAGE SO THEY GET RENDERED
-                if ( isMetaballFluidDemoMode || isPictureParticleFluidDemoMode ) {
-                    app.stage.addChild( sphereShapesContainer ); // comment this line out to hide fluid circles
-                }
-                // ################# //
-            }            
-            
-            
-            let softBodyContainer = new PIXI.Container();
-            if ( drawSoftbodies ) {
-                app.stage.addChild( softBodyContainer ); // add softbody particles to scene
-            }
-
-            let numSoftBodyBallMassPositions  = 8;
-            let numSoftBodyPlankMassPositions = 8;
-            
-            let softBodyMassRadius = 8.0;
-            let softBodyRadius = 70.0;
-            
-            let SBS = SoftBodySolver;
-
-            let softBodyAreaConstraint = new SBS.SpringMassSolverConstraintCircle( app.screen.width, app.screen.height, fluidParticleRadius );
-            let softBodyConstraints = [];
-            softBodyConstraints.push( softBodyAreaConstraint );
-            
-
-                                                            
-            let softBodyCombinedSystem = new SBS.SoftBodySolver(  app.screen.width, app.screen.height, 
-                                                              numSoftBodyBallMassPositions+numSoftBodyPlankMassPositions, softBodyMassRadius, fluidParticleGravityX, fluidParticleGravityY,
-                                                              fixedDt, subSteps,
-                                                              softBodyConstraints );
-                        
-            { // make ball
-                let angleStep = Math.PI * 2.0 / numSoftBodyBallMassPositions;
-                for ( let i = 0; i < numSoftBodyBallMassPositions; i++ ) {
-                    let softBodyParticle = new SBS.MassPoint(outlinedCircleRT);
-                    softBodyParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
-                    softBodyParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
-                    
-                    softBodyParticle.anchor.set(0.5);
-                    
-                    softBodyParticle.scale.set( softBodyMassRadius / fluidParticleRadius );
-
-                    let angle = i * angleStep;
-                    softBodyParticle.position.x = app.screen.width  * 0.5 + Math.cos( angle ) * softBodyRadius;
-                    softBodyParticle.position.y = app.screen.height * 0.5 + Math.sin( angle ) * softBodyRadius;
-                    
-                    softBodyParticle.vel.x = 300.0;
-                    softBodyParticle.vel.y = -600.0;
-
-                    softBodyParticle.speed = 0.0; //1 + random() * 1.2;
-                    
-                    softBodyContainer.addChild( softBodyParticle );                
-                    // add particle to spring-mass system solver
-                    softBodyCombinedSystem.addParticle( softBodyParticle );
-                }
-
-                for ( let i = 0; i < numSoftBodyBallMassPositions; i++ ) {
-                    // insert links into 
-                    for ( let j = i + 1; j < numSoftBodyBallMassPositions; j++ ) {
-                        softBodyCombinedSystem.addLink( i, j % numSoftBodyBallMassPositions );
-                    }
-                }
-            }
-            
-            { // make bridge element
-
-                // add spring masses to gfx system
-                for ( let i = 0; i < numSoftBodyPlankMassPositions; i++ ) {
-                    let softBodyParticle = new SBS.MassPoint(outlinedCircleRT);
-                    softBodyParticle.blendMode = PIXI.BLEND_MODES.NORMAL;
-                    softBodyParticle.tint = parseInt(Math.floor(random() * 16777215).toString(16), 16);
-                    
-                    softBodyParticle.anchor.set(0.5);
-                    
-                    softBodyParticle.scale.set( softBodyMassRadius / fluidParticleRadius );
-
-                    // let angle = i * angleStep;
-                    // softBodyParticle.position.x = app.screen.width  * 0.5 + Math.cos( angle ) * softBodyRadius;
-                    // softBodyParticle.position.y = app.screen.height * 0.5 + Math.sin( angle ) * softBodyRadius;
-                    
-                    // positions for a horizontal bar
-                    // softBodyParticle.position.x = app.screen.width  * 0.5 + ( ( i % 4 ) / 3.0 * 2.0 - 1.0 ) * 180.0;
-                    // softBodyParticle.position.y = app.screen.height * 0.28 + ( Math.floor( i / 4 ) * 2.0 - 1.0 ) * 35.0;
-
-                    softBodyParticle.position.x = ( ( i % 4 ) / 3.0 * 2.0 - 1.0 ) * 180.0;
-                    softBodyParticle.position.y = ( Math.floor( i / 4 ) * 2.0 - 1.0 ) * 35.0;
-                    
-                    const rota = Math.PI * 0.11;
-                    const ca = Math.cos( rota );
-                    const sa = Math.sin( rota );
-                    const rotx =  ca * softBodyParticle.position.x + sa * softBodyParticle.position.y;
-                    const roty = -sa * softBodyParticle.position.x + ca * softBodyParticle.position.y;
-                    softBodyParticle.position.x = rotx + app.screen.width  * 0.5;
-                    softBodyParticle.position.y = roty + app.screen.height * 0.3;
-                    
-                    softBodyParticle.vel.x = -100.0;
-                    softBodyParticle.vel.y = -500.0;
-
-                    softBodyParticle.speed = 0.0; //1 + random() * 1.2;
-                    
-                    softBodyContainer.addChild( softBodyParticle );
-
-                    // add particle to spring-mass system solver
-                    softBodyCombinedSystem.addParticle( softBodyParticle );
-                    
-                }
-
-                for ( let i = numSoftBodyBallMassPositions; i < numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions; i++ ) {
-                    // insert links into 
-                    for ( let j = i + 1; j < numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions; j++ ) {
-                        //softBodyBridgeSystem.addLink( i, j % numSoftBodyMassPositions );
-                        softBodyCombinedSystem.addLink( i, j % ( numSoftBodyBallMassPositions + numSoftBodyPlankMassPositions ) );
-                    }
-                }
-
-            }            
-            // #######################
-            
-            
-            // Listen for window resize events
-            window.addEventListener('resize', resize);
-            resize();
-   
-            // const redraw = () => {
-            //     let startTime = performance.now();
-            //     for (let i = 0; i < fluidParticles.length; i++) {
-            //         const fluidParticle = fluidParticles[i];
-            //         fluidParticle.position.x += fluidParticle.speed;
-            //         if (fluidParticle.position.x > app.screen.width + width) {
-            //             fluidParticle.position.x -= app.screen.width + width + width;
-            //         }
-            //     }
-            //     // text.text =
-            //     //     "Prepared: " +
-            //     //     Math.round(performance.now() - startTime) +
-            //     //     "ms, Points: n/a";
-            //     app.render();
-
-            //     requestAnimationFrame(redraw);
-            // };
-            // requestAnimationFrame(redraw);
-                        
-            let keyObject_SPACE = AppUtils.keyboard( " " );            
-            if ( recordingEnabled == true ) { // recordings
-                keyObject_SPACE.press = () => {
-                    //key object pressed
-                };
-                keyObject_SPACE.release = async () => {
-                    //key object released
-                    const readImg = PIXI.Sprite.from(sceneMapTex);
-                    const image = await app.renderer.extract.pixels(readImg);
-                    await image;
-                    PFS.saveFluidParticleColorsToConsole(particleFluidSolver.getFluidParticles(), image);                
-                };
-            }
-
-            let keyObject_r = AppUtils.keyboard( "r" );
-            keyObject_r.release = async () => {
-                if ( fluidAsBlobs ) {
-                    metaballContainer.removeChildren(
-                        Math.max( 0, metaballContainer.children.length-1-activeFluidParticles ), 
-                        metaballContainer.children.length-1 );
-                } else {
-                    //sphereShapesContainer.removeChildren(0,activeFluidParticles);
-                    sphereShapesContainer.removeChildren(0,sphereShapesContainer.children.length-1);
-                }
-                activeFluidParticles = 0;
-                particleFluidSolver.setActiveParticleCount( 0 );
-                seed = startRandomSeed;
+            let sound_meta_obj = {
+                muted: false,
+                background_music: background_music,
+                //background_music_alias: 'background-music-alias',
+                main_thrust_alias: 'thrust-sfx-alias',
+                small_thrust_alias: 'small-thrust-sfx-alias',
+                rock_destroy_alias: 'rock-destroy-sfx-alias',
+                player_collide_sfx_alias: 'stone-scratch-sfx-alias',
+                object_collide_sfx_alias: 'stone-scratch-2-sfx-alias',
             };
             
-            // callback hooks to switch active game object with digit keys
-            let prev_active_game_object_idx = -1;
-            let active_game_object_idx = 0;
-            let key_digit_objects = [];
-            for ( let digit = 0; digit <= 9; digit++ ) {
-                let key_obj = AppUtils.keyboard( digit.toString() );
-                key_obj.release = async () => {
-                    console.log( `key ${digit} released` );
-                    active_game_object_idx = digit;
-                };
+            // sound is an instance of SoundLibrary
+            
+            //PIXI.sound.add( sound_meta_obj.background_music_alias, sound_meta_obj.background_music );
+            
+            PIXI.sound.add( sound_meta_obj.main_thrust_alias, '../assets/music/thrust.mp3' );
+            { // 1st playback volume hack
+                PIXI.sound.volume( sound_meta_obj.main_thrust_alias, 0.0001 ); 
+                PIXI.sound.play( sound_meta_obj.main_thrust_alias );
+                PIXI.sound.stop( sound_meta_obj.main_thrust_alias );
             }
+            PIXI.sound.volume( sound_meta_obj.main_thrust_alias, 0.4 );
             
-                  
-            let translation_speed = 3.0;
-            let rotation_radians_speed = 0.05;//0.01;
-            // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
-            Input.KeyboardController( document, window, //go_mgr,
-                {
-                    37: () => { 
-                        //console.log( `arrow left` ); 
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.translateBy( {x: -translation_speed, y: 0.0} );
-                        selected_go.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
-                        //selected_go.rigid_body.applyLinearVelocity( {x: -translation_speed, y: 0.0} );
-                    },
-                    38: () => { 
-                        //console.log( `arrow up` ); },
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.translateBy( {x: 0.0, y: -translation_speed} );
-                        selected_go.applyLinearVelocity( {x: 0.0, y: -translation_speed} );
-                        //selected_go.rigid_body.applyLinearVelocity( {x: 0.0, y: -translation_speed} );
-                    },
-                    39: () => { 
-                        //console.log( `arrow right` ); 
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.translateBy( {x: translation_speed, y: 0.0} );
-                        selected_go.applyLinearVelocity( {x: translation_speed, y: 0.0} );
-                        //selected_go.rigid_body.applyLinearVelocity( {x: translation_speed, y: 0.0} );
-                    },
-                    40: () => { 
-                        //console.log( `arrow down` ); 
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.translateBy( {x: 0.0, y: translation_speed} );
-                        selected_go.applyLinearVelocity( {x: 0.0, y: translation_speed} );
-                        //selected_go.rigid_body.applyLinearVelocity( {x: 0.0, y: translation_speed} );
-                    },
-                    
-                    69: () => {  // 'e'
-                        //console.log( `e` ); 
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.rotateBy( rotation_radians_speed );
-                        //selected_go.applyAngularVelocity( rotation_radians_speed );
-                        selected_go.rigid_body.applyAngularVelocity( rotation_radians_speed );
-                    },
-                    81: () => {  // 'q'
-                        //console.log( `q` ); 
-                        let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                        //selected_go.rotateBy( -rotation_radians_speed );
-                        //selected_go.applyAngularVelocity( -rotation_radians_speed );
-                        selected_go.rigid_body.applyAngularVelocity( -rotation_radians_speed );
-                    },
-                }, 
-                1.0/60.0
-            );      
-            
-            
-            app.stage.eventMode = "dynamic";
-            app.stage.hitArea = app.screen;
-            //app.stage.on('pointerdown', AppUtils.takeScreenshot);
 
-            let saveFluidParticleColorsHelper = async () => {
-                
-                const readImg = PIXI.Sprite.from(sceneMapTex);
-                const image = await app.renderer.extract.pixels(readImg);
-                await image;
-                PFS.saveFluidParticleColors( app, browserEnum, particleFluidSolver.getFluidParticles(), image );
-                console.log("LMB clicked - saved fluid particle colors from background!"); 
+            PIXI.sound.add( sound_meta_obj.small_thrust_alias, '../assets/music/thrust.mp3' );
+            { // 1st playback volume hack
+                PIXI.sound.volume( sound_meta_obj.small_thrust_alias, 0.0001 );
+                PIXI.sound.play( sound_meta_obj.small_thrust_alias );
+                PIXI.sound.stop( sound_meta_obj.small_thrust_alias );
             }
+            PIXI.sound.volume( sound_meta_obj.small_thrust_alias, 0.25 );
+            
+            PIXI.sound.add( sound_meta_obj.rock_destroy_alias, '../assets/music/rock-destroy-6409.mp3' );
+            { // 1st playback volume hack
+                PIXI.sound.volume( sound_meta_obj.rock_destroy_alias, 0.0001 );
+                PIXI.sound.play( sound_meta_obj.rock_destroy_alias );
+                PIXI.sound.stop( sound_meta_obj.rock_destroy_alias );
+            }
+            PIXI.sound.volume( sound_meta_obj.rock_destroy_alias, 0.5 );
+            
+            PIXI.sound.add( sound_meta_obj.player_collide_sfx_alias, '../assets/music/aluminum-cans-31112.mp3' );
+            { // 1st playback volume hack
+                PIXI.sound.volume( sound_meta_obj.player_collide_sfx_alias, 0.0001 );
+                PIXI.sound.play( sound_meta_obj.player_collide_sfx_alias );
+                PIXI.sound.stop( sound_meta_obj.player_collide_sfx_alias );
+            }
+            PIXI.sound.volume( sound_meta_obj.player_collide_sfx_alias, 0.5 );
 
-            // for recordings
-            if ( recordingEnabled == true ) { // recordings
-                if ( !fluidAsBlobs ) {
-                    app.stage.on('pointerdown', saveFluidParticleColorsHelper);
-                }
-            }            
+            PIXI.sound.add( sound_meta_obj.object_collide_sfx_alias, '../assets/music/stones-falling-6375.mp3' );
+            { // 1st playback volume hack
+                PIXI.sound.volume( sound_meta_obj.object_collide_sfx_alias, 0.0001 );
+                PIXI.sound.play( sound_meta_obj.object_collide_sfx_alias );
+                PIXI.sound.stop( sound_meta_obj.object_collide_sfx_alias );
+            }
+            PIXI.sound.volume( sound_meta_obj.object_collide_sfx_alias, 0.15 );
+            
 
-            let tickNum = 0;
-
-            let elapsed = 0.0;
-            app.ticker.add((delta) => {
-                //elapsed += delta;
-                
-                //console.log(delta / PIXI.Ticker.targetFPMS);                        
-        
-                tickNum += 1;
-                
-                let dt = app.ticker.elapsedMS * 0.001;
-                dt = Math.min( 0.033, dt );
-                
-                //elapsed += dt;
-                elapsed += 1/60;
-
-                // tried clearing that nasty single particle that sticks around after "reset", but doesn't work
-                // if ( fluidAsBlobs ) {
-                //     let containerLen = metaballContainer.length-1;
-                //     if ( activeFluidParticles < containerLen ) {
-                //         metaballContainer.removeChildren(activeFluidParticles, containerLen);
-                //     }
-                // } else {
-                //     let containerLen = sphereShapesContainer.length-1;
-                //     if ( activeFluidParticles < containerLen ) {
-                //         sphereShapesContainer.removeChildren(activeFluidParticles, containerLen);
-                //     }
-                // }
-                
-                for ( let i = 0; i < fracture_cells.length; i++ ) {
-                    let cell = fracture_cells[i];
-                    cell.rotation += 0.066 * debug_dirs_fracture_cells[i][0] * debug_dirs_fracture_cells[i][1];
-                    cell.position.x += debug_dirs_fracture_cells[i][0] * 10.0;
-                    cell.position.y += debug_dirs_fracture_cells[i][1] * 10.0;
-                }
-                
-                let it = 0;
-                game_objects.forEach( (gobj) => {
-                    gobj.render_primitive.rotation += 0.01;
-                    gobj.render_primitive.position.x += Math.cos( elapsed * 4.0 + it ) * 3.0; 
-                    gobj.render_primitive.position.y += Math.sin( elapsed * 4.0 + it ) * 3.0; 
-                    it++;
-                } );
-                
-                //test_circle_go.setPos( [ 400.0, 320.0 ] );
-                // if (!fix_circle) {
-                //     test_circle_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
-                // }
-                // it++;
-                // if (!fix_polygon) {
-                //     test_polygon_go.translateBy( new Vec2( Math.cos( elapsed * 4.0 + it ) * 3.0, Math.sin( elapsed * 4.0 + it ) * 3.0 ) );
-                //     test_polygon_go.rotateBy( -0.03 );
-                // }
-                if ( prev_active_game_object_idx != active_game_object_idx ) {
-                    console.log( `switched active game object to idx ${active_game_object_idx}` );
-                    let selected_go = go_mgr.getGameObjects()[ active_game_object_idx ];
-                    prev_active_game_object_idx = active_game_object_idx;
-                }
-                
-                go_mgr.updateAllGameObjects( dt );
-
-                
-                //performCollisionDetection( game_objects );
-                
-                
-                
-                primitiveTriangle.rotation += 0.01;
-                primitiveTriangle.shader.uniforms.u_time += 0.1;
-                
-                MyDrawPrimitive.setColorForPrimitive( primitiveTriangle, [ 
-                    Math.cos( 0.5 + elapsed * 1.3 ) * 0.5 + 0.5, 
-                    Math.cos( elapsed ) * 0.5 + 0.5, 
-                    Math.cos( 0.7 + 0.33 * elapsed ) * 0.5 + 0.5, 
-                    primitiveTriangle.shader.uniforms.u_color[3] ] );
-                
-                // emit new fluid particles    
-                const emissionRate = (isPictureParticleFluidDemoMode) ? 8 : 6;
-                for ( let i = 0; i < emissionRate; i++ ) 
-                {
-                    const angleVal = elapsed * 2.0 * 3.1415;
-                    const cosTime = Math.cos( angleVal ) * 0.3 + 0.7;
-                    const sinTime = Math.sin( angleVal ) * 0.3 + 0.7;
-                    
-                    //if ( activeFluidParticles < fluidParticles.length ) {
-                    if ( activeFluidParticles < maxNumFluidParticles ) {
-                        //let fluidParticle = fluidParticles[activeFluidParticles];
-                        //XXXYYYXXX let fluidParticle = particleFluidSolver.addNewParticleAtIdx( activeFluidParticles );
-                        let fluidParticle = particleFluidSolver.getParticleAtIdx( activeFluidParticles );
-                        
-                        if ( isPictureParticleFluidDemoMode ) {
-                            let offX = activeFluidParticles % 13 - 6;
-                            offX *= 1.8 + 0.2 * random();
-                            fluidParticle.position.x = app.screen.width * 0.3 + offX * 1.1 * fluidParticleRadius;
-                            //fluidParticle.position.x = app.screen.width / 2;
-                            //fluidParticle.position.y = app.screen.height / 2;
-                            let offY = activeFluidParticles % 10;
-                            offY *= 0.8 + 0.2 * random();
-                            //let signX = ( activeFluidParticles % 3 ) - 1;
-                            let signX = -1.0;
-                            //let randDir = random() * 0.5 - 0.25;
-
-                            let randDir = 1.0; //-random() * 0.1 + 0.9;
-                            const randDirX_tmp = randDir * signX * 0.8 * fluidParticleRadius;
-                            const randDirY_tmp = 0.1;// * 3.0;
-                            
-                            let randDirX = +cosTime * randDirX_tmp + sinTime * randDirY_tmp;
-                            let randDirY = -sinTime * randDirX_tmp + cosTime * randDirY_tmp;
-
-                            fluidParticle.position.y = app.screen.height * 0.225 + offY * fluidParticleRadius;
-                            
-                            fluidParticle.position.x += randDirX * 2.0;
-                            fluidParticle.position.y += randDirY * 2.0;
-
-                            fluidParticle.lastPosX = fluidParticle.position.x + randDirX;
-                            fluidParticle.lastPosY = fluidParticle.position.y + randDirY;// + randDir * 0.5 * fluidParticleRadius; 
-                            
-                        } else /*if ( isMetaballFluidDemoMode )*/ {
-                            // let signX = ( activeFluidParticles % 3 ) - 1;
-                            // randDir = random() * 0.5 - 0.25;
-                            // randDirX = randDir * 0.03 * signX;
-                            // randDirY = randDir * 0.02;
-                            // fluidParticle.position.x = app.screen.width * 0.5 + offX * fluidParticleRadius;
-                            // fluidParticle.position.y = app.screen.height * 0.25 + offY * fluidParticleRadius;
-                            let offX = activeFluidParticles % 13 - 6;
-                            fluidParticle.position.x = app.screen.width / 2 + offX * 1.8 * fluidParticleRadius;
-                            let offY = activeFluidParticles % 10;
-                            let signX = ( activeFluidParticles % 3 ) - 1;
-                            let randDir = random() * 0.5 - 0.25;
-                            fluidParticle.speed = 0.0001;
-                            fluidParticle.position.y = app.screen.height / 4 + offY * 1.8 * fluidParticleRadius;
-                            fluidParticle.lastPosX = fluidParticle.position.x + dt * randDir * signX * 0.5 * fluidParticleRadius;
-                            fluidParticle.lastPosY = fluidParticle.position.y + dt * randDir * 0.5 * fluidParticleRadius; 
-                        }
-                        
-                        fluidParticle.accelX = 0.0;
-                        fluidParticle.accelY = fluidParticleGravityY;
-
-                        if ( fluidAsBlobs ) {
-                            metaballContainer.addChild(fluidParticle);
-                        } else {
-                            sphereShapesContainer.addChild(fluidParticle);
-                        }
-                        
-                        activeFluidParticles++;
-                        particleFluidSolver.setActiveParticleCount( activeFluidParticles );
-                    } else {
-                        break;
-                    }
-                }
-                
-                //console.log( app.ticker.elapsedMS * 0.001 );
-                
-                // triangle.rotation += 0.04;
-                // triangle.position.x += 1.4;
-                // triangle.position.y += Math.sin( tickNum * 0.1 ) * 2.0;
-                
-                //app.renderer.render(metaballContainer, { renderTexture: metaballBufferRT } );
-              
-                metaballNormalsFilter.uniforms.u_time = elapsed;
-                metaballNormalsFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
-                metaballNormalsFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
-                
-                crtFilter.uniforms.u_time = elapsed*0.33;
-                crtFilter.uniforms.u_rDim = {x: 1.0/app.renderer.screen.width, y: 1.0/app.renderer.screen.height};
-                crtFilter.uniforms.u_dim = {x: app.renderer.screen.width, y: app.renderer.screen.height};
-
-                particleFluidSolver.updateFluidDriver();
-
-                //!!!  
-                // softBodyBallSystem.updateDriver();
-                // softBodyBridgeSystem.updateDriver();
-                softBodyCombinedSystem.updateDriver();
-                
-                // update gauss blobs
-                //gaussSprite.position.x = (Math.sin( tickNum * 0.1 ) + 1.0) * 0.25 * app.screen.width;
-                for (let i = 0; i < gaussSpriteArray.length; i++) {
-                    const gaussSprite = gaussSpriteArray[i];
-                    gaussSprite.direction += gaussSprite.turningSpeed * 0.01;
-                    gaussSprite.x += Math.sin(gaussSprite.direction) * gaussSprite.speed;
-                    gaussSprite.y += Math.cos(gaussSprite.direction) * gaussSprite.speed;
-
-                    // wrap the dudes by testing their bounds...
-                    if (gaussSprite.x < gaussSpriteBounds.x) {
-                        gaussSprite.x += gaussSpriteBounds.width;
-                    } else if (gaussSprite.x > gaussSpriteBounds.x + gaussSpriteBounds.width) {
-                        gaussSprite.x -= gaussSpriteBounds.width;
-                    }
-
-                    if (gaussSprite.y < gaussSpriteBounds.y) {
-                        gaussSprite.y += gaussSpriteBounds.height;
-                    } else if (gaussSprite.y > gaussSpriteBounds.y + gaussSpriteBounds.height) {
-                        gaussSprite.y -= gaussSpriteBounds.height;
-                    }
-                } 
-                
-                if ( !eggHeadSprite.dragging ) { // spring relaxation
-
-                    let currDiffVecX = (flowerTopSprite.x - eggHeadSprite.x);
-                    let currDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
-                    let currLen = Math.sqrt( currDiffVecX * currDiffVecX + currDiffVecY * currDiffVecY );
-                    
-                    let relativeLenDiff = (restLen - currLen) / restLen;
-                    
-                    let springForce = -eggHeadSpriteSpringConst * relativeLenDiff;
-                    
-                    //let gravityY = 0.02; // +=
-                    let gravityY = 50.2; // =
-                    // if ( Math.abs( springForce ) > 0.0 ) 
-                    {                                            
-                        let mass = 1.0;
-                        let springAccel = ( springForce / mass ) * dt;
-                        //springAccelY = ( -gravityY + springForce / mass ) * dt;
-                        
-                        //eggHeadSpriteAccelY += gravityY;
-                        //eggHeadSpriteAccelY = gravityY;
-                        
-                        eggHeadSpriteVelX += springAccel * currDiffVecX/currLen;
-                        eggHeadSpriteVelY += springAccel * currDiffVecY/currLen;// + eggHeadSpriteAccelY;
-                        
-                        eggHeadSprite.x += eggHeadSpriteVelX * dt;// + springAccel * dt;
-                        eggHeadSprite.y += eggHeadSpriteVelY * dt;// + springAccel * dt;
-                                                
-                    }
-                    
-                    eggHeadSpriteVelX *= velDamping;
-                    eggHeadSpriteVelY *= velDamping;
-                }
-                
-                { // spring relaxation for 2nd 
-                    let currDiffVecX = (eggHeadSprite.x - flowerTopSprite.x);
-                    let currDiffVecY = (eggHeadSprite.y - flowerTopSprite.y);
-                    let currLen = Math.sqrt( currDiffVecX * currDiffVecX + currDiffVecY * currDiffVecY );
-                    
-                    let relativeLenDiff = (restLen - currLen) / restLen;
-                    
-                    let springForce = -eggHeadSpriteSpringConst * relativeLenDiff;
-                        
-                    let mass = 1.0;
-                    let springAccel = ( springForce / mass ) * dt;
-                    
-                    flowerTopSpriteVelX += springAccel * currDiffVecX/currLen;
-                    flowerTopSpriteVelY += springAccel * currDiffVecY/currLen;
-                    
-                    flowerTopSprite.x += flowerTopSpriteVelX * dt;
-                    flowerTopSprite.y += flowerTopSpriteVelY * dt;
-                    flowerTopSpriteVelX *= velDamping;
-                    flowerTopSpriteVelY *= velDamping;
-                }                
-                
-            });
-
+            let magneticScrapyard1000 = new MagneticScrapyard1000(app, window, sound_meta_obj);
             
             
             // Resize function window
             function resize() {
-                windowScale = AppUtils.scaleToWindow( app.renderer.view );
-                console.log( windowScale );
-                
-                particleFluidSolver.onResolutionChanged( app.screen.width, app.screen.height );
-            }
-       
-            // function performCollisionDetection( game_objects ) {
-            //     game_objects.forEach( (game_object) => {
-            //         if ( game_object.rigid_body.shape_type == ShapeType.circle ) {
-            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive, [ 0.1, 0.2, 0.9, 0.6 ] );
-            //         } else if ( game_object.rigid_body.shape_type == ShapeType.polygon ) {
-            //             //console.log( game_object );
-            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[0], [ 0.1, 0.2, 0.9, 0.6 ] );
-            //             MyDrawPrimitive.setColorForPrimitive( game_object.render_primitive.children[1], [ 0.5, 0.2, 0.9, 0.15 ] );
-            //         }
-            //     } );
-            //     for ( let i = 0; i < game_objects.length; i++ ) {
-            //         for ( let j = i + 1; j < game_objects.length; j++ ) {
-            //             const [ did_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
-            //             if ( did_collide ) {
-            //                 //console.log( `collision game objects ${i} | ${j}` );
-            //                 if ( game_objects[i].rigid_body.shape_type == ShapeType.circle ) {
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
-            //                 } else if ( game_objects[i].rigid_body.shape_type == ShapeType.polygon ) {
-            //                     //console.log( game_object );
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[i].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
-            //                 }
-                            
-            //                 if ( game_objects[j].rigid_body.shape_type == ShapeType.circle ) {
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive, [ 0.9, 0.2, 0.1, 0.6 ] );
-            //                 } else if ( game_objects[j].rigid_body.shape_type == ShapeType.polygon ) {
-            //                     //console.log( game_object );
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[0], [ 0.9, 0.5, 0.1, 0.6 ] );
-            //                     MyDrawPrimitive.setColorForPrimitive( game_objects[j].render_primitive.children[1], [ 0.5, 0.4, 0.2, 0.15 ] );
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-       
-        </script>
-        
-        <!-- <script> 
-            // Create the application helper and add its render target to the page
-            let app = new PIXI.Application({ width: 640, height: 360 });
-            document.body.appendChild(app.view);
+                // windowScale = AppUtils.scaleToWindow( app.renderer.view );
+                //console.log( windowScale );
+                console.log( `resize event:` ); 
+                console.log( `    window.innerWidth: ${window.innerWidth} x ${window.innerHeight}` );
 
-            // Add a ticker callback to move the sprite back and forth
-            let elapsed = 0.0;
-            app.ticker.add((delta) => {
-                elapsed += delta;
-            });
-        </script> -->
+                // NO!!! don't touch the sizes anymore!
+                // app.stage.width  = app.screen.width;
+                // app.stage.height = app.screen.height;
+                // app.stage.filterArea = app.renderer.screen;
+                
+                //magneticScrapyard1000.onResize( window.innerWidth, window.innerHeight);
+                // app.stage.position.x = app.renderer.screen.width/2;
+                // app.stage.position.y = app.renderer.screen.height/2;                
+                // app.stage.width  	  = app.renderer.screen.width;
+		        // app.stage.height 	  = app.renderer.screen.height;                 
+            }
+            
+        </script>
     </body>
 </html>

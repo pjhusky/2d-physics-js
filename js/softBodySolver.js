@@ -1,3 +1,7 @@
+"use strict";
+
+// import * as PIXI from './pixijs/pixi.js';
+
 var SoftBodySolver = (function (exports) {
 
     function vectorFromTo( posA, posB ) {
@@ -5,8 +9,6 @@ var SoftBodySolver = (function (exports) {
     }
     
     function distance( posA, posB ) {
-        // let diffX = posA.x - posB.x;
-        // let diffY = posA.y - posB.y;
         let dVec = vectorFromTo( posA, posB );
         return length( dVec );
     }
@@ -31,22 +33,27 @@ var SoftBodySolver = (function (exports) {
     }
     
     let MassPoint = class MassPointClass extends PIXI.Sprite {
-        constructor(texture) {
+        constructor(mass, texture) {
             super(texture);
+            //super(Texture.fromImage(texture_url));
             this.speed = 0.0;
             this.vel = { x: 0.0, y: 0.0 };
             this.force = { x: 0.0, y: 0.0 };
-            //this.mass = 1000.0;
-            this.mass = 1.0;
+            this.recip_mass = 1.0 / mass;
+            this.lastPosX = this.position.x;
+            this.lastPosY = this.position.y;
         }
         
         update( dt ) {
 
             // Euler integration
             {
+                this.lastPosX = this.position.x;
+                this.lastPosY = this.position.y;
+                    
                 // accumulate velocity
-                this.vel.x += this.force.x * dt / this.mass;
-                this.vel.y += this.force.y * dt / this.mass;
+                this.vel.x += this.force.x * dt * this.recip_mass;
+                this.vel.y += this.force.y * dt * this.recip_mass;
 
                 // accumulate position
                 this.position.x += this.vel.x * dt;
@@ -62,49 +69,50 @@ var SoftBodySolver = (function (exports) {
             this.force.x += force.x;
             this.force.y += force.y;
         }
+
+        setForce( force ) {
+            this.force.x = force.x;
+            this.force.y = force.y;
+        }
+        
     };
     
     let Spring = class SpringClass {
-        constructor( massA, massB /*, stiffness, dampingFactor*/ ) {
-            this.massA = massA;
-            this.massB = massB;
+        constructor( objA, objB /*, stiffness, dampingFactor*/ ) {
+            this.objA = objA;
+            this.objB = objB;
 
-            //this.kS = 80.0;
-            //this.kS = 180.0; //stiffness;
-            
             //stiffness;
-            this.kS = 220.0;
-            //this.kS = 1000.0; 
-            // this.kS = 10000.0; 
+            //this.kS = 220.0;
+            //this.kS = 350.0;
+            //this.kS = 420.0;
+            this.kS = 480.0;
+            //this.kS = 520.0;
+            //this.kS = 820.0;
 
             //dampingFactor;
-            this.kD = 0.4; 
-            //this.kD = 10.0; 
-            // this.kD = 20.0;
+            //this.kD = 0.4; 
+            this.kD = 5.8; // TODO: [ph] while tweaking... is it okay to not be within [0;1] ...?
+            //this.kD = 4.8;
             
-            //this.kD = 1.2; //dampingFactor;
-            //this.kD = 4.0; //dampingFactor;
-            
-            this.restLen = distance( this.massA.position, this.massB.position );
-            //this.kD = 0.2; //dampingFactor;
-            
+            this.restLen = distance( this.objA.position, this.objB.position );
         }
         
         calculateSpringForce() {
-            let currLen = distance( this.massA.position, this.massB.position );
+            let currLen = distance( this.objA.position, this.objB.position );
             return this.kS * (currLen - this.restLen)
         }
         
         calculateDampingForce( vecAB_unit ) {
             //let velDiff = vectorFromTo( this.massA.vel, this.massB.vel );
-            let velDiff = { x: this.massB.vel.x - this.massA.vel.x, y: this.massB.vel.y - this.massA.vel.y };
+            let velDiff = { x: this.objB.vel.x - this.objA.vel.x, y: this.objB.vel.y - this.objA.vel.y };
             
             let dotProd = dot( vecAB_unit, velDiff );
             return dotProd * this.kD;
         }
         
         update() {
-            let vecAB = vectorFromTo( this.massA, this.massB );
+            let vecAB = vectorFromTo( this.objA.position, this.objB.position );
             let vecAB_unit = vecAB;
             normalize( vecAB_unit );
 
@@ -114,10 +122,10 @@ var SoftBodySolver = (function (exports) {
             let fT = fS + fD;
             
             let forceMassA = { x:  fT * vecAB_unit.x, y:  fT * vecAB_unit.y };
-            this.massA.addForce( forceMassA );
+            this.objA.addForce( forceMassA );
             
             let forceMassB = { x: -fT * vecAB_unit.x, y: -fT * vecAB_unit.y };
-            this.massB.addForce( forceMassB );
+            this.objB.addForce( forceMassB );
         }
     };
     
@@ -126,33 +134,34 @@ var SoftBodySolver = (function (exports) {
     };
     
     let SpringMassSolverConstraintCircle = class SpringMassSolverConstraintCircleClass extends SpringMassSolverConstraintBase {
-        constructor( gridW, gridH, particleRadius ) {
+        constructor( circleCenterX, circleCenterY, circleRadius, particleRadius ) {
             super();
 
             // boundary condition
             this.particleRadius = particleRadius;
-            this.commonInit( gridW, gridH );
-            console.log( "SpringMassSolverConstraintCircle ctor" );
-        }
-        
-        commonInit( newGridW, newGridH ) {
-            this.circleBoundCenterX = newGridW * 0.5;
-            this.circleBoundCenterY = newGridH * 0.5; //0.38;
-            this.circleBoundRadius = Math.min( newGridW, newGridH ) * 0.46; //0.5;
+            
+            this.circleBoundCenterX = circleCenterX;
+            this.circleBoundCenterY = circleCenterY; //0.38;
+            this.circleBoundRadius = circleRadius;
             //this.circleBoundRadius = Math.min( newGridW, newGridH ) * 0.375;
             this.circleBoundRadiusSquared = this.circleBoundRadius * this.circleBoundRadius;
             this.testDistSquared = this.circleBoundRadiusSquared - 2.0 * this.circleBoundRadius * this.particleRadius + this.particleRadius*this.particleRadius;
-        }
-            
-        onResolutionChanged( newGridW, newGridH ) {
-            this.commonInit( newGridW, newGridH );
-        }
 
-        applyConstraint( particles, numActiveParticles ) {
+            //console.log( "SpringMassSolverConstraintCircle ctor" );
+        }
+        
+            
+        // onResolutionChanged( newGridW, newGridH ) {
+        //     this.commonInit( newGridW, newGridH );
+        // }
+
+        //applyConstraint( particles, numActiveParticles ) {
+        applyConstraint( particles ) {
             //console.log( "here" );
             
             // enforce constraints / boundary conditions
-            for (let i = 0; i < numActiveParticles; i++) {
+            //for (let i = 0; i < numActiveParticles; i++) {
+            for (let i = 0; i < particles.length; i++) {
                 let particle = particles[i];
                 let toObjX = particle.position.x - this.circleBoundCenterX;
                 let toObjY = particle.position.y - this.circleBoundCenterY;
@@ -165,42 +174,8 @@ var SoftBodySolver = (function (exports) {
                     let fixDirX = toObjX / dist;
                     let fixDirY = toObjY / dist;
 
-                    // particle.position.x = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius*1.025 );
-                    // particle.position.y = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius*1.025 );
-                    
-                    // // actually reflect!!!
-                    // let N = { x: -fixDirX, y: -fixDirY };
-                    // normalize( N );
-                    // let reflVel = reflect( vel, N );
-                    // particle.vel.x = reflVec.x;
-                    // particle.vel.y = reflVec.y;
-
-                    // let normalX = particle.position.x - this.circleBoundCenterX;
-                    // let normalY = particle.position.y - this.circleBoundCenterY;
-                    
-                    // let normalLen = Math.sqrt( normalX * normalX + normalY * normalY );
-                    // normalX /= normalLen;
-                    // normalY /= normalLen;
-                    
-                    // let velX = particle.position.x - particle.lastPosX;
-                    // let velY = particle.position.y - particle.lastPosY;
-                    
-                    // let velDotN = velX * normalX + velY * normalY;
-                    // let reflX = velX - 2.0 * velDotN * normalX;
-                    // let reflY = velY - 2.0 * velDotN * normalY;
-
-                    // // pos insdie constraint region
-                    // particle.lastPosX = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius );
-                    // particle.lastPosY = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius );
-
-                    // particle.position.x = particle.lastPosX + reflX * 0.66;
-                    // particle.position.y = particle.lastPosY + reflY * 0.66;
-
-                    // particle.velX = reflX;
-                    // particle.velY = reflY;
-
-
-                    if ( false ) { // don't bounce back, more viscous fluid-like
+                    let boolean_val = false;
+                    if ( boolean_val ) { // don't bounce back, more viscous fluid-like
                         //console.log( "constraint resolve!" );
                         particle.position.x = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius*1.05 );
                         particle.position.y = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius*1.05 );
@@ -225,18 +200,10 @@ var SoftBodySolver = (function (exports) {
                         let velDotN = velX * normalX + velY * normalY;
                         let reflX = velX - 2.0 * velDotN * normalX;
                         let reflY = velY - 2.0 * velDotN * normalY;
-
-                        // particle.lastPosX = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius * 1.035 );
-                        // particle.lastPosY = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius * 1.035 );
-                        // particle.position.x = particle.lastPosX + reflX * 0.66;
-                        // particle.position.y = particle.lastPosY + reflY * 0.66;
                         
                         particle.position.x = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.particleRadius * 1.035 );
                         particle.position.y = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.particleRadius * 1.035 );
-                        // particle.position.x += reflX * 0.66;
-                        // particle.position.y += reflY * 0.66;
 
-                        //const elasticity = 0.9;
                         const elasticity = 0.975;
                         particle.vel.x = reflX * elasticity;
                         particle.vel.y = reflY * elasticity;
@@ -251,38 +218,89 @@ var SoftBodySolver = (function (exports) {
     };
     exports.SpringMassSolverConstraintCircle = SpringMassSolverConstraintCircle;
     
+    let SpringMassSolverConstraintPlane = class SpringMassSolverConstraintPlaneClass extends SpringMassSolverConstraintBase {
+        constructor( particle_radius, plane_N ) {
+            super();
+
+            // boundary condition
+            this.particle_radius = particle_radius;
+            this.plane_N = plane_N;
+    
+            console.log( "SpringMassSolverConstraintPlane ctor" );
+        }
+        
+        applyConstraint( particles ) {
+            
+            // enforce constraints / boundary conditions
+            for (let i = 0; i < particles.length; i++) {
+                let particle = particles[i];
+                
+                const dist_val = ( particle.position.x * this.plane_N.x + particle.position.y * this.plane_N.y + this.plane_N.z ) - this.particle_radius;
+                if ( dist_val < 0.0 ) { // did collide
+                    let velX = particle.vel.x; //particle.position.x - particle.lastPosX;
+                    let velY = particle.vel.y; //particle.position.y - particle.lastPosY;
+                    
+                    let velDotN = velX * this.plane_N.x + velY * this.plane_N.y;
+                    let reflX = velX - 2.0 * velDotN * this.plane_N.x;
+                    let reflY = velY - 2.0 * velDotN * this.plane_N.y;                
+                    
+                    const elasticity = 0.975;
+                    particle.position.x += -dist_val * reflX * elasticity;
+                    particle.position.y += -dist_val * reflY * elasticity;
+
+                    
+                    //const elasticity = 0.999;
+                    particle.vel.x = 0.0; //reflX * 0.1;
+                    particle.vel.y = 0.0; //reflY * 0.1;
+
+                    
+                    particle.force.x = 0.0;
+                    particle.force.y = 0.0;
+
+                }
+            }
+            
+        }                 
+    };
+    exports.SpringMassSolverConstraintPlane = SpringMassSolverConstraintPlane;
+        
+    
     let SoftBodySolver = class SoftBodySolverClass {
 
-        constructor( gridW, gridH, 
-                     maxNumParticles, particleRadius, particleGravityX, particleGravityY, 
-                     //massPositions, springLinks, 
-                     fixedDt, numSubSteps, 
-                     constraints ) {
+        constructor( //gridW, gridH, 
+                     //maxNumParticles, 
+                     //particleRadius, 
+                     //particleGravityX, particleGravityY, 
+                     //fixedDt, 
+                     //numSubSteps, 
+                     //constraints 
+                     ) {
             
             this.particles = [];
-            this.maxNumParticles = maxNumParticles;
-            this.numActiveParticles = 0;
-            this.particleRadius = particleRadius;
-            this.binDim = 2.0 * particleRadius;
+            //this.maxNumParticles = maxNumParticles;
+            //this.numActiveParticles = 0;
+            //this.particleRadius = particleRadius;
+            //this.binDim = 2.0 * particleRadius;
             
-            // this.massPositions = massPositions;
+            this.particleRadius = 1.0;
+            
             this.springLinks = [];
-            // this.shapeSpringLinks = [];
-            //this.springRestLens = new Map();
-            
-            this.particleGravityX = particleGravityX;
-            this.particleGravityY = particleGravityY;
 
-            this.fixedDt = fixedDt;
-            this.numSubSteps = numSubSteps;
-            this.subFixedDt = fixedDt / numSubSteps;
+            // this.particleGravityX = particleGravityX;
+            // this.particleGravityY = particleGravityY;
+            // this.particleGravityX = SimulationParameters.globalGravity().x;
+            // this.particleGravityY = SimulationParameters.globalGravity().y;
+            this.particleGravityX = 0.0;
+            this.particleGravityY = 1200.0;
+
+            // this.fixedDt = fixedDt;
+            // this.numSubSteps = numSubSteps;
+            // this.subFixedDt = fixedDt / numSubSteps;
                         
-            this.constraints = constraints;
+            //this.constraints = constraints;
+            this.constraints = [];
             
-            let twoParticleRadius = 2.0 * particleRadius;
-            this.twoParticleRadiusSquared = twoParticleRadius * twoParticleRadius;
-                        
-            this.commonInit( gridW, gridH );                         
+            // this.commonInit( gridW, gridH );                         
         }
         
         getParticles() { 
@@ -294,28 +312,21 @@ var SoftBodySolver = (function (exports) {
         }
 
         addParticle( particle ) { 
-            this.numActiveParticles++;
+            //this.numActiveParticles++;
             this.particles.push( particle ); 
         }
-        removeParticle( particleIdx ) { 
-            this.numActiveParticles--;
-            this.particles.splice( particleIdx, particleIdx ); // attention, also remove link if there was one!
-        }
+        // removeParticle( particleIdx ) { 
+        //     //this.numActiveParticles--;
+        //     //this.particles.splice( particleIdx, particleIdx ); // attention, also remove link if there was one!
+        //     this.particles.splice( particleIdx, 1 ); // attention, also remove link if there was one!
+        // }
 
         addLink( particleAIdx, particleBIdx ) {
             let idxPair = [ particleAIdx, particleBIdx ].sort();
-            // let massAPos = this.particles[ idxPair[ 0 ] ].position;
-            // let massBPos = this.particles[ idxPair[ 1 ] ].position;
-            // let diffX = massAPos.x - massBPos.x;
-            // let diffY = massAPos.y - massBPos.y;
-            // let restLen = Math.sqrt( diffX*diffX + diffY*diffY );
             
             let massA = this.particles[ idxPair[ 0 ] ];
             let massB = this.particles[ idxPair[ 1 ] ];
-            // let kS = 10.0;
-            // let kD = 1.0;
             this.springLinks.push( new Spring( massA, massB/*, kS, kD*/ ) );
-            //this.springRestLens.set( idxPair, restLen );
         }
         // removeLink( particleAIdx, particleBIdx ) {
         //     const idx = this.springLinks.indexOf( [ particleAIdx, particleBIdx ].sort() );
@@ -323,83 +334,96 @@ var SoftBodySolver = (function (exports) {
         //         this.springLinks.splice( idx, idx );
         //     }
         // }
-        
-        setActiveParticleCount( activeParticleCount ) {
-            this.numActiveParticles = activeParticleCount;
+        removeAllSpringLinks() {
+            this.springLinks = [];
         }
+        
+        // setActiveParticleCount( activeParticleCount ) {
+        //     this.numActiveParticles = activeParticleCount;
+        // }
         
         getMaxNumParticles() { 
-            return this.maxNumParticles; 
+            return this.particles.length; 
         }
         
-        commonInit(gridW, gridH) {
-            this.gridW = gridW;
-            this.gridH = gridH;
-            this.numBinsX = Math.floor( ( gridW + ( this.binDim - 1 ) ) / this.binDim ); // round up
-            this.numBinsY = Math.floor( ( gridH + ( this.binDim - 1 ) ) / this.binDim ); // round up
+        addBoundaryConstraint( constraint ) {
+            this.constraints.push( constraint );
+        }
+        
+        // commonInit(gridW, gridH) {
+        //     this.gridW = gridW;
+        //     this.gridH = gridH;
+        //     this.numBinsX = Math.floor( ( gridW + ( this.binDim - 1 ) ) / this.binDim ); // round up
+        //     this.numBinsY = Math.floor( ( gridH + ( this.binDim - 1 ) ) / this.binDim ); // round up
             
-            this.spatialArray = this.createSpatialBins();
-        }
+        //     this.spatialArray = this.createSpatialBins();
+        // }
         
-        onResolutionChanged( newGridW, newGridH ) {
-            this.commonInit( newGridW, newGridH );
-            this.createSpatialBins();
+        // onResolutionChanged( newGridW, newGridH ) {
+        //     this.commonInit( newGridW, newGridH );
+        //     this.createSpatialBins();
             
-            for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
-                this.constraints[constraintIdx].onResolutionChanged( newGridW, newGridH );
-            }
-        }
+        //     for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
+        //         this.constraints[constraintIdx].onResolutionChanged( newGridW, newGridH );
+        //     }
+        // }
         
-        createSpatialBins() { 
-            console.log( 'created spatial bins' );
-            this.spatialArray = new Array( this.numBinsY );
-            console.log( 'numBinsX = %d, numBinsY = %d', this.numBinsX, this.numBinsY );
-            //console.log( 'spatialArray.length %d, numBinsY = %d', this.spatialArray.length, this.numBinsY );
-            for (let y = 0; y < this.numBinsY; y++) {
-                this.spatialArray[y] = new Array( this.numBinsX );
-                //console.log( '\tspatialArray[y].length %d, this.numBinsX = %d', this.spatialArray[y].length, this.numBinsX );
-                for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = [];
-                    //console.log( '\tspatialArray[%d][%d].length = %d', y, x, spatialArray[y][x].length );
-                }
-            }
-            //return [numBinsX, numBinsY];
-        }
+        // createSpatialBins() { 
+        //     console.log( 'created spatial bins' );
+        //     this.spatialArray = new Array( this.numBinsY );
+        //     console.log( 'numBinsX = %d, numBinsY = %d', this.numBinsX, this.numBinsY );
+        //     //console.log( 'spatialArray.length %d, numBinsY = %d', this.spatialArray.length, this.numBinsY );
+        //     for (let y = 0; y < this.numBinsY; y++) {
+        //         this.spatialArray[y] = new Array( this.numBinsX );
+        //         //console.log( '\tspatialArray[y].length %d, this.numBinsX = %d', this.spatialArray[y].length, this.numBinsX );
+        //         for ( let x = 0; x < this.numBinsX; x++ ) {
+        //             this.spatialArray[y][x] = [];
+        //             //console.log( '\tspatialArray[%d][%d].length = %d', y, x, spatialArray[y][x].length );
+        //         }
+        //     }
+        //     //return [numBinsX, numBinsY];
+        // }
 
-        clearSpatialBins() {            
-            //console.log( 'cleared spatial bins' );
-            for (let y = 0; y < this.numBinsY; y++) {
-                for ( let x = 0; x < this.numBinsX; x++ ) {
-                    this.spatialArray[y][x] = [];
-                }
-            }
-        }
+        // clearSpatialBins() {            
+        //     //console.log( 'cleared spatial bins' );
+        //     for (let y = 0; y < this.numBinsY; y++) {
+        //         for ( let x = 0; x < this.numBinsX; x++ ) {
+        //             this.spatialArray[y][x] = [];
+        //         }
+        //     }
+        // }
 
-        updateDriver() {
-            if ( this.numSubSteps > 0 ) {
-                for ( let step = 0; step < this.numSubSteps; step++ ) {
-                    this.updateSpringMassSystem( this.subFixedDt );
+        updateDriver( dt, num_sub_steps ) {
+            // if ( this.numSubSteps > 0 ) {
+            //     for ( let step = 0; step < this.numSubSteps; step++ ) {
+            //         this.updateSpringMassSystem( this.subFixedDt );
+            //     }
+            // } else {
+            //     this.updateSpringMassSystem( this.fixedDt );
+            // }
+            
+            
+            if ( num_sub_steps > 0 ) {
+                const dt_step = dt / num_sub_steps;
+                for ( let step = 0; step < num_sub_steps; step++ ) {
+                    this.updateSpringMassSystem( dt_step );
                 }
             } else {
-                this.updateSpringMassSystem( this.fixedDt );
+                this.updateSpringMassSystem( dt );
             }
+            
         }
-        
         
         updateSpringMassSystem( dt ) {
             // apply gravity
-            for (let i = 0; i < this.numActiveParticles; i++) {
+            //for (let i = 0; i < this.numActiveParticles; i++) {
+            for (let i = 0; i < this.particles.length; i++) {
                 let particle = this.particles[ i ];
                 // add gravity
                 
-                particle.addForce( { x: 0.0, y: 200.0 * particle.mass }  );
-                //particle.addForce( { x: 0.0, y: 300.0 * particle.mass }  );
-                //particle.addForce( { x: 0.0, y: 400.0 * particle.mass }  );
-                //particle.addForce( { x: 0.0, y: 600.0 * particle.mass }  );
-                
-                //particle.addForce( { x: 0.0, y: 10.0 * particle.mass }  );
+                //particle.addForce( { x: 0.0, y: 200.0 * particle.mass }  );
+                particle.addForce( { x: 0.0, y: 200.0 / particle.recip_mass }  );
             }
-
             
             for ( const smLink of this.springLinks ) {
                 smLink.update( dt );
@@ -408,22 +432,21 @@ var SoftBodySolver = (function (exports) {
             // enforce constraints
             for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
                 //console.log( "here 1" );
-                this.constraints[ constraintIdx ].applyConstraint( this.particles, this.numActiveParticles );
+                //this.constraints[ constraintIdx ].applyConstraint( this.particles, this.numActiveParticles );
+                this.constraints[ constraintIdx ].applyConstraint( this.particles, this.particles.length, dt );
             }
             
             // update positions
-            for (let i = 0; i < this.numActiveParticles; i++) {
+            //for (let i = 0; i < this.numActiveParticles; i++) {
+            for (let i = 0; i < this.particles.length; i++) {
                 let particle = this.particles[i];
                 particle.update( dt );
             }                    
             
             // update shape spring
         }
-        
-        
     
     };
-    
     
     exports.MassPoint = MassPoint;
     exports.Spring = Spring;

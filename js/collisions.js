@@ -1,5 +1,10 @@
 "use strict";
 
+// import { Vec2 } from './vec2.js';
+// import { MathUtil } from './mathUtil.js';
+// import { ShapeType } from './shapeType.js';
+
+// export
 class CollisionInfo {
     
     static none = new CollisionInfo();
@@ -13,6 +18,7 @@ class CollisionInfo {
     }
 }
 
+// export
 class SupportPointInfo {
     constructor( found_support_pt, query_dir_vec2, support_pt_idx, support_depth, on_polygon_a_b ) {
         this.found_support_pt = found_support_pt;
@@ -25,6 +31,7 @@ class SupportPointInfo {
     //{ found_support_pt: false, query_dir_vec2: query_dir_vec2, support_pt_idx: -1, support_depth: -1.0 }
 }
 
+// export
 class Collisions {
     
     static collideShapes( shape_A, shape_B ) {

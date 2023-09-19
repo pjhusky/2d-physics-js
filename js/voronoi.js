@@ -1,4 +1,10 @@
+"use strict";
 
+// import { Vec2 } from './vec2.js';
+// import { MathUtil } from './mathUtil.js';
+// import { Triangle } from './triangle.js';
+
+//export
 class Voronoi {
 
     static calcCircumCenters( delaunay_tris ) {

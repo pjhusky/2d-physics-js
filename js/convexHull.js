@@ -21,7 +21,9 @@
 
 // adapted for js and not using "Point" datastructure with .x, .y members, but rather simple arrays
 
+"use strict";
 
+//export
 class ConvexHull {
 	
 	// Returns a new array of points representing the convex hull of

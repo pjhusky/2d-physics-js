@@ -1,1 +1,6 @@
 vis-debug/*
+
+node_modules/*
+
+**/_*
+**/*.log

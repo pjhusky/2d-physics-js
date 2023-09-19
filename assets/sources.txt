@@ -1,0 +1,20 @@
+magnet-man.png: https://game-icons.net/1x1/delapouite/magnet-man.html
+mecha-head.png https://game-icons.net/1x1/delapouite/mecha-head.html
+robot-grab.png https://game-icons.net/1x1/delapouite/robot-grab.html
+screw.png https://game-icons.net/1x1/delapouite/screw.html
+screw2.png https://game-icons.net/1x1/lorc/screw.html
+magnet.png https://game-icons.net/1x1/lorc/magnet.html
+hexagonal-nut.png https://game-icons.net/1x1/delapouite/hexagonal-nut.html
+nice-robot.png https://game-icons.net/1x1/lorc/vintage-robot.html
+goblin.png https://game-icons.net/1x1/caro-asercion/goblin.html
+daemon-skull.png https://game-icons.net/1x1/lorc/daemon-skull.html
+transparent-slime.png https://game-icons.net/1x1/cathelineau/transparent-slime.html
+magnet-blast.png https://game-icons.net/1x1/lorc/magnet-blast.html
+death-skull.png https://game-icons.net/1x1/sbed/death-skull.html
+heartburn.png https://game-icons.net/1x1/lorc/heartburn.html
+pirate-grave.png https://game-icons.net/1x1/lorc/pirate-grave.html
+
+
+https://img.freepik.com/premium-photo/dark-landscape-maountains-seen-from-cave-concept-art-digital-painting-fantasy-illustration_743201-409.jpg
+
+

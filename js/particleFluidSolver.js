@@ -1,3 +1,7 @@
+"use strict";
+
+// import * as PIXI from './pixijs/pixi.js';
+
 var ParticleFluidSolver = (function (exports) {
 
     function length ( vec ) {
@@ -27,6 +31,7 @@ var ParticleFluidSolver = (function (exports) {
             this.lastPosY = 0.0;
             this.accelX = 0.0;
             this.accelY = 0.0;
+            this.anchor.set( 0.5, 0.5 );
         }        
         updatePosition( dt ) {
             let velX = this.position.x - this.lastPosX;
@@ -35,7 +40,8 @@ var ParticleFluidSolver = (function (exports) {
             this.lastPosX = this.position.x;
             this.lastPosY = this.position.y;
             
-            let damping = 0.9975;
+            //let damping = 0.9975;
+            let damping = 0.999;
             this.position.x += ( velX + this.accelX * dt * dt ) * damping;
             this.position.y += ( velY + this.accelY * dt * dt ) * damping;
             
@@ -61,89 +67,6 @@ var ParticleFluidSolver = (function (exports) {
         }
     };
     
-    let FluidSolverConstraintBase = class FluidSolverConstraintBaseClass {   
-    };
-    
-    let FluidSolverConstraintCircle = class FluidSolverConstraintCircleClass extends FluidSolverConstraintBase {
-        constructor( gridW, gridH, fluidParticleRadius ) {
-            super();
-
-            this.fluidParticleRadius = fluidParticleRadius;
-            // boundary condition
-            this.commonInit( gridW, gridH );
-        }
-        
-        commonInit( newGridW, newGridH ) {
-            this.circleBoundCenterX = newGridW * 0.5;
-            this.circleBoundCenterY = newGridH * 0.5; //0.38;
-            this.circleBoundRadius = Math.min( newGridW, newGridH ) * 0.46;
-            //this.circleBoundRadius = Math.min( newGridW, newGridH ) * 0.5;
-            this.circleBoundRadiusSquared = this.circleBoundRadius * this.circleBoundRadius;
-            
-            //this.testDistSquared = this.circleBoundRadiusSquared - 2.0 * this.circleBoundRadius * this.fluidParticleRadius - this.fluidParticleRadius*this.fluidParticleRadius;
-            // this should be correct:
-            this.testDistSquared = this.circleBoundRadiusSquared - 2.0 * this.circleBoundRadius * this.fluidParticleRadius + this.fluidParticleRadius*this.fluidParticleRadius;
-        }
-            
-        onResolutionChanged( newGridW, newGridH ) {
-            this.commonInit( newGridW, newGridH );
-        }
-
-        applyConstraint( fluidParticles, activeFluidParticles, dt ) {
-            // enforce constraints / boundary conditions
-            for (let i = 0; i < activeFluidParticles; i++) {
-                let fluidParticle = fluidParticles[i];
-                let toObjX = fluidParticle.position.x - this.circleBoundCenterX;
-                let toObjY = fluidParticle.position.y - this.circleBoundCenterY;
-                let distSquared = toObjX*toObjX + toObjY*toObjY;
-                
-                if ( distSquared > this.testDistSquared ) {
-                    let dist = Math.sqrt( distSquared );
-                    //let recipDist = 1.0 / dist;
-                    //let fixDirX = toObjX * recipDist;
-                    //let fixDirY = toObjY * recipDist;
-                    let fixDirX = toObjX / dist;
-                    let fixDirY = toObjY / dist;
-                    
-                    //fixDirX *= 0.995; // elasticity - a bit more lively!
-                    //fixDirY *= 0.995; // elasticity - a bit more lively!
-                    
-                    if ( false ) { // don't bounce back, more viscous fluid-like
-                        fluidParticle.position.x = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.fluidParticleRadius*1.025 );
-                        fluidParticle.position.y = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.fluidParticleRadius*1.025 );
-                    } else { // bounce off elastically
-                        let normalX = fluidParticle.position.x - this.circleBoundCenterX;
-                        let normalY = fluidParticle.position.y - this.circleBoundCenterY;
-                        
-                        let normalLen = Math.sqrt( normalX * normalX + normalY * normalY );
-                        normalX /= normalLen;
-                        normalY /= normalLen;
-                        
-                        let velX = fluidParticle.position.x - fluidParticle.lastPosX;
-                        let velY = fluidParticle.position.y - fluidParticle.lastPosY;
-                        
-                        let velDotN = velX * normalX + velY * normalY;
-                        let reflX = velX - 2.0 * velDotN * normalX;
-                        let reflY = velY - 2.0 * velDotN * normalY;
-
-                        // pos outside of constraint region
-                        // fluidParticle.lastPosX = fluidParticle.position.x;
-                        // fluidParticle.lastPosY = fluidParticle.position.y;
-                        // pos insdie constraint region
-                        fluidParticle.lastPosX = this.circleBoundCenterX + fixDirX * ( this.circleBoundRadius - this.fluidParticleRadius );
-                        fluidParticle.lastPosY = this.circleBoundCenterY + fixDirY * ( this.circleBoundRadius - this.fluidParticleRadius );
-
-                        fluidParticle.position.x = fluidParticle.lastPosX + reflX * 0.66;
-                        fluidParticle.position.y = fluidParticle.lastPosY + reflY * 0.66;
-                    }
-                                        
-                    fluidParticle.accelX = 0.0;                    
-                    fluidParticle.accelY = 0.0;
-                }
-            }
-        }                 
-    };
-    exports.FluidSolverConstraintCircle = FluidSolverConstraintCircle;
     
     let FluidSolver = class FluidSolverClass {
 
@@ -195,6 +118,10 @@ var ParticleFluidSolver = (function (exports) {
         //     return this.fluidParticles[idx]; 
         // }
         
+        addConstraint( constraint ) {
+            this.constraints.push( constraint );
+        }
+        
         setActiveParticleCount( activeParticleCount ) {
             this.activeFluidParticles = activeParticleCount;
         }
@@ -209,22 +136,22 @@ var ParticleFluidSolver = (function (exports) {
             this.numBinsX = Math.floor( ( gridW + ( this.binDim - 1 ) ) / this.binDim ); // round up
             this.numBinsY = Math.floor( ( gridH + ( this.binDim - 1 ) ) / this.binDim ); // round up
             
-            this.spatialArray = this.createSpatialBins();
+            this.createSpatialBins();
         }
         
-        onResolutionChanged( newGridW, newGridH ) {
-            this.commonInit( newGridW, newGridH );
-            this.createSpatialBins();
+        // onResolutionChanged( newGridW, newGridH ) {
+        //     this.commonInit( newGridW, newGridH );
+        //     this.createSpatialBins();
             
-            for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
-                this.constraints[constraintIdx].onResolutionChanged( newGridW, newGridH );
-            }
-        }
+        //     for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
+        //         this.constraints[constraintIdx].onResolutionChanged( newGridW, newGridH );
+        //     }
+        // }
         
         createSpatialBins() { 
-            console.log( 'created spatial bins' );
+            //console.log( 'created spatial bins' );
             this.spatialArray = new Array( this.numBinsY );
-            console.log( 'numBinsX = %d, numBinsY = %d', this.numBinsX, this.numBinsY );
+            //console.log( 'numBinsX = %d, numBinsY = %d', this.numBinsX, this.numBinsY );
             //console.log( 'spatialArray.length %d, numBinsY = %d', this.spatialArray.length, this.numBinsY );
             for (let y = 0; y < this.numBinsY; y++) {
                 this.spatialArray[y] = new Array( this.numBinsX );
@@ -248,7 +175,7 @@ var ParticleFluidSolver = (function (exports) {
             }
         }
 
-        updateFluidDriver() {
+        updateFluidDriver( dt ) {
             if ( this.numSubSteps > 0 ) {
                 for ( let step = 0; step < this.numSubSteps; step++ ) {
                     this.updateFluid( this.subFixedDt );
@@ -260,6 +187,8 @@ var ParticleFluidSolver = (function (exports) {
         
         updateFluid(dt) {
 
+            const recip_dt = 1.0 / dt;
+            
             this.clearSpatialBins();
             
             // insert particle into bin array for faster neighbor search
@@ -319,6 +248,7 @@ var ParticleFluidSolver = (function (exports) {
                                 
                                 //halfDeltaLen *= 1.2; // elasticity - a bit more lively!
                                 
+                                /**
                                 fluidParticleA.position.x += fixDirX * halfDeltaLen;
                                 fluidParticleA.position.y += fixDirY * halfDeltaLen;
                                 
@@ -332,6 +262,25 @@ var ParticleFluidSolver = (function (exports) {
                                 fluidParticleB.accelX = 0.0;
                                 fluidParticleB.accelY = 0.0;
                                 //! fluidParticleB.accelY = Math.min( 0.0, -fixDirY );
+                                **/
+                               
+                                const dxA = fixDirX * halfDeltaLen;
+                                const dyA = fixDirY * halfDeltaLen;
+                                fluidParticleA.position.x += dxA;
+                                fluidParticleA.position.y += dyA;
+                                fluidParticleB.position.x -= dxA;
+                                fluidParticleB.position.y -= dyA;
+                                
+                                // fluidParticleA.accelX = 0.0;
+                                // fluidParticleA.accelY = Math.min( 0.0, fixDirY );
+                                // fluidParticleB.accelX = 0.0;
+                                // fluidParticleB.accelY = Math.min( 0.0, -fixDirY );
+
+                                fluidParticleA.accelX +=  dxA * recip_dt;
+                                fluidParticleA.accelY +=  dyA * recip_dt;
+                                fluidParticleB.accelX += -dxA * recip_dt;
+                                fluidParticleB.accelY += -dyA * recip_dt;
+                                
                             }
                         }
                     }
@@ -339,7 +288,9 @@ var ParticleFluidSolver = (function (exports) {
             }
 
             // enforce constraints
+            //console.error( `this.constraints.length = ${this.constraints.length}` ); // <<<
             for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
+                //console.log( `applying fluid constraints` );
                 this.constraints[ constraintIdx ].applyConstraint( this.fluidParticles, this.activeFluidParticles, dt );
             }
             
@@ -366,6 +317,8 @@ var ParticleFluidSolver = (function (exports) {
         
         updateFluid(dt) {
 
+            const recip_dt = 1.0 / dt;
+            
             this.clearSpatialBins();
             
             // insert particle into bin array for faster neighbor search
@@ -382,7 +335,9 @@ var ParticleFluidSolver = (function (exports) {
             }
             
             // enforce constraints
+            //console.error( `this.constraints.length = ${this.constraints.length}` );
             for ( let constraintIdx = 0; constraintIdx < this.constraints.length; constraintIdx++ ) {
+                //console.log( `applying fluid constraints` );
                 this.constraints[ constraintIdx ].applyConstraint( this.fluidParticles, this.activeFluidParticles );
             }
                         
@@ -421,21 +376,23 @@ var ParticleFluidSolver = (function (exports) {
                                 //let halfDeltaLen = 0.5 * ( 2.0f * this.fluidParticleRadius - diffLen );
                                 let halfDeltaLen = this.fluidParticleRadius - 0.5 * diffLen;
                                 
-                                fluidParticleA.position.x += fixDirX * halfDeltaLen;
-                                fluidParticleA.position.y += fixDirY * halfDeltaLen;
+                                const dxA = fixDirX * halfDeltaLen;
+                                const dyA = fixDirY * halfDeltaLen;
+                                fluidParticleA.position.x += dxA;
+                                fluidParticleA.position.y += dyA;
+                                fluidParticleB.position.x -= dxA;
+                                fluidParticleB.position.y -= dyA;
                                 
-                                fluidParticleB.position.x -= fixDirX * halfDeltaLen;
-                                fluidParticleB.position.y -= fixDirY * halfDeltaLen;
-                                
-                                fluidParticleA.accelX = 0.0;
-                                //! fluidParticleA.accelY = 0.0;
-                                //! 
-                                fluidParticleA.accelY = Math.min( 0.0, fixDirY );
-                                
-                                fluidParticleB.accelX = 0.0;
-                                //! fluidParticleB.accelY = 0.0;
-                                //! 
-                                fluidParticleB.accelY = Math.min( 0.0, -fixDirY );
+                                // fluidParticleA.accelX = 0.0;
+                                // fluidParticleA.accelY = Math.min( 0.0, fixDirY );
+                                // fluidParticleB.accelX = 0.0;
+                                // fluidParticleB.accelY = Math.min( 0.0, -fixDirY );
+
+                                fluidParticleA.accelX +=  dxA * recip_dt;
+                                fluidParticleA.accelY +=  dyA * recip_dt;
+                                fluidParticleB.accelX += -dxA * recip_dt;
+                                fluidParticleB.accelY += -dyA * recip_dt;
+
                             }
                         }
                     }
@@ -459,7 +416,7 @@ var ParticleFluidSolver = (function (exports) {
     };
                          
     
-    exports.saveFluidParticleColors = async function saveFluidParticleColorsFn( app, browserEnum, fluidParticles, image ) {
+    exports.saveFluidParticleColors = async function saveFluidParticleColorsFn( app, browserEnum, fluidParticles, image, tex, screen_dim ) {
         app.stop();
 
         //const url = await app.renderer.extract.base64(app.stage);
@@ -473,14 +430,14 @@ var ParticleFluidSolver = (function (exports) {
                 tintArray.push( '\n' );
                 continue;
             }
-            let x = Math.floor( fluidParticle.position.x * (sceneMapTex.width-1)  / app.screen.width  + 0.5 );
-            let y = Math.floor( fluidParticle.position.y * (sceneMapTex.height-1) / app.screen.height + 0.5 );
+            let x = Math.floor( fluidParticle.position.x * (tex.width-1)  / app.screen.width  + 0.5 );
+            let y = Math.floor( fluidParticle.position.y * (tex.height-1) / app.screen.height + 0.5 );
 
-            x = AppUtils.clamp( x, 0, sceneMapTex.width-1 );
-            y = AppUtils.clamp( y, 0, sceneMapTex.height-1 );
-            let r = image[ ( sceneMapTex.width * y + x ) * 4 + 0 ];
-            let g = image[ ( sceneMapTex.width * y + x ) * 4 + 1 ];
-            let b = image[ ( sceneMapTex.width * y + x ) * 4 + 2 ];
+            x = AppUtils.clamp( x, 0, tex.width-1 );
+            y = AppUtils.clamp( y, 0, tex.height-1 );
+            let r = image[ ( tex.width * y + x ) * 4 + 0 ];
+            let g = image[ ( tex.width * y + x ) * 4 + 1 ];
+            let b = image[ ( tex.width * y + x ) * 4 + 2 ];
             
             if( isNaN( r ) || isNaN( g ) || isNaN( b ) ) {
                 r = g = b = 127;

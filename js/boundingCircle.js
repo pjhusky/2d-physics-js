@@ -18,7 +18,7 @@
  * along with this program (see COPYING.txt and COPYING.LESSER.txt).
  * If not, see <http://www.gnu.org/licenses/>.
  */
-//"use strict";
+"use strict";
 // class Point {
 //     constructor(x, y) {
 //         this.x = x;
@@ -35,6 +35,7 @@
 
 // adapted - no longer using "Point" datastructure with .x, .y members, but rather simple arrays
 
+//export
 class BoundingCircle {
     /*
      * Returns the smallest circle that encloses all the given points. Runs in expected O(n) time, randomized.

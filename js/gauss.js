@@ -146,9 +146,17 @@ var MyGauss = (function (exports) {
             height: gaussDim,
             internalFormat: 'R32F',
             format: 'RED',
-            type: 'FLOAT'
+            type: 'FLOAT',
+            resolution: 1,
           });
-        const baseGaussDataTexture = new PIXI.BaseTexture(gaussRawResource /*, { scaleMode: PIXI.SCALE_MODES.NEAREST }*/ );
+        const baseGaussDataTexture = new PIXI.BaseTexture(gaussRawResource, {
+            width: gaussDim,
+            height: gaussDim,
+            internalFormat: 'R32F',
+            format: 'RED',
+            type: 'FLOAT',
+            resolution: 1,
+        });
         const gaussTexture = new PIXI.Texture(baseGaussDataTexture);
 
           

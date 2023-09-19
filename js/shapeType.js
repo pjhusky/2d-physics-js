@@ -1,4 +1,6 @@
 // https://2ality.com/2020/01/enum-pattern.html
+
+//export
 class ShapeType {
     // static abstract = new ShapeType( 'Abstract' );
     static circle = new ShapeType( 'Circle' );

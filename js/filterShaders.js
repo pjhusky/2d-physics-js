@@ -1,4 +1,4 @@
-var MyFilterShaders = (function (exports) {
+var FilterShaders = (function (exports) {
     
     exports.printDefaultVertexShader = function printDefaultVertexShader() {
         console.log( PIXI.Filter.defaultVertexSrc ); // DEBUG: print default vertex shader, so we can mod it later on
@@ -182,6 +182,8 @@ var MyFilterShaders = (function (exports) {
         uniform float u_time;
         uniform vec2 u_rDim;
         uniform vec2 u_dim;
+        uniform float u_boostDistortIntensity;
+        uniform float u_baseEmit;
         vec2 curve(vec2 uv)
         {
             uv = uv * 2.0 - 1.0;
@@ -242,8 +244,8 @@ var MyFilterShaders = (function (exports) {
             col.r = texture2D( uSampler, vec2(x + curvedTCSampler.x + offS, curvedTCSampler.y + offS ) ).x + 0.05;
             col.g = texture2D( uSampler, vec2(x + curvedTCSampler.x + 0.00, curvedTCSampler.y - offL ) ).y + 0.05;
             col.b = texture2D( uSampler, vec2(x + curvedTCSampler.x - offL, curvedTCSampler.y + 0.00 ) ).z + 0.05;
-            float wRB = 0.08;
-            float wG  = 0.05;
+            float wRB = 0.012;
+            float wG  = 0.008;
             // float wRB = 0.0;
             // float wG  = 0.0;
             
@@ -251,11 +253,13 @@ var MyFilterShaders = (function (exports) {
             float stepVal = ( step( 0.0, 3.2 * sin( curvedTCSampler.y * 5.5 ) ) * 0.5 );
             
             wRB += stepVal*0.02;
-            col.r += wRB * texture2D( uSampler, stepVal * 0.75 * vec2( x + 0.025, -0.027 ) + vec2( curvedTCSampler.x + 0.001, curvedTCSampler.y + 0.001 ) ).x;
-            col.g += wG  * texture2D( uSampler, 0.75 * vec2( x + -0.022, -0.02 ) + vec2( curvedTCSampler.x + 0.000, curvedTCSampler.y - 0.002 ) ).y;
-            col.b += wRB * texture2D( uSampler, stepVal * 0.75 * vec2( x + -0.02, -0.018 ) + vec2( curvedTCSampler.x - 0.002, curvedTCSampler.y + 0.000 ) ).z;
+            float chromatic_distortion_weak     = 0.000025;
+            float chromatic_distortion_strong   = 0.000125;
+            col.r += wRB * texture2D( uSampler, stepVal * 0.75 * vec2( x + 0.025, -0.027 ) + vec2( curvedTCSampler.x + chromatic_distortion_strong, curvedTCSampler.y + chromatic_distortion_strong ) ).x;
+            col.g += wG  * texture2D( uSampler, 0.75 * vec2( x + -0.022, -0.02 ) + vec2( curvedTCSampler.x + 0.000, curvedTCSampler.y - chromatic_distortion_weak ) ).y;
+            col.b += wRB * texture2D( uSampler, stepVal * 0.75 * vec2( x + -0.02, -0.018 ) + vec2( curvedTCSampler.x - chromatic_distortion_weak, curvedTCSampler.y + 0.000 ) ).z;
 
-            col = clamp(col*0.6+0.4*col*col*1.0,0.0,1.0);
+            col = clamp(col*0.6+0.4*col*col*1.0 + u_baseEmit,0.0,1.0);
 
             float vig = (0.0 + 1.0*16.0*curvedTC.x*curvedTC.y*(1.0-curvedTC.x)*(1.0-curvedTC.y)); // smooth vignetting
             //float vig = 1.0; // sharp vignetting
@@ -290,7 +294,7 @@ var MyFilterShaders = (function (exports) {
             // Remove the next line to stop cross-fade between original and postprocess
             //col = mix( col, origCol, comp );
 
-            gl_FragColor = vec4(col,1.0);
+            gl_FragColor = vec4(col * u_boostDistortIntensity,1.0);
         }
     `;
     
