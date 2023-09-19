@@ -1149,16 +1149,6 @@
             let initDiffVecY = (flowerTopSprite.y - eggHeadSprite.y);
             let restLen = Math.sqrt( initDiffVecX * initDiffVecX + initDiffVecY * initDiffVecY );
             
-            //triangle = MyTriangle.setupTriangle();
-            //! app.stage.addChild(triangle);
-
-            if ( false ) { // instanced triangle fluidParticles
-                let sphereRadius = 3.5;
-                let instanceCount = 10; 
-                sphere = MySphere.setupSphere( sphereRadius, instanceCount );
-                app.stage.addChild(sphere);
-            }
-
             // https://medium.com/@bigtimebuddy/rendering-fast-graphics-with-pixijs-6f547895c08c
             // https://codesandbox.io/s/pixi-graphics-post-attempt-4-hlgs33?from-embed=&file=/src/index.ts:725-928
 
@@ -1323,8 +1313,6 @@
             let softBodyAreaConstraint = new SBS.SpringMassSolverConstraintCircle( app.screen.width, app.screen.height, fluidParticleRadius );
             let softBodyConstraints = [];
             softBodyConstraints.push( softBodyAreaConstraint );
-            
-
                                                             
             let softBodyCombinedSystem = new SBS.SoftBodySolver(  app.screen.width, app.screen.height, 
                                                               numSoftBodyBallMassPositions+numSoftBodyPlankMassPositions, softBodyMassRadius, fluidParticleGravityX, fluidParticleGravityY,
