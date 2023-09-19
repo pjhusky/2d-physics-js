@@ -68,8 +68,15 @@ class GameObjectMgr {
         }
         
         this.game_objects.forEach( (go) => { go.update( dt ); } );
-        let collisions_detected_set = this.calculateAndDrawCollisionInfo( this.game_objects );
-        collisions_detected_set.forEach( ( go_idx ) => { this.game_objects[ go_idx ].onCollide(); } );
+
+        // let collisions_detected_set = this.calculateAndDrawCollisionInfo( this.game_objects );
+        // collisions_detected_set.forEach( ( go_idx ) => { this.game_objects[ go_idx ].onCollide(); } );
+
+        let collisions_detected_pair_info_set = this.calculateAndDrawCollisionInfo( this.game_objects );
+        collisions_detected_pair_info_set.forEach( ( collision_pair_info ) => { 
+            this.game_objects[ collision_pair_info.idx1 ].onCollide( collision_pair_info.info ); 
+            this.game_objects[ collision_pair_info.idx2 ].onCollide( collision_pair_info.info ); 
+        } );
         
         this.collisionDetectionWithResolve( this.game_objects );
         
@@ -508,6 +515,7 @@ class GameObjectMgr {
         } );
         
         let collision_detected = new Set();
+        let collision_detected_pair_info = new Set();
         for ( let i = 0; i < game_objects.length; i++ ) {
             for ( let j = i + 1; j < game_objects.length; j++ ) {
                 const [ did_narrow_phase_collide, did_broad_phase_collide, collision_info ] = Collisions.collideShapes( game_objects[i].rigid_body, game_objects[j].rigid_body );
@@ -521,6 +529,7 @@ class GameObjectMgr {
                                         
                     collision_detected.add( i );
                     collision_detected.add( j );
+                    collision_detected_pair_info.add( { idx1: Math.min(i,j), idx2: Math.max(i,j), info: collision_info } );
                     
                     if ( collision_info.outside == false && game_objects[i].rigid_body.shape_type != game_objects[j].rigid_body.shape_type) {
                         //console.log( "inside!" );
@@ -547,7 +556,8 @@ class GameObjectMgr {
                 }
             }
         }
-        return collision_detected;
+        //return collision_detected;
+        return collision_detected_pair_info;
     }
     
     setDebugVisibility( show_debug_vis ) {

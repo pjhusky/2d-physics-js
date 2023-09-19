@@ -24,7 +24,7 @@ class GameObject {
         this.rigid_body.postUpdate();
     }
     
-    onCollide() {}
+    onCollide( collision_info ) {}
     
     setPos( pos_vec2 ) {
         this.rigid_body.setPos( pos_vec2 );
@@ -76,8 +76,8 @@ class GameObject_Breakable extends GameObject {
     
     static shardCreateEventName() { return "createShards"; }
     
-    onCollide() {
-        super.onCollide();
+    onCollide( collision_info ) {
+        super.onCollide( collision_info );
         
         if ( this.shattered == true ) { return; }
         this.shattered = true; // shatter only once!
@@ -108,6 +108,12 @@ class GameObject_Breakable extends GameObject {
         this.rigid_body.world_space_points_ccw_vec2.forEach( (pos_vec2) => {
             delaunay_in.push( pos_vec2.toArray() );
         } );
+        
+        //delaunay_in.push( collision_info.end_collision_pt.toArray() ); // also add collision pt
+        delaunay_in.push( collision_info.start_collision_pt.toArray() ); // also add collision pt
+        
+        //delaunay_in.push( Vec2.add( collision_info.end_collision_pt, collision_info.normal ).toArray() ); // also add collision pt
+        //delaunay_in.push( Vec2.add( collision_info.end_collision_pt, Vec2.mulScalar( collision_info.normal, 3.0 ) ).toArray() ); // also add collision pt
         
         //let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( this.rigid_body.world_space_points_ccw_vec2 );
         let [ outer_tri, delaunay_tris, boundary_delaunay_tris, boundary_edges ] = Delaunay.calculate( delaunay_in );
