@@ -184,7 +184,7 @@ var AppUtils = (function (exports) {
             }
         }
 
-        //5. Return the `scale` value. This is important, because you'll nee this value 
+        //5. Return the `scale` value. This is important, because you'll need this value 
         //for correct hit testing between the pointer and sprites
         return scale;
     };
